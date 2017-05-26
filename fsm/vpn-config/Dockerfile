@@ -31,7 +31,7 @@ ENV broker_exchange son-kernel
 # install package dependencies
 RUN apt-get clean \
     && apt-get update \
-    && apt-get install -y git
+    && apt-get install -y git build-essential libffi-dev libssl-dev
 
 # clone son-sm repo to install dependencies
 RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git
