@@ -1,30 +1,28 @@
----
 ##
-## Some general information regarding this
-## VNF descriptor.
+## TOR VNF Descriptor
 ##
 descriptor_version: "vnfd-schema-02"
-vendor: "eu.sonata-nfv.nec"
-name: "tor"
+vendor: "eu.sonata-nfv"
+name: "tor-vnf"
 version: "0.1"
-author: "Michael Bredel, NEC, michael.bredel@neclab.eu"
-description: "The TOR VNF for the PSA pilot"
-
+author: "Luis Conceicao, UBIWHERE"
+description: "Implementation of TOR function to be used as a transparent proxy"
+ 
 ##
-## The virtual deployment unit.
+## The virtual deployment units.
 ##
 virtual_deployment_units:
-  - id: "1"
-    vm_image: "tor"
+  - id: "vdu01"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/tor-vnf/sonata-tor.qcow2"
     vm_image_format: "qcow2"
     resource_requirements:
       cpu:
         vcpus: 1
       memory:
-        size: 1
+        size: 2
         size_unit: "GB"
       storage:
-        size: 1
+        size: 20
         size_unit: "GB"
     monitoring_parameters:
       - name: "vm_cpu_perc"
@@ -45,7 +43,22 @@ virtual_deployment_units:
       - id: "vdu01:eth2"
         interface: "ipv4"
         type: "internal"
-
+ 
+##
+## The VNF connection points to the 
+## outside world.
+##
+connection_points:
+  - id: "mgmt"
+    interface: "ipv4"
+    type: "management"
+  - id: "input"
+    interface: "ipv4"
+    type: "external"
+  - id: "output"
+    interface: "ipv4"
+    type: "external"
+ 
 ##
 ## The virtual links that interconnect
 ## the different connections points.
@@ -55,30 +68,39 @@ virtual_links:
     connectivity_type: "E-LAN"
     connection_points_reference:
       - "vdu01:eth0"
-      - "vnf:mgmt"
+      - "mgmt"
+    dhcp: True
   - id: "input"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth1"
-      - "vnf:input"
+      - "input"
+    dhcp: True
   - id: "output"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth2"
-      - "vnf:output"
-
-
+      - "output"
+    dhcp: True
+ 
 ##
-## The VNF connection points to the 
-## outside world.
+## The monitoring rules that react
+## to the monitoring parameters
 ##
-connection_points:
-  - id: "vnf:mgmt"
-    interface: "ipv4"
-    type: "management"
-  - id: "vnf:input"
-    interface: "ipv4"
-    type: "external"
-  - id: "vnf:output"
-    interface: "ipv4"
-    type: "external"
+monitoring_rules:
+  - name: "mon:rule:vm_cpu_perc"
+    description: "Trigger events if CPU load is above 10 percent."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:vm_cpu_perc > 10"
+    notification:
+      - name: "notification01"
+        type: "rabbitmq_message"
+  - name: "mon:rule:vm_mem_perc"
+    description: "Trigger events if memory consumption is above 10 percent."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:vm_mem_perc > 10"
+    notification:
+      - name: "notification02"
+        type: "rabbitmq_message"
