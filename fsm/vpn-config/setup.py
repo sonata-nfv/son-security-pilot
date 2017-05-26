@@ -60,7 +60,7 @@ setup(
     keywords='NFV orchestrator',
 
     packages=find_packages("vpn-config"),
-    install_requires=['pytest'],
+    install_requires=['pytest', 'ansible'],
     setup_requires=['pytest-runner'],
 
     # To provide executable scripts, use entry points in preference to the
