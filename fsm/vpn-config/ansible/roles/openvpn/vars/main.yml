@@ -1,0 +1,3 @@
+---
+if_vpn_outbound: "eth2"
+vpn_proto: udp

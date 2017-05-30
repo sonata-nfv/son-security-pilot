@@ -1,0 +1,21 @@
+#- name: check if firewalld is installed
+#  stat: path=/usr/lib/systemd/system/firewalld.service
+#  register: firewalld_status
+
+- name: disable and mask firewalld (if exists)
+  service: name=firewalld state=stopped masked=yes enabled=no
+  register: firewalld_status
+  failed_when: "firewalld_status|failed and ('find' not in firewalld_status.msg and 'found' not in firewalld_status.msg)"
+
+- name: put SELinux in permissive mode
+  selinux: policy=targeted state=permissive
+
+- name: enable ip forwarding
+  sysctl: name=net.ipv4.ip_forward value=1 sysctl_set=yes
+
+- name: install iptables
+  yum: name=iptables-services
+  notify: start iptables
+
+- name: install EPEL
+  yum: name=epel-release
