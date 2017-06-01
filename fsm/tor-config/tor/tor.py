@@ -38,22 +38,22 @@ from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
 
 logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("fsm-vpn-config-1")
+LOG = logging.getLogger("fsm-tor-config-1")
 LOG.setLevel(logging.DEBUG)
 logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
-class VPNConfigurationFSM(sonSMbase):
+class TORConfigurationFSM(sonSMbase):
 
     def __init__(self):
 
         self.specific_manager_type = 'fsm'
         self.service_name = 'psa-service'  # TODO: match nsd name
-        self.function_name = 'vpn-vnf'
-        self.specific_manager_name = 'vpn-config'
+        self.function_name = 'tor-vnf'
+        self.specific_manager_name = 'tor-config'
         self.id_number = '1'
         self.version = 'v0.1'
-        self.description = "FSM for configuring the VPN VNF"
+        self.description = "FSM for configuring the TOR VNF"
 
         self.amqp_topic = ('son.' + self.specific_manager_name +
                            self.id_number + self.version)
@@ -89,8 +89,8 @@ class VPNConfigurationFSM(sonSMbase):
             response = yaml.load(str(response))
             list = response['VNFR']
             mgmt_ip = None
-            vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/' \
-                       'sonata-vpn.qcow2'
+            vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/tor-vnf/' \
+                       'sonata-tor.qcow2'
 
             for x in range(len(list)):
                 if (response['VNFR'][x]['virtual_deployment_units']
@@ -124,7 +124,7 @@ class VPNConfigurationFSM(sonSMbase):
             inventory = Inventory(loader=loader,
                                   variable_manager=variable_manager)
 
-            playbook_path = 'fsm/vpn-config/ansible/site.yml'
+            playbook_path = 'fsm/tor-config/ansible/site.yml'
 
             if not os.path.exists(playbook_path):
                 LOG.error('The playbook does not exist')

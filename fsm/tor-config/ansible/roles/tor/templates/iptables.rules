@@ -1,0 +1,5 @@
+iptables -F
+iptables -t nat -F
+iptables -t nat -A PREROUTING -i {{ if_tor_inbound }} -p udp --dport 53 -j REDIRECT --to-ports 53
+iptables -t nat -A PREROUTING -i {{ if_tor_inbound }} -p tcp --dport 22 -j REDIRECT --to-ports 22
+iptables -t nat -A PREROUTING -i {{ if_tor_inbound }} -p tcp --syn -j REDIRECT --to-ports {{ tor_trans_port }}

@@ -1,0 +1,7 @@
+---
+- name: Install Tor
+  hosts: torproxy
+  remote_user: root
+  roles:
+    - common
+    - tor

@@ -1,0 +1,9 @@
+---
+# tor ip address
+#tor_ip: "{{ groups['torproxy'][0] }}"
+#tor_ip: "{{ ansible_eth0.ipv4.address }}"
+#tor_ip: "{{ hostvars.torproxy.ansible_ssh_host }}"
+if_tor_inbound: "eth2"
+
+# tor transparent port
+tor_trans_port: 9040
