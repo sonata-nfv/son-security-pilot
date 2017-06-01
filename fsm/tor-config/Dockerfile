@@ -44,10 +44,10 @@ WORKDIR /son-sm/son-sm-template
 RUN python setup.py install
 
 # run fsm
-ADD fsm/vpn-config /vpn-config
+ADD fsm/tor-config /tor-config
 
-WORKDIR /vpn-config
+WORKDIR /tor-config
 RUN python setup.py develop
 
-CMD ["vpn-config"]
+CMD ["tor-config"]
 

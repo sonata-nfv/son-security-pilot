@@ -1,0 +1,5 @@
+- name: restart tor
+  service: name=tor.service state=restarted enabled=yes
+
+- name: restart iptables
+  service: name=iptables.service state=restarted enabled=yes

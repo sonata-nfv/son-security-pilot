@@ -1,0 +1,15 @@
+- name: TOR configuration ...
+  debug: msg="Binding in *:{{ tor_trans_port }} @ {{ if_tor_inbound }}"
+
+- name: install TOR
+  yum: name=tor state=installed
+
+- name: configure Tor
+  template: src=torrc dest=/etc/tor/torrc
+  notify: restart tor
+
+- name: copy iptables rules
+  template: src=iptables.rules dest=/root/iptables.sh mode=0700
+
+- name: install iptables rules
+  shell: /root/iptables.sh

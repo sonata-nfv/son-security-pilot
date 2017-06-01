@@ -39,7 +39,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='vpn-config',
+    name='tor-config',
 
     version='0.1',
 
@@ -47,7 +47,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/sonata-nfv/son-security-pilot/fsm/vpn-config',
+    url='https://github.com/sonata-nfv/son-security-pilot/fsm/tor-config',
 
     # Author details
     author='Luis Conceicao, UBIWHERE',
@@ -59,7 +59,7 @@ setup(
     # What does your project relate to?
     keywords='NFV orchestrator',
 
-    packages=find_packages("vpn-config"),
+    packages=find_packages("tor-config"),
     install_requires=['pytest', 'ansible'],
     setup_requires=['pytest-runner'],
 
@@ -67,6 +67,6 @@ setup(
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
-        'console_scripts': ['vpn-config=vpn.__main__:main'],
+        'console_scripts': ['tor-config=tor.__main__:main'],
     },
 )
