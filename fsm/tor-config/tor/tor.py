@@ -162,7 +162,7 @@ class TORConfigurationFSM(sonSMbase):
             return
 
 def main():
-    VPNConfigurationFSM()
+    TORConfigurationFSM()
 
 if __name__ == '__main__':
     main()
