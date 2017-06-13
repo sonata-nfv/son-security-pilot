@@ -1,0 +1,44 @@
+---
+# tasks file for docker-snort
+
+- name: get Snort Docker image
+  docker_image:
+    name: glanf/snort
+
+- name: start Snort IDS container
+  docker_container:
+    name: snort
+    image: glanf/snort
+    #env:
+    state: started
+    network_mode: bridge
+    networks:
+      - name: "{{ vl_vpsa_mgmt }}"
+        aliases:
+          - son-mgmt
+      - name: "{{ vl_prx_ids }}"
+        aliases:
+          - vpsa-proxy-ids
+      #- name: "{{ vl_addblk_ids }}"
+      #  aliases:
+      #    - vpsa-addblk-ids
+      - name: "{{ vl_fw_out }}"
+        aliases:
+          - vpsa-fw-outside
+      - name: "{{ vl_fw_in }}"
+        aliases:
+          - vpsa-fw-inside
+    restart_policy: "unless-stopped"
+    published_ports:
+     - 0:1024
+     - 1024:65535
+    volumes:
+      - /var/log/sonata/snort:/var/log/snort
+    log_driver: syslog # gelf
+
+    #log_options:
+    #  syslog-address: tcp://my-syslog-server:514
+    #  syslog-facility: daemon
+
+#- wait_for: host=0.0.0.0 port=80 timeout=30 delay=10 state=started
+

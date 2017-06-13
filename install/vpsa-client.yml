@@ -1,0 +1,24 @@
+---
+
+### instantiate a vPSA client
+
+- name: get Snort Docker image
+  docker_image:
+    name: ubuntu:latest
+
+- name: start Ubuntu Xenial container
+  docker_container:
+    name: vpsa-client
+    image: ubuntu
+    #env:
+    state: started
+    network_mode: bridge
+    networks:
+      - name: "{{ vl_vpsa_mgmt }}"
+        aliases:
+          - son-mgmt
+      - name: "{{ vl_vpsa_enduser }}"
+        aliases:
+          - vpsa-enduser
+    restart_policy: "unless-stopped"
+

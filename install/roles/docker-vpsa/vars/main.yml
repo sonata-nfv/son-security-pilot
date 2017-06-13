@@ -1,0 +1,4 @@
+public_ip: 172.31.6.111
+docker-vpsa_fqdn: docker-vpsa-alabs-demo-trusty-1497029406
+docker-vpsa_fqdn: docker-vpsa-alabs-demo-trusty-1497029864
+docker-vpsa_fqdn: docker-vpsa-alabs-demo-xenial-1497031079

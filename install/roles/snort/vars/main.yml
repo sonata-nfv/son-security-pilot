@@ -1,0 +1,6 @@
+---
+# vars file for snort
+public_ip: 172.31.6.111
+snort_fqdn: snort-alabs-demo-Core-1497008895
+snort_fqdn: snort-alabs-demo-Core-1497018642
+snort_fqdn: snort-alabs-demo-Core-1497020024
