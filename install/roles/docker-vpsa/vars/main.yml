@@ -1,9 +1,3 @@
-public_ip: 172.31.6.111
-docker-vpsa_fqdn: docker-vpsa-alabs-demo-trusty-1497029406
-docker-vpsa_fqdn: docker-vpsa-alabs-demo-trusty-1497029864
-docker-vpsa_fqdn: docker-vpsa-alabs-demo-xenial-1497031079
-public_ip: 172.31.6.114
-docker-vpsa_fqdn: docker-vpsa-alabs-demo-Core-1497368736
-docker-vpsa_fqdn: docker-vpsa-alabs-demo-xenial-1497374960
-docker-vpsa_fqdn: docker-vpsa-alabs-demo-xenial-1497376283
-docker-vpsa_fqdn: docker-vpsa-alabs-demo-xenial-1497377956
+---
+# vars file for docker-vpsa
+
