@@ -3,8 +3,3 @@
 --subnet=172.20.0.0/24 --gateway=172.20.0.1 \
 --ip-range=172.20.0.128/25 "{{ docker_network_name }}"'
 
-- name: Docker User Defined Network (MGMT)
-  shell: 'docker network create --driver=bridge \
---subnet=172.20.1.0/24 --gateway=172.20.1.1 \
---ip-range=172.20.1.128/25 "{{ vl_mgmt }}"'
-

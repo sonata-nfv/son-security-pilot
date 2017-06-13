@@ -13,8 +13,6 @@
 
 - include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/secgrp.yml"
 
-- include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/networks.yml"
-
 - include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/vm4{{ plat }}.yml"
 
 - set_fact:
