@@ -26,7 +26,7 @@
       #- name: "{{ vl_addblk_ids }}"
       #  aliases:
       #    - vpsa-addblk-ids
-      - name: "{{ vl_fwin }}"
+      - name: "{{ vl_fw_in }}"
         aliases:
           - vpsa-fw-in
         links:
