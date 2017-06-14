@@ -10,7 +10,7 @@
         msg: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
   roles:
     - docker
-    #- docker-nginx
+    - docker-nginx
     #- docker-pfsense
     #- docker-openvpn
     - docker-snort

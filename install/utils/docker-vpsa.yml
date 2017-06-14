@@ -15,9 +15,9 @@
         owner: "{{ lookup('env','USER') }}"
         group: "{{ lookup('env','USER') }}"
         mode: "u=rw,g=rw,o=rw"
-    - include: "{{ lookup('env','PWD') }}/roles/docker-vpsa/tasks/networks.yml"
   roles:
     - firewall
+    - docker
     - docker-squid
     - docker-snort
     #- { role: docker-vpn, become: true }

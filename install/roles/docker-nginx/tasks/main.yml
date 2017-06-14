@@ -15,10 +15,10 @@
     networks:
       - name: "{{ docker_network_name }}"
         aliases:
-          - son-vpsa-mgmt
-      - name: "{{ docker_enduser_netw }}"
+          - vpsa-mgmt
+      - name: "{{ vl_vpsa_enduser }}"
         aliases:
-          - son-vpsa-enduser
+          - vpsa-enduser
     restart_policy: "unless-stopped"
     volumes:
       - /var/log/sonata/nginx:/var/log/nginx

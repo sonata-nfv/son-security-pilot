@@ -24,6 +24,7 @@ All you need is a 'bash' shell with Ansible installed: actually, 'son-cmud.yml' 
 
 
 #### Pre-configuration
+NOTE: only if you want to create a new VM at openstack VIM
 
 1. Create the hidden file that contains the available Openstack clouds you can connect [os_client_config](http://docs.openstack.org/developer/os-client-config/)
 * ~/.config/openstack/clouds.yaml
