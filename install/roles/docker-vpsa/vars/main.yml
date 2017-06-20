@@ -1,3 +1,11 @@
 ---
 # vars file for docker-vpsa
 
+public_ip: 172.31.6.114
+docker-vpsa_fqdn: docker-vpsa-alabs-demo-xenial-1497425171
+docker-vpsa_fqdn: docker-vpsa-alabs-demo-xenial-1497426504
+public_ip: 10.100.32.146
+docker-vpsa_fqdn: docker-vpsa-ncsrd-qual-xenial-1497429092
+public_ip: 172.31.6.108
+docker-vpsa_fqdn: docker-vpsa-alabs-demo-Core-1497465575
+docker-vpsa_fqdn: docker-vpsa-alabs-demo-xenial-1497982572

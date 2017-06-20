@@ -9,6 +9,6 @@ vl_vpsa_mgmt: vpsa-mgmt
 vl_vpsa_enduser: vpsa-enduser
 
 vl_prx_ids: vpsa-prx-ids
-vl_fw_in: vpsa-fw-in
-vl_fw_out: vpsa-fw-out
+vl_fwin: vpsa-fwin
+vl_fwout: vpsa-fwout
 

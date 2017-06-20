@@ -1,28 +1,35 @@
 ---
 # tasks file for docker-openvpn
 
-- name: start OpenVPN as a Docker containers
+- name: start OpenVPN Server as a Docker container
   docker_container:
-    name: snort
-    image: kylemanna/openvpn
+    name: vpnserver
+    #image: kylemanna/openvpn
+    image: lconceicao/vpnserver
     #env:
     state: started
     network_mode: bridge
     networks:
 
-      - name: "{{ docker_network_name }}"
+      - name: "{{ vl_mgmt }}"
         aliases:
           - vpsa-mgmt
 
-      - name: "{{ vl_vpsa_user }}"
+      - name: "{{ vl_vpsa_enduser }}"
         aliases:
-          - vpsa-user
+          - vpsa-enduser
 
-      - name: "{{ vl_vpn_fw }}"
+      - name: "{{ vl_fwin }}"
         aliases:
-          - vpsa-vpn-fw
+          - vpsa-vpn-fwin
         links:
-          - vpsa-vpn-fw:vpn-fw
+          - vpsa-vpn-fwin:vpn-fwin
+
+      - name: "{{ vl_fwout }}"
+        aliases:
+          - vpsa-vpn-fwout
+        links:
+          - vpsa-vpn-fwout:vpn-fwout
 
     restart_policy: "unless-stopped"
     volumes:
