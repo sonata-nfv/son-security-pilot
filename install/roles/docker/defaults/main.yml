@@ -1,4 +1,3 @@
 ---
 # defaults file for docker
-docker_network_name: son-mgmt
-vl_mgmt: mgmt-netw
+docker_network_name: vpsa-mgmt
