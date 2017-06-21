@@ -3,6 +3,6 @@
 
 plat: docker-vpsa
 
-vl_vpsa_mgmt: vpsa-mgmt
-vl_vpsa_user: vpsa-user
+vlmgmt: vpsa-mgmt
+vluser: vpsa-user
 vl_vpn_fw: vpn-fw

@@ -14,11 +14,14 @@
     state: started
     network_mode: bridge
     networks:
-      - name: "{{ vl_vpsa_mgmt }}"
+      - name: "{{ vlmgmt }}"
         aliases:
           - son-mgmt
-      - name: "{{ vl_vpsa_enduser }}"
+      - name: "{{ vlenduser }}"
         aliases:
           - vpsa-enduser
     restart_policy: "unless-stopped"
+
+- debug:
+    msg: "vPSA client up and running"
 

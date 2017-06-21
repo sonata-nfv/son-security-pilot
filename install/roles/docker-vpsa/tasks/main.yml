@@ -11,6 +11,12 @@
         group: "{{ lookup('env','USER') }}"
         mode: "u=rw,g=rw,o=rw"
       become: true
+    - lineinfile:
+        become: true
+        path: "/etc/hosts"
+        line: "{{ public_ip }} {{ plat_hostname }}"
+        create: yes
+        state: present
 
   roles:
     #- common
@@ -23,4 +29,5 @@
     #- docker-openvpn
 
   tasks:
-    - include: vpsa-client.yml
+    - include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/vpsa-client.yml
+

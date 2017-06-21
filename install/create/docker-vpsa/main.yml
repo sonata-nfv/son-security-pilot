@@ -8,6 +8,7 @@
   pre_tasks:
     - debug:
         msg: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+
   roles:
     - docker
     - docker-nginx
@@ -17,3 +18,6 @@
     #- docker-addblk
     #- docker-openldap
     - docker-squid
+
+  tasks:
+    - include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/vpsa-client.yml"

@@ -15,10 +15,10 @@
     state: started
     network_mode: bridge
     networks:
-      - name: "{{ vl_vpsa_enduser }}"
+      - name: "{{ vlenduser }}"
         aliases:
           - vpsa-enduser
-      - name: "{{ vl_vpsa_mgmt }}"
+      - name: "{{ vlmgmt }}"
         aliases:
           - vpsa-mgmt
       #- name: "{{ vl_prx_addblk }}"
