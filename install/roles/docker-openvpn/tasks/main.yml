@@ -15,7 +15,7 @@
         aliases:
           - vpsa-mgmt
 
-      - name: "{{ vlenduser }}"
+      - name: "{{ vl_enduser }}"
         aliases:
           - vpsa-enduser
 

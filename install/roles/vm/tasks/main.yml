@@ -43,7 +43,6 @@
   add_host:
     name: "{{ item.openstack.name }}"
     groups: "{{ item.openstack.metadata.group }}"
-    #groups: "{{ plat }}"
     ansible_host: "{{ item.openstack.accessIPv4 }}"
   with_items: "{{ newvm.results }}"
 

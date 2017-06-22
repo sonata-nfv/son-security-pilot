@@ -4,7 +4,7 @@ pop: alabs
 proj: demo
 distro: xenial
 
-#vlenduser: "{{ 'sonata.dem-net' if pop == 'ncsrd' and proj == 'dem' else 'demo-netw' }}"
+#vl_enduser: "{{ 'sonata.dem-net' if pop == 'ncsrd' and proj == 'dem' else 'demo-netw' }}"
 
 vl_mgmt: vpsa-mgmt
 vl_enduser: vpsa-enduser
