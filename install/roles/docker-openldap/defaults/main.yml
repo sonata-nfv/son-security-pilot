@@ -1,5 +1,5 @@
 ---
 # defaults file for docker-openldap
 
-vlmgmt: vpsa-mgmt
+vl_mgmt: vpsa-mgmt
 vl_proxy_ldap: proxy-ldap

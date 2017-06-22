@@ -9,8 +9,8 @@ distro: xenial
 vl_mgmt: vpsa-mgmt
 vl_enduser: vpsa-enduser
 vl_portal: vpsa-portal
-vl_vpn: vpsa_vpn
-vl_ids: vpsa_ids
+vl_vpn: vpsa-vpn
+vl_ids: vpsa-ids
 vl_prx: vpsa-prx
 vl_fwin: vpsa-fwin
 vl_fwout: vpsa-fwout

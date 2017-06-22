@@ -14,10 +14,10 @@
     state: started
     network_mode: bridge
     networks:
-      - name: "{{ vlmgmt }}"
+      - name: "{{ vl_mgmt }}"
         aliases:
           - son-mgmt
-      - name: "{{ vlenduser }}"
+      - name: "{{ vl_enduser }}"
         aliases:
           - vpsa-enduser
     restart_policy: "unless-stopped"

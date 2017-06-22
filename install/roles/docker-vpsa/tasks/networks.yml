@@ -20,8 +20,13 @@
 
 - name: Docker User Defined Network (vPRX)
   shell: "docker network create --driver=bridge \
+--subnet=172.22.115.0/24 --gateway=172.22.115.1 \
+--ip-range=172.22.115.128/25 '{{ vl_prx }}'"
+
+- name: Docker User Defined Network (vIDS)
+  shell: "docker network create --driver=bridge \
 --subnet=172.22.117.0/24 --gateway=172.22.117.1 \
---ip-range=172.22.117.128/25 '{{ vl_prx }}'"
+--ip-range=172.22.117.128/25 '{{ vl_ids }}'"
 
 - name: Docker User Defined Network (vFW INSIDE)
   shell: "docker network create --driver=bridge \

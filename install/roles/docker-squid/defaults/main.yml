@@ -5,10 +5,10 @@ distro: xenial
 
 #vlenduser: "{{ 'sonata.dem-net' if pop == 'ncsrd' and proj == 'dem' else 'demo-netw' }}"
 
-vlmgmt: vpsa-mgmt
-vlenduser: vpsa-enduser
+vl_mgmt: vpsa-mgmt
+vl_enduser: vpsa-enduser
 
-vl_prx_ids: vpsa-prx-ids
+vl_ids: vpsa-ids
 vl_fwin: vpsa-fwin
 vl_fwout: vpsa-fwout
 
