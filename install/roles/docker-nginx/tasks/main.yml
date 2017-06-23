@@ -16,7 +16,7 @@
       - name: "{{ docker_network_name }}"
         aliases:
           - vpsa-mgmt
-      - name: "{{ vl_vpsa_enduser }}"
+      - name: "{{ vl_enduser }}"
         aliases:
           - vpsa-enduser
     restart_policy: "unless-stopped"

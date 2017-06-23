@@ -13,11 +13,7 @@
 
 - include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/secgrp.yml"
 
-- include: "{{ lookup('env','PWD') }}/roles/{{ plat }}/tasks/vm4{{ plat }}.yml"
-
-- set_fact:
-    public_ip: "{{ item.openstack.accessIPv4 }}"
-  with_items: "{{ newvm.results }}"
+- include: "{{ lookup('env','PWD') }}/roles/vm/tasks/vm.yml"
 
 - lineinfile:
     path: "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/main.yml"
@@ -47,7 +43,6 @@
   add_host:
     name: "{{ item.openstack.name }}"
     groups: "{{ item.openstack.metadata.group }}"
-    #groups: "{{ plat }}"
     ansible_host: "{{ item.openstack.accessIPv4 }}"
   with_items: "{{ newvm.results }}"
 

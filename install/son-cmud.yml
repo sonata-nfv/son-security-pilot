@@ -20,11 +20,11 @@
       when: ops == "create"
 
   roles:
-#    - { role: common, become: true }
-#    - { role: openstackclients, become: true }
+    - { role: common, become: true }
+    - { role: openstackclients, become: true }
     - vm
 
-#- include: "{{ lookup('env','PWD') }}/common.yml"
+- include: "{{ lookup('env','PWD') }}/common.yml"
 
 - include: "{{ lookup('env','PWD') }}/{{ ops }}/{{ plat }}/main.yml"
 
