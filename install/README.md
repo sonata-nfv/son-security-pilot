@@ -29,8 +29,8 @@ NOTE: only if you want to create a new VM at openstack VIM
 1. Create the hidden file that contains the available Openstack clouds you can connect [os_client_config](http://docs.openstack.org/developer/os-client-config/)
 * ~/.config/openstack/clouds.yaml
 
-2. Select the platment you want to deploy in 'ansible.cfg' (default: "inventory = group_vars/'PLAT'"):<br>
-* inventory = "inventory/'PLAT'
+2. Select the platment you want to deploy in 'ansible.cfg' (default: "inventory = inventory/'PLAT'") - eg:<br>
+* inventory = "inventory/vpsa"
 
 3. To avoid setting password credentials, use the private key pair (eg, "~/.ssh/YOUR-KEY.pem") of the public key you have used to create the VM
 

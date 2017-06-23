@@ -1,0 +1,7 @@
+---
+# defaults file for dmz
+plat: dmz
+pop: alabs
+proj: demo
+distro: xenial
+
