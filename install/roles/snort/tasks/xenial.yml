@@ -146,8 +146,11 @@
     dest: /etc/snort
     remote_src: true
 
-- synchronize:
-    src: /tmp/snort_src/snort-2.9.9.0/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor/
-    dest: /usr/local/lib/snort_dynamicpreprocessor/
-  delegate_to: "{{ inventory_hostname }}"
+- name: sync remote dirs
+  copy:
+    remote_src: true
+    src: "{{ item }}"
+    dest: "/usr/local/lib/snort_dynamicpreprocessor/"
+  with_fileglob:
+    - /tmp/snort_src/snort-2.9.9.0/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor/*
 
