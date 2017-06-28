@@ -18,7 +18,8 @@
 - name: start HA Proxy
   service: name=haproxy state=started enabled=yes
 
-- command: sudo haproxy -v
+- command: haproxy -v
+  become: true
   register: haproxy_ver
 - debug:
     var: haproxy_ver.stdout
