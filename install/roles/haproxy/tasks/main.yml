@@ -1,0 +1,32 @@
+---
+# tasks file for haproxy
+
+- name: installing HA Proxy
+  include: "{{ ansible_os_family }}.yml"
+
+#- yum: name=* state=latest
+
+- name: install HA Proxy requirements
+  yum: name={{ item }}
+  become: true
+  with_items:
+    - pcre-static
+    - pcre-devel
+
+- name: install HA Proxy
+  yum: name=haproxy state=present
+
+- name: setting your specific configuration
+  copy:
+    remote_src: false
+    src: "{{ lookup('env','PWD') }}/roles/haproxy/files/haproxy.conf"
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: start HA Proxy
+  service: name=haproxy state=started enabled=yes
+
+- command: sudo haproxy -v
+  register: haproxy_ver
+- debug:
+    var: haproxy_ver.stdout
+
