@@ -79,7 +79,7 @@
   delay: 10
   with_items: "{{ newvm.results }}"
 
-- name: wait for remote package upgrade ending (YUM/DPKG)
+- name: wait for remote package upgrade ending (YUM/APT)
   pause:
     minutes: 2
 
