@@ -1,2 +1,4 @@
 ---
 # vars file for haproxy
+public_ip: 172.31.6.118
+plat_hostname: haproxy-alabs-demo-xenial-01-1498668927

@@ -9,6 +9,11 @@
   pre_tasks:
     - debug:
         msg: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+    - lineinfile:
+        path: "/etc/hosts"
+        line: "{{ public_ip }} {{ plat_hostname }}"
+        create: yes
+        state: present
 
   roles:
     - snort

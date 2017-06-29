@@ -13,4 +13,10 @@
         msg: "{{ timestamp.stdout }}"
 
   roles:
-    - vpsa
+#    - vpsa
+    - haproxy
+    #- openvpn
+    - nginx
+    - pfsense
+    - snort
+    - squid

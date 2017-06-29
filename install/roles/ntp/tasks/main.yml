@@ -21,7 +21,7 @@
   yum: name=ntp state=installed
   when: ansible_os_family == 'RedHat'
 
-- name: Install NTP (Debian).
+- name: Install NTP
   apt: name=ntp state=installed
   when: ansible_os_family == 'Debian'
 

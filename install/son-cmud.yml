@@ -15,7 +15,7 @@
         mode: "u=rw,g=rw,o=rw"
       become: true
     - file:
-        path: "{{ lookup('env','PWD') }}/group_vars/{{ plat }}/hosts"
+        path: "{{ lookup('env','PWD') }}/inventory/{{ plat }}/hosts"
         state: absent
       when: ops == "create"
 
