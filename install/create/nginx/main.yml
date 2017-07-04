@@ -1,8 +1,9 @@
 - hosts: "{{ plat }}"
   become: true
   connection: ssh
-  vars:
-    localhome: "{{ lookup('env','PWD') }}"
+  vars_files:
+    - "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/os_{{ pop }}_{{ proj }}_{{ distro }}.yml"
+    - "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/main.yml"
 
   pre_tasks:
 

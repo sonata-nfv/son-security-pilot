@@ -12,6 +12,9 @@
 - name: upgrade all packages to the latest version
   apt: upgrade=yes update_cache=yes
 
+- pause:
+    minutes: 2
+
 - name: install Python 2.7
   apt: name=python state=present
 

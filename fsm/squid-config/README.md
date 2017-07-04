@@ -1,0 +1,1 @@
+FSM do Sonata para a VNF Squid

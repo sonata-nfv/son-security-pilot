@@ -4,6 +4,7 @@
   connection: ssh
   vars_files:
     - "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/os_{{ pop }}_{{ proj }}_{{ distro }}.yml"
+    - "{{ lookup('env','PWD') }}/roles/{{ plat }}/vars/main.yml"
   remote_user: "{{ vm_user }}"
 
   pre_tasks:
