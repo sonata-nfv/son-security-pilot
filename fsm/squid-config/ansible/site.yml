@@ -1,0 +1,6 @@
+- name: deploy SQUID (Proxy server)
+  hosts: "{{ target }}"
+  become: true
+  connection: ssh
+  roles:
+    - squid
