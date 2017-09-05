@@ -55,17 +55,17 @@ virtual_links:
     connectivity_type: "E-LAN"
     connection_points_reference:
       - "cp_eth0"
-      - "vnf:mgmt"
+      - "cp_mgmt"
   - id: "input"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "cp_eth1"
-      - "vnf:input"
+      - "cp_input"
   - id: "output"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "cp_eth2"
-      - "vnf:output"
+      - "cp_output"
 
 
 ##
@@ -73,12 +73,12 @@ virtual_links:
 ## outside world.
 ##
 connection_points:
-  - id: "vnf:mgmt"
+  - id: "cp_mgmt"
     interface: "ipv4"
     type: "management"
-  - id: "vnf:input"
+  - id: "cp_input"
     interface: "ipv4"
     type: "external"
-  - id: "vnf:output"
+  - id: "cp_output"
     interface: "ipv4"
     type: "external"
