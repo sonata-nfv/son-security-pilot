@@ -15,8 +15,8 @@ description: "The Squid HTTP proxy VNF for the PSA pilot"
 ##
 virtual_deployment_units:
   - id: "1"
-    vm_image: "squid"
-    vm_image_format: "qcow2"
+    vm_image: "sonata-psa/squid"
+    vm_image_format: "docker"
     resource_requirements:
       cpu:
         vcpus: 1
