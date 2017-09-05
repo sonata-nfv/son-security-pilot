@@ -4,7 +4,7 @@
 ## VNF descriptor.
 ##
 descriptor_version: "vnfd-schema-02"
-vendor: "eu.sonata-nfv.nec"
+vendor: "eu.sonata-nfv"
 name: "squid"
 version: "0.1"
 author: "Michael Bredel, NEC, michael.bredel@neclab.eu"
