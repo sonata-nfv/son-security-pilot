@@ -43,7 +43,7 @@ setup(
 
     version='0.1',
 
-    description='VPN configuration FSM',
+    description='TOR configuration FSM',
     long_description=long_description,
 
     # The project's main homepage.
