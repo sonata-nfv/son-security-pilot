@@ -12,31 +12,32 @@ import time
 import sys
 
 from multiprocessing import Process
-from vnfrsender import fakeflm
-from fakeSMR import fakesmr
+import fakeFLM
+import fakeSMR
 from sonmanobase import messaging
-from configuration.configuration import ConfigurationFSM
+# from configuration.configuration import ConfigurationFSM
+import sonfsmvprxsquidconfiguration1.sonfsmvprxsquidconfiguration1
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger('amqp-storm').setLevel(logging.INFO)
-LOG = logging.getLogger("son-mano-plugins:sm_template_test")
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
-LOG.setLevel(logging.INFO)
-
-
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+logging.getLogger('amqpstorm').setLevel(logging.INFO)
+# logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
+# FORMAT = '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
+FORMAT = '[%(asctime)s] %(levelname)s [%(funcName)s:%(lineno)d] %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+LOG = logging.getLogger(__name__)
 
 
 class testConf(unittest.TestCase):
 
     def setUp(self):
-
-        self.slm_proc = Process(target= fakeflm)
-        self.smr_proc = Process(target= fakesmr)
-        self.con_proc = Process(target= ConfigurationFSM)
+        self.slm_proc = Process(target=fakeFLM.main)
+        self.smr_proc = Process(target=fakeSMR.main)
+        self.con_proc = Process(target=sonfsmvprxsquidconfiguration1.sonfsmvprxsquidconfiguration1.main)
 
         self.slm_proc.daemon = True
         self.smr_proc.daemon = True
-        self.con_proc.daemon = True
+        # self.con_proc.daemon = True
 
         self.manoconn = messaging.ManoBrokerRequestResponseConnection('ConfTest')
 
@@ -47,7 +48,7 @@ class testConf(unittest.TestCase):
         self.wait_for_res_event.clear()
 
     def tearDown(self):
-
+        LOG.info("tearDown")
         if self.smr_proc is not None:
             self.smr_proc.terminate()
         del self.smr_proc
@@ -83,7 +84,7 @@ class testConf(unittest.TestCase):
 
 
         def on_register_receive(ch, method, properties, message):
-            print(properties.app_id)
+            LOG.info(properties.app_id)
 
             if properties.app_id != 'fake-smr':
                 msg = yaml.load(message)
@@ -134,7 +135,7 @@ class testConf(unittest.TestCase):
 
 
         def on_ip_receive(ch, method, properties, message):
-
+            LOG.debug("on_ip_receive %s", message)
             if properties.app_id == 'sonfsmservice1firewallconfiguration1':
 
                 payload = yaml.load(message)
@@ -156,14 +157,15 @@ class testConf(unittest.TestCase):
         #time.sleep(4)
         self.waitForRegEvent(timeout=5, msg="Registration request not received.")
 
-        self.manoconn.subscribe(on_ip_receive, 'son.configuration')
+        self.manoconn.subscribe(on_ip_receive, 'son.configuration.#')
         #time.sleep(4)
         self.slm_proc.start()
         #time.sleep(4)
-        self.waitForResEvent(timeout=5, msg="Configuration request not received.")
-
+        #self.waitForResEvent(timeout=5, msg="Configuration request not received.")
+        while True:
+            time.sleep(10)
 
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(warnings='ignore')
