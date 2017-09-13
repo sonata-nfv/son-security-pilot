@@ -36,13 +36,13 @@ virtual_deployment_units:
       - name: "vm_net_tx_bps"
         unit: "bps"
     connection_points:
-      - id: "cp_eth0"
+      - id: "vdu1cpeth0"
         interface: "ipv4"
         type: "internal"
-      - id: "cp_eth1"
+      - id: "vdu1cpeth1"
         interface: "ipv4"
         type: "internal"
-      - id: "cp_eth2"
+      - id: "vdu1cpeth2"
         interface: "ipv4"
         type: "internal"
 
@@ -51,21 +51,21 @@ virtual_deployment_units:
 ## the different connections points.
 ##
 virtual_links:
-  - id: "vl_mgmt"
+  - id: "vlmgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "1:cp_eth0"
-      - "cp_mgmt"
-  - id: "vl_input"
+      - "1:vdu1cpeth0"
+      - "cpmgmt"
+  - id: "vlinput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "1:cp_eth1"
-      - "cp_input"
-  - id: "vl_output"
+      - "1:vdu1cpeth1"
+      - "cpinput"
+  - id: "vloutput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "1:cp_eth2"
-      - "cp_output"
+      - "1:vdu1cpeth2"
+      - "cpoutput"
 
 
 ##
@@ -73,12 +73,12 @@ virtual_links:
 ## outside world.
 ##
 connection_points:
-  - id: "cp_mgmt"
+  - id: "cpmgmt"
     interface: "ipv4"
     type: "management"
-  - id: "cp_input"
+  - id: "cpinput"
     interface: "ipv4"
     type: "external"
-  - id: "cp_output"
+  - id: "cpoutput"
     interface: "ipv4"
     type: "external"
