@@ -1,0 +1,8 @@
+version: '0.5'
+descriptor_extension: "yml"
+package:
+  vendor: "eu.sonata-nfv"
+  name: "sonata-psa-service"
+  version: "0.5"
+  maintainer: "Geoffroy"
+  description: "PSA service package"
