@@ -9,7 +9,7 @@ docker-image-haproxy:
 	cd install/roles/docker-haproxy/files && \
 	  docker build -t sonata-psa/haproxy .
 
-package-squid:
+package:
 	son-validate --debug --project ns
 	son-package --project ns
 
