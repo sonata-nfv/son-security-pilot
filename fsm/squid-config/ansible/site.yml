@@ -1,6 +1,17 @@
-- name: deploy SQUID (Proxy server)
+- name: "deploy SQUID (Proxy server)"
   hosts: "{{ target }}"
-  become: true
-  connection: ssh
+  # connection: "ssh"
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+  pre_tasks:
+    - name: "whoami && pwd"
+      shell: "whoami && pwd"
+    - debug:
+        msg: "target={{ target }}, system={{ inventory_hostname }}, hostvars={{ hostvars }}"
+        verbosity: 0
+    - copy:
+        content: "{{ vnfs }}"
+        # src: "/squid-config/ansible/site.yml"
+        dest: "/tmp/vnfs.json"
   roles:
     - squid

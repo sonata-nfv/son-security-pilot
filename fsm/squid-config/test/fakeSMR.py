@@ -6,10 +6,11 @@ Created on Jun 13, 2017
 
 import logging
 import yaml
+import time
 from sonmanobase import messaging
 
 logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("son-mano-fakesmr")
+LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
@@ -21,13 +22,21 @@ class fakesmr(object):
         self.name = 'fake-smr'
         self.version = '0.1-dev'
         self.description = 'description'
+        self.end = False
 
-        LOG.info("Start SMR:...")
+        LOG.info("Init fakesmr")
 
         # create and initialize broker connection
         self.manoconn = messaging.ManoBrokerRequestResponseConnection(self.name)
 
         self.declare_subscriptions()
+        self._run()
+
+    def _run(self):
+        # go into infinity loop
+        while self.end == False:
+            # LOG.info("_run, sleeping")
+            time.sleep(1)
 
     def declare_subscriptions(self):
         """
@@ -52,6 +61,7 @@ class fakesmr(object):
             "error": None
         }
 
+        LOG.info(response)
         return yaml.dump(response)
 
 

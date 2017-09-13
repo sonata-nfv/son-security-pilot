@@ -4,7 +4,7 @@
 ## VNF descriptor.
 ##
 descriptor_version: "vnfd-schema-02"
-vendor: "eu.sonata-nfv.nec"
+vendor: "eu.sonata-nfv"
 name: "squid"
 version: "0.1"
 author: "Michael Bredel, NEC, michael.bredel@neclab.eu"
@@ -15,8 +15,8 @@ description: "The Squid HTTP proxy VNF for the PSA pilot"
 ##
 virtual_deployment_units:
   - id: "1"
-    vm_image: "squid"
-    vm_image_format: "qcow2"
+    vm_image: "sonata-psa/squid"
+    vm_image_format: "docker"
     resource_requirements:
       cpu:
         vcpus: 1
@@ -36,13 +36,13 @@ virtual_deployment_units:
       - name: "vm_net_tx_bps"
         unit: "bps"
     connection_points:
-      - id: "vdu01:eth0"
+      - id: "vdu1cpeth0"
         interface: "ipv4"
         type: "internal"
-      - id: "vdu01:eth1"
+      - id: "vdu1cpeth1"
         interface: "ipv4"
         type: "internal"
-      - id: "vdu01:eth2"
+      - id: "vdu1cpeth2"
         interface: "ipv4"
         type: "internal"
 
@@ -51,21 +51,21 @@ virtual_deployment_units:
 ## the different connections points.
 ##
 virtual_links:
-  - id: "mgmt"
+  - id: "vlmgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "vdu01:eth0"
-      - "vnf:mgmt"
-  - id: "input"
+      - "1:vdu1cpeth0"
+      - "cpmgmt"
+  - id: "vlinput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth1"
-      - "vnf:input"
-  - id: "output"
+      - "1:vdu1cpeth1"
+      - "cpinput"
+  - id: "vloutput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth2"
-      - "vnf:output"
+      - "1:vdu1cpeth2"
+      - "cpoutput"
 
 
 ##
@@ -73,12 +73,12 @@ virtual_links:
 ## outside world.
 ##
 connection_points:
-  - id: "vnf:mgmt"
+  - id: "cpmgmt"
     interface: "ipv4"
     type: "management"
-  - id: "vnf:input"
+  - id: "cpinput"
     interface: "ipv4"
     type: "external"
-  - id: "vnf:output"
+  - id: "cpoutput"
     interface: "ipv4"
     type: "external"
