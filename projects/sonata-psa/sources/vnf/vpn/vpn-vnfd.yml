@@ -36,10 +36,10 @@ virtual_deployment_units:
     connection_points:
       - id: "cpeth0"
         interface: "ipv4"
-        type: "internal"
+        type: "management"
       - id: "cpeth1"
         interface: "ipv4"
-        type: "internal"
+        type: "management"
       - id: "cpeth2"
         interface: "ipv4"
         type: "internal"
