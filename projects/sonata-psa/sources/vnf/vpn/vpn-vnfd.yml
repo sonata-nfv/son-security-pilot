@@ -36,7 +36,7 @@ virtual_deployment_units:
     connection_points:
       - id: "cpeth0"
         interface: "ipv4"
-        type: "management"
+        type: "internal"
       - id: "cpeth1"
         interface: "ipv4"
         type: "management"
@@ -73,7 +73,7 @@ virtual_links:
 connection_points:
   - id: "cpmgmt"
     interface: "ipv4"
-    type: "management"
+    type: "internal"
   - id: "cpinput"
     interface: "ipv4"
     type: "management"
@@ -107,10 +107,10 @@ connection_points:
 ##
 ## Function Specific Managers
 ##
-##function_specific_managers:
-##  - id: "fsmpsaservicevpn-vnfvpn-config1"
-##    description: "FSM for the configuration of the VPN"
-##    image: "lconceicao/psa-fsm-vpn-config"
-##    options:
-##      - key: "myKey"
-##        value: "myValue"
+function_specific_managers:
+  - id: "sonfsmservice1function1css1"
+    description: "FSM to do a first FSM test"
+    image: "sonatanfv/fsm-css"
+    options:
+      - key: "type"
+        value: "start"
