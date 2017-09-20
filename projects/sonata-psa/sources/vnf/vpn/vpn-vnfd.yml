@@ -76,7 +76,7 @@ connection_points:
     type: "management"
   - id: "cpinput"
     interface: "ipv4"
-    type: "external"
+    type: "management"
   - id: "cpoutput"
     interface: "ipv4"
     type: "internal"
