@@ -14,9 +14,9 @@ description: "Firewall VNF based on an Openflow controller Ryu + OpenVswitch"
 ## The virtual deployment unit.
 ##
 virtual_deployment_units:
-  - id: "vdu01"
-    vm_image: "sonatanfv/sonata-fw-vnf"
-    vm_image_format: "docker"
+  - id: "1"
+    vm_image: "http://<url-to-image-server>sonata-fw.qcow2"
+    vm_image_format: "qcow2"
     resource_requirements:
       cpu:
         vcpus: 1
@@ -27,13 +27,13 @@ virtual_deployment_units:
         size: 1
         size_unit: "GB"
     connection_points:
-      - id: "eth0"
+      - id: "cpeth0"
         interface: "ipv4"
         type: "internal"
-      - id: "eth1"
+      - id: "cpeth1"
         interface: "ipv4"
         type: "internal"
-      - id: "eth2"
+      - id: "cpeth2"
         interface: "ipv4"
         type: "internal"
 
@@ -42,21 +42,21 @@ virtual_deployment_units:
 ## the different connections points.
 ##
 virtual_links:
-  - id: "mgmt"
+  - id: "vlmgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "vdu01:eth0"
-      - "mgmt"
-  - id: "fwin"
+      - "1:cpeth0"
+      - "cpmgmt"
+  - id: "vlinput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth1"
-      - "fwin"
-  - id: "fwout"
+      - "1:cpeth1"
+      - "cpinput"
+  - id: "vloutput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth2"
-      - "fwout"
+      - "1:cpeth2"
+      - "cpoutput"
 
 
 ##
@@ -64,13 +64,13 @@ virtual_links:
 ## outside world.
 ##
 connection_points:
-  - id: "mgmt"
+  - id: "cpmgmt"
     interface: "ipv4"
     type: "management"
-  - id: "fwin"
+  - id: "cpinput"
     interface: "ipv4"
     type: "external"
-  - id: "fwout"
+  - id: "cpoutput"
     interface: "ipv4"
     type: "external"
 
