@@ -1,19 +1,19 @@
 ##
-## TOR VNF Descriptor
+## VPN VNF Descriptor
 ##
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
-name: "tor-vnf"
+name: "vpn-vnf"
 version: "0.1"
 author: "Luis Conceicao, UBIWHERE"
-description: "Implementation of TOR function to be used as a transparent proxy"
+description: "Implementation of OpenVPN function"
  
 ##
 ## The virtual deployment units.
 ##
 virtual_deployment_units:
-  - id: "vdu01"
-    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/tor-vnf/sonata-tor.qcow2"
+  - id: "1"
+    vm_image: "http://<url-to-image-server>sonata-vpn.qcow2"
     vm_image_format: "qcow2"
     resource_requirements:
       cpu:
@@ -34,54 +34,52 @@ virtual_deployment_units:
       - name: "vm_net_tx_bps"
         unit: "bps"
     connection_points:
-      - id: "vdu01:eth0"
+      - id: "cpeth0"
         interface: "ipv4"
         type: "internal"
-      - id: "vdu01:eth1"
+      - id: "cpeth1"
         interface: "ipv4"
         type: "internal"
-      - id: "vdu01:eth2"
+      - id: "cpeth2"
         interface: "ipv4"
         type: "internal"
- 
-##
-## The VNF connection points to the 
-## outside world.
-##
-connection_points:
-  - id: "mgmt"
-    interface: "ipv4"
-    type: "management"
-  - id: "input"
-    interface: "ipv4"
-    type: "external"
-  - id: "output"
-    interface: "ipv4"
-    type: "external"
- 
+
 ##
 ## The virtual links that interconnect
 ## the different connections points.
 ##
 virtual_links:
-  - id: "mgmt"
+  - id: "vlmgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "vdu01:eth0"
-      - "mgmt"
-    dhcp: True
-  - id: "input"
+      - "1:cpeth0"
+      - "cpmgmt"
+  - id: "vlinput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth1"
-      - "input"
-    dhcp: True
-  - id: "output"
+      - "1:cpeth1"
+      - "cpinput"
+  - id: "vloutput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth2"
-      - "output"
-    dhcp: True
+      - "1:cpeth2"
+      - "cpoutput"
+
+
+##
+## The VNF connection points to the 
+## outside world.
+##
+connection_points:
+  - id: "cpmgmt"
+    interface: "ipv4"
+    type: "management"
+  - id: "cpinput"
+    interface: "ipv4"
+    type: "internal"
+  - id: "cpoutput"
+    interface: "ipv4"
+    type: "internal"
  
 ##
 ## The monitoring rules that react
@@ -104,3 +102,15 @@ monitoring_rules:
     notification:
       - name: "notification02"
         type: "rabbitmq_message"
+
+
+##
+## Function Specific Managers
+##
+function_specific_managers:
+  - id: "fsmpsaservicevpn-vnfvpn-config1"
+    description: "FSM for the configuration of the VPN"
+    image: "lconceicao/psa-fsm-vpn-config"
+    options:
+      - key: "myKey"
+        value: "myValue"

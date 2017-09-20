@@ -4,18 +4,18 @@
 ## VNF descriptor.
 ##
 descriptor_version: "vnfd-schema-02"
-vendor: "eu.sonata-nfv.nec"
-name: "pfsense"
+vendor: "eu.sonata-nfv"
+name: "cache-vnf"
 version: "0.1"
 author: "Michael Bredel, NEC, michael.bredel@neclab.eu"
-description: "The PFSense firewall VNF for the PSA pilot"
+description: "The Squid HTTP proxy VNF for the PSA pilot"
 
 ##
 ## The virtual deployment unit.
 ##
 virtual_deployment_units:
   - id: "1"
-    vm_image: "pfsense"
+    vm_image: "http://<url-to-image-server>sonata-squid.qcow2"
     vm_image_format: "qcow2"
     resource_requirements:
       cpu:
@@ -36,13 +36,13 @@ virtual_deployment_units:
       - name: "vm_net_tx_bps"
         unit: "bps"
     connection_points:
-      - id: "vdu01:eth0"
+      - id: "cpeth0"
         interface: "ipv4"
         type: "internal"
-      - id: "vdu01:eth1"
+      - id: "cpeth1"
         interface: "ipv4"
         type: "internal"
-      - id: "vdu01:eth2"
+      - id: "cpeth2"
         interface: "ipv4"
         type: "internal"
 
@@ -51,21 +51,21 @@ virtual_deployment_units:
 ## the different connections points.
 ##
 virtual_links:
-  - id: "mgmt"
+  - id: "vlmgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "vdu01:eth0"
-      - "vnf:mgmt"
-  - id: "input"
+      - "1:cpeth0"
+      - "cpmgmt"
+  - id: "vlinput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth1"
-      - "vnf:input"
-  - id: "output"
+      - "1:cpeth1"
+      - "cpinput"
+  - id: "vloutput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth2"
-      - "vnf:output"
+      - "1:cpeth2"
+      - "cpoutput"
 
 
 ##
@@ -73,12 +73,12 @@ virtual_links:
 ## outside world.
 ##
 connection_points:
-  - id: "vnf:mgmt"
+  - id: "cpmgmt"
     interface: "ipv4"
     type: "management"
-  - id: "vnf:input"
+  - id: "cpinput"
     interface: "ipv4"
-    type: "external"
-  - id: "vnf:output"
+    type: "internal"
+  - id: "cpoutput"
     interface: "ipv4"
-    type: "external"
+    type: "internal"
