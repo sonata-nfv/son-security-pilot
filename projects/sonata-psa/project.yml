@@ -4,5 +4,5 @@ package:
   maintainer: Luis Conceicao, UBIWHERE, lconceicao@ubiwhere.com
   name: "sonata-psa"
   vendor: "eu.sonata-nfv"
-  version: "0.2"
+  version: "0.5"
 version: '0.5'
