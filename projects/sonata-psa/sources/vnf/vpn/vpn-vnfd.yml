@@ -13,7 +13,7 @@ description: "Implementation of OpenVPN function"
 ##
 virtual_deployment_units:
   - id: "1"
-    vm_image: "http://<url-to-image-server>sonata-vpn.qcow2"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2"
     vm_image_format: "qcow2"
     resource_requirements:
       cpu:
@@ -76,7 +76,7 @@ connection_points:
     type: "management"
   - id: "cpinput"
     interface: "ipv4"
-    type: "internal"
+    type: "external"
   - id: "cpoutput"
     interface: "ipv4"
     type: "internal"

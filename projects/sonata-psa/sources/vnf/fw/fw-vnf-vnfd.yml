@@ -15,8 +15,8 @@ description: "Firewall VNF based on an Openflow controller Ryu + OpenVswitch"
 ##
 virtual_deployment_units:
   - id: "1"
-    vm_image: "http://<url-to-image-server>sonata-fw.qcow2"
-    vm_image_format: "qcow2"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/pfsense-vnf/pfSense.raw"
+    vm_image_format: "raw"
     resource_requirements:
       cpu:
         vcpus: 1
@@ -69,10 +69,10 @@ connection_points:
     type: "management"
   - id: "cpinput"
     interface: "ipv4"
-    type: "external"
+    type: "internal"
   - id: "cpoutput"
     interface: "ipv4"
-    type: "external"
+    type: "internal"
 
 
 
