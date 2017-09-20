@@ -30,7 +30,7 @@ FSM to configure the TOR function that connects to Service Specific Registry (SM
  * (In `son-security-pilot/fsm/tor-config/`)
     * `python3.4 setup.py develop`
  * (In `son-security-pilot/`)
-    * `python3.4 fsm/vpn-config/tor/tor.py`
+    * `python3.4 fsm/tor-config/tor/tor.py`
 
 ## How to test it
 * Do the following; each in a separate terminal.
