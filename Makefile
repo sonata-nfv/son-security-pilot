@@ -1,3 +1,6 @@
+EXTRA_SONVALIDATE_ARGS:=
+EXTRA_SONPACKAGE_ARGS:=
+
 all: package package-emu
 
 docker-images: docker-image-squid docker-image-fw
@@ -22,12 +25,12 @@ docker-image-fw:
 	docker tag sonatanfv/sonata-empty-vnf sonata-psa/fw
 
 package:
-	son-validate --debug -s -i -t --project projects/sonata-psa
-	son-package --project projects/sonata-psa
+	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa
+	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa
 
 package-emu: docker-images gen_emu
-	son-validate --debug -s -i -t --project projects/sonata-psa-gen-emu
-	son-package --project projects/sonata-psa-gen-emu
+	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-gen-emu
+	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-gen-emu
 
 gen_emu:
 	$(MAKE) -C projects gen_emu
