@@ -36,7 +36,7 @@ RUN apt-get clean \
     && tar -xzf docker-*-ce.tgz \
     && cp docker/docker /usr/bin/ \
     && rm -rf docker-*-ce.tgz docker \
-    && pip install --no-cache-dir ansible docker \
+    && pip install --no-cache-dir 'ansible<=2.3.2.0' docker \
     && sed -i 's/def __init__(self, verbosity=0)/def __init__(self, verbosity=4)/' '/usr/local/lib/python3.5/site-packages/ansible/utils/display.py' \
     && apt-get clean
 
