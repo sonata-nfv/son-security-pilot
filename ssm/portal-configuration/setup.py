@@ -39,19 +39,22 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='vpn-config',
+    name='portal_configure',
 
-    version='0.1',
+    # Versions should comply with PEP440.  For a discussion on single-sourcing
+    # the version across setup.py and the project code, see
+    # https://packaging.python.org/en/latest/single_source_version.html
+    version='v0.1',
 
-    description='VPN configuration FSM',
+    description='Portal Configure SSM',
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/sonata-nfv/son-security-pilot/fsm/vpn-config',
+    url='https://github.com/sonata-nfv/son-sm/tree/master/son-ssm-examples',
 
     # Author details
-    author='Luis Conceicao, UBIWHERE',
-    author_email='lconceicao@ubiwhere.com',
+    author='Thomas Soenen',
+    author_email='thomas.soenen@ugent.be',
 
     # Choose your license
     license='Apache 2.0',
@@ -59,14 +62,14 @@ setup(
     # What does your project relate to?
     keywords='NFV orchestrator',
 
-    packages=find_packages("vpn-config"),
-    install_requires=['pytest', 'ansible<=2.3.2.0'],
+    packages=find_packages("portal_configure"),
+    install_requires=['pika', 'pytest'],
     setup_requires=['pytest-runner'],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
-        'console_scripts': ['vpn-css=vpn_css.__main__:main'],
+        'console_scripts': ['portal_configure=portal_configure.__main__:main'],
     },
 )
