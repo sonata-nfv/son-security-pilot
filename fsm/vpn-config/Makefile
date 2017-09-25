@@ -1,5 +1,5 @@
 TARGET_DIR=/vpn-config
-SOURCE_DIR=vpn
+SOURCE_DIR=vpn_css
 
 all: run
 

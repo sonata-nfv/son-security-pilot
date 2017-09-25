@@ -57,6 +57,7 @@ class CssFSM(sonSMbase):
         :param description: description
         """
 
+        LOG.debug('Initialize CssFSM from %s', __file__)
         self.specific_manager_type = 'fsm'
         self.service_name = 'service1'
         self.function_name = 'function1'

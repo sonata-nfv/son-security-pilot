@@ -32,7 +32,7 @@ from multiprocessing import Process
 from vnfrsender import fakeflm
 from fake_smr import fakesmr
 from sonmanobase import messaging
-from vpn.vpn import VPNConfigurationFSM
+from vpn_css.vpn_css import CssFSM
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger('amqp-storm').setLevel(logging.INFO)
@@ -49,7 +49,7 @@ class testConfFSM(unittest.TestCase):
 
         self.slm_proc = Process(target= fakeflm)
         self.smr_proc = Process(target= fakesmr)
-        self.con_proc = Process(target= VPNConfigurationFSM)
+        self.con_proc = Process(target= CssFSM)
 
         self.slm_proc.daemon = True
         self.smr_proc.daemon = True
