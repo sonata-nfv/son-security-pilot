@@ -26,9 +26,9 @@ import yaml
 from sonmanobase import messaging
 
 logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("son-mano-fakesmr")
+LOG = logging.getLogger("fakesmr")
 LOG.setLevel(logging.DEBUG)
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
+#logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
 class fakesmr(object):
@@ -50,10 +50,11 @@ class fakesmr(object):
         """
         Declare topics to which we want to listen and define callback methods.
         """
+        LOG.debug('Registering endpoint')
         self.manoconn.register_async_endpoint(self.on_register_receive, 'specific.manager.registry.ssm.registration')
 
     def on_register_receive(self,ch, method, properties, payload):
-
+        LOG.debug('Receiving on_register ch=%s', ch)
         message = yaml.load(payload)
 
         response = {

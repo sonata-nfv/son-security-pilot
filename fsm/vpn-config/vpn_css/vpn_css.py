@@ -34,7 +34,7 @@ from sonsmbase.smbase import sonSMbase
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("fsm-start-stop-configure")
 LOG.setLevel(logging.DEBUG)
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
+logging.getLogger("son-mano-base:messaging").setLevel(logging.DEBUG)
 
 
 class CssFSM(sonSMbase):

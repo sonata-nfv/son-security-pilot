@@ -27,9 +27,9 @@ import time
 from sonmanobase import messaging
 
 logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("son-mano-fakeflm")
+LOG = logging.getLogger("fakeflm")
 LOG.setLevel(logging.DEBUG)
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
+#logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
 class fakeflm(object):
@@ -39,7 +39,7 @@ class fakeflm(object):
         self.version = '0.1-dev'
         self.description = 'description'
 
-        LOG.info("Start sending VNFR:...")
+        LOG.info("Subscribing ...")
 
         # create and initialize broker connection
         self.manoconn = messaging.ManoBrokerRequestResponseConnection(self.name)

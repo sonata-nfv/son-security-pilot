@@ -34,12 +34,13 @@ from fake_smr import fakesmr
 from sonmanobase import messaging
 from vpn_css.vpn_css import CssFSM
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger('amqp-storm').setLevel(logging.INFO)
-LOG = logging.getLogger("son-mano-plugins:sm_template_test")
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
-LOG.setLevel(logging.INFO)
-
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+logging.getLogger('amqpstorm').setLevel(logging.INFO)
+# logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
+FORMAT = '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+LOG = logging.getLogger(__name__)
 
 
 
@@ -100,7 +101,7 @@ class testConfFSM(unittest.TestCase):
 
 
         def on_register_receive(ch, method, properties, message):
-            print(properties.app_id)
+            LOG.debug('on_register_receive with id=%s, message=%s', properties.app_id, message)
 
             if properties.app_id != 'fake-smr':
                 msg = yaml.load(message)
@@ -151,7 +152,7 @@ class testConfFSM(unittest.TestCase):
 
 
         def on_ip_receive(ch, method, properties, message):
-
+            LOG.info('on_ip_receive message=%s', message)
             if properties.app_id == 'sonfsmservice1firewallconfiguration1':
 
                 payload = yaml.load(message)
