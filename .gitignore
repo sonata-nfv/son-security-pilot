@@ -71,3 +71,6 @@ bin/
 # ide trash
 .idea
 
+# Sonata
+*.son
+projects/sonata-psa-gen-emu
