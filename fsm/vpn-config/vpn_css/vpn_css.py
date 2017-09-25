@@ -26,6 +26,7 @@ acknowledge the contributions of their colleagues of the SONATA
 partner consortium (www.sonata-nfv.eu).
 """
 
+import time
 import logging
 import yaml
 import paramiko
@@ -246,6 +247,8 @@ class CssFSM(sonSMbase):
 
 def main():
     CssFSM()
+    while True:
+        time.sleep(10)
 
 if __name__ == '__main__':
     main()
