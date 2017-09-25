@@ -1,8 +1,8 @@
-from vpn import vpn
+from vpn_css import vpn_css
 
 
 def main():
-    vpn.main()
+    vpn_css.main()
 
 if __name__ == '__main__':
     main()

@@ -29,19 +29,26 @@ ENV broker_host amqp://guest:guest@broker:5672/%2F
 ENV broker_exchange son-kernel
 
 # install package dependencies
-RUN apt-get clean \
-    && apt-get update \
-    && apt-get install -y git build-essential libffi-dev libssl-dev
+#RUN apt-get clean \
+#    && apt-get update \
+#    && apt-get install -y git build-essential libffi-dev libssl-dev
 
 # clone son-sm repo to install dependencies
-RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git
+#RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git
+
+# add workdirs
+ADD son-sm/son-mano-framework/son-mano-base /son-mano-base
+ADD son-sm/son-sm-template /son-sm-template
 
 # install fsm dependencies (sonsmbase and sonmanobase)
-WORKDIR /son-sm/son-mano-framework/son-mano-base
+WORKDIR /son-mano-base
 RUN python setup.py install
 
-WORKDIR /son-sm/son-sm-template
+WORKDIR /son-sm-template
 RUN python setup.py install
+
+# install paramiko
+RUN pip install paramiko
 
 # run fsm
 ADD fsm/vpn-config /vpn-config
@@ -49,5 +56,5 @@ ADD fsm/vpn-config /vpn-config
 WORKDIR /vpn-config
 RUN python setup.py develop
 
-CMD ["vpn-config"]
+CMD ["vpn-css"]
 
