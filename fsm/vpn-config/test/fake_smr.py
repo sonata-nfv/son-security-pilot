@@ -22,6 +22,7 @@ partner consortium (www.sonata-nfv.eu).
 """
 
 import logging
+import json
 import yaml
 from sonmanobase import messaging
 
@@ -70,7 +71,7 @@ class fakesmr(object):
             "error": None
         }
 
-        return yaml.dump(response)
+        return json.dumps(response)
 
 
 def main():

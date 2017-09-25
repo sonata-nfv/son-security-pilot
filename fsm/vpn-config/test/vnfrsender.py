@@ -22,6 +22,7 @@ partner consortium (www.sonata-nfv.eu).
 """
 
 import logging
+import json
 import yaml
 import time
 from sonmanobase import messaging
@@ -63,15 +64,15 @@ class fakeflm(object):
 
         LOG.info("Sending VNFR")
         vnfr = open('test/vnfr.yml', 'r')
-        message = {'VNFR':yaml.load(vnfr)}
-        self.manoconn.publish('son.configuration',yaml.dump(message))
+        message = {'VNFR': yaml.load(vnfr)}
+        self.manoconn.publish('son.configuration', json.dumps(message))
         vnfr.close()
         self.end = True
 
     def _on_publish(self, ch, method, props, response):
 
         if props.app_id != self.name:
-            response = yaml.load(response)
+            response = json.loads(response)
             if type(response) == dict:
                 try:
                     print(response)
