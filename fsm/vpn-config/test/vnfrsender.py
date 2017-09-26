@@ -26,6 +26,7 @@ import json
 import yaml
 import time
 from sonmanobase import messaging
+from vpn_css.vpn_css import CssFSM
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -62,8 +63,8 @@ class fakeflm(object):
 
         LOG.info("Sending VNFR")
         vnfr = open('test/vnfr.yml', 'r')
-        message = {'VNFR': yaml.load(vnfr)}
-        self.manoconn.publish('son.configuration', json.dumps(message))
+        message = {'fsm_type': 'configure', 'content': {'vnfrs': [yaml.load(vnfr)], 'nsr': None}}
+        self.manoconn.publish(CssFSM.get_listening_topic_name(), json.dumps(message))
         vnfr.close()
         self.end = True
 

@@ -38,6 +38,12 @@ LOG.setLevel(logging.DEBUG)
 
 class CssFSM(sonSMbase):
 
+    _listening_topic_root = ('son', 'configuration', 'psa', 'vpn', 'v1')
+
+    @staticmethod
+    def get_listening_topic_name():
+        return '.'.join(CssFSM._listening_topic_root)
+
     def __init__(self):
 
         """
@@ -86,7 +92,7 @@ class CssFSM(sonSMbase):
                               message=yaml.dump(message))
 
         # Subscribing to the topics that the fsm needs to listen on
-        topic = "generic.fsm." + str(self.sfuuid)
+        topic = CssFSM.get_listening_topic_name()
         self.manoconn.subscribe(self.message_received, topic)
         LOG.info("Subscribed to " + topic + " topic.")
 
@@ -95,6 +101,7 @@ class CssFSM(sonSMbase):
         This method handles received messages
         """
 
+        LOG.debug('<-- message_received app_id=%s', props.app_id)
         # Decode the content of the message
         request = yaml.load(payload)
 
@@ -102,6 +109,7 @@ class CssFSM(sonSMbase):
         if "fsm_type" not in request.keys():
             LOG.info("Received a non-request message, ignoring...")
             return
+        LOG.info('Handling message with fsm_type=%s', request["fsm_type"])
 
         # Create the response
         response = None
@@ -129,7 +137,7 @@ class CssFSM(sonSMbase):
         if response is not None:
             # Generated response for the FLM
             LOG.info("Response to request generated:" + str(response))
-            topic = "generic.fsm." + str(self.sfuuid)
+            topic = CssFSM.get_listening_topic_name()
             corr_id = props.correlation_id
             self.manoconn.notify(topic,
                                  yaml.dump(response),
