@@ -173,7 +173,7 @@ class testConfFSM(unittest.TestCase):
         #time.sleep(4)
         self.waitForRegEvent(timeout=5, msg="Registration request not received.")
 
-        self.manoconn.subscribe(on_ip_receive, 'son.configuration')
+        self.manoconn.subscribe(on_ip_receive, vpn_css.vpn_css.CssFSM.get_listening_topic_name())
         #time.sleep(4)
         self.slm_proc.start()
         #time.sleep(4)
