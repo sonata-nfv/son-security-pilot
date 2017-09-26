@@ -40,7 +40,7 @@ logging.getLogger('amqpstorm').setLevel(logging.INFO)
 # logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 FORMAT = '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__ if __name__ != "__main__" else __file__ + ':' + __name__)
 
 
 
