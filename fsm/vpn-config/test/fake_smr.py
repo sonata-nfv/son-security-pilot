@@ -75,8 +75,10 @@ class fakesmr(object):
 
 
 def main():
+    LOG.info('Welcome to the main in %s', __name__)
     fakesmr()
-
+    while True:
+        time.sleep(10)
 
 if __name__ == '__main__':
     main()

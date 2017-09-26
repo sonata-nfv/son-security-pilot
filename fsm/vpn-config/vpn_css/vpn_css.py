@@ -246,6 +246,7 @@ class CssFSM(sonSMbase):
 
 
 def main():
+    LOG.info('Welcome to the main in %s', __name__)
     CssFSM()
     while True:
         time.sleep(10)

@@ -30,9 +30,9 @@ import sys
 
 from multiprocessing import Process
 from vnfrsender import fakeflm
-from fake_smr import fakesmr
+import fake_smr
 from sonmanobase import messaging
-from vpn_css.vpn_css import CssFSM
+import vpn_css.vpn_css
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -47,10 +47,9 @@ LOG = logging.getLogger(__name__)
 class testConfFSM(unittest.TestCase):
 
     def setUp(self):
-
         self.slm_proc = Process(target= fakeflm)
-        self.smr_proc = Process(target= fakesmr)
-        self.con_proc = Process(target= CssFSM)
+        self.smr_proc = Process(target= fake_smr.main)
+        self.con_proc = Process(target= vpn_css.vpn_css.main)
 
         self.slm_proc.daemon = True
         self.smr_proc.daemon = True
