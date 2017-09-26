@@ -26,10 +26,8 @@ import json
 import yaml
 from sonmanobase import messaging
 
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("fakesmr")
+LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-#logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
 class fakesmr(object):

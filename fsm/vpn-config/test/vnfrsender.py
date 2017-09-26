@@ -27,10 +27,8 @@ import yaml
 import time
 from sonmanobase import messaging
 
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("fakeflm")
+LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-#logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
 class fakeflm(object):
