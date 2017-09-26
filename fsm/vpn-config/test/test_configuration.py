@@ -30,26 +30,26 @@ import sys
 
 from multiprocessing import Process
 from vnfrsender import fakeflm
-from fake_smr import fakesmr
+import fake_smr
 from sonmanobase import messaging
-from vpn_css.vpn_css import CssFSM
+import vpn_css.vpn_css
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger('amqp-storm').setLevel(logging.INFO)
-LOG = logging.getLogger("son-mano-plugins:sm_template_test")
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
-LOG.setLevel(logging.INFO)
-
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+logging.getLogger('amqpstorm').setLevel(logging.INFO)
+# logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
+FORMAT = '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+LOG = logging.getLogger(__name__ if __name__ != "__main__" else __file__ + ':' + __name__)
 
 
 
 class testConfFSM(unittest.TestCase):
 
     def setUp(self):
-
         self.slm_proc = Process(target= fakeflm)
-        self.smr_proc = Process(target= fakesmr)
-        self.con_proc = Process(target= CssFSM)
+        self.smr_proc = Process(target= fake_smr.main)
+        self.con_proc = Process(target= vpn_css.vpn_css.main)
 
         self.slm_proc.daemon = True
         self.smr_proc.daemon = True
@@ -100,7 +100,7 @@ class testConfFSM(unittest.TestCase):
 
 
         def on_register_receive(ch, method, properties, message):
-            print(properties.app_id)
+            LOG.debug('on_register_receive with id=%s, message=%s', properties.app_id, message)
 
             if properties.app_id != 'fake-smr':
                 msg = yaml.load(message)
@@ -151,7 +151,7 @@ class testConfFSM(unittest.TestCase):
 
 
         def on_ip_receive(ch, method, properties, message):
-
+            LOG.info('on_ip_receive message=%s', message)
             if properties.app_id == 'sonfsmservice1firewallconfiguration1':
 
                 payload = yaml.load(message)

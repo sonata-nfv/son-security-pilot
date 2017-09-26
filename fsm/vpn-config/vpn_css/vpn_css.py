@@ -26,15 +26,14 @@ acknowledge the contributions of their colleagues of the SONATA
 partner consortium (www.sonata-nfv.eu).
 """
 
+import time
 import logging
 import yaml
 import paramiko
 from sonsmbase.smbase import sonSMbase
 
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("fsm-start-stop-configure")
+LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
 class CssFSM(sonSMbase):
@@ -245,7 +244,10 @@ class CssFSM(sonSMbase):
 
 
 def main():
+    LOG.info('Welcome to the main in %s', __name__)
     CssFSM()
+    while True:
+        time.sleep(10)
 
 if __name__ == '__main__':
     main()
