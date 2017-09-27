@@ -8,7 +8,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "sonata-psa"
-version: "0.7"
+version: "0.8"
 author: "SONATA Consortium"
 description: >
   "Reconfigurable personal security appliance."
@@ -29,7 +29,7 @@ network_functions:
   - vnf_id: "vnf_fw"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "fw-vnf"
-    vnf_version: "0.7"
+    vnf_version: "0.8"
 #  - vnf_id: "vnf_ids"
 #    vnf_vendor: "eu.sonata-nfv"
 #    vnf_name: "ids-vnf"
