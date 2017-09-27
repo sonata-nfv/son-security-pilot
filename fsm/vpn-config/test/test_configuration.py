@@ -151,18 +151,21 @@ class testConfFSM(unittest.TestCase):
 
 
         def on_ip_receive(ch, method, properties, message):
-            LOG.info('on_ip_receive message=%s', message)
-            if properties.app_id == 'sonfsmservice1firewallconfiguration1':
+            LOG.info('on_ip_receive app_id=%s, message=%s ...', properties.app_id, message[:100])
+            if properties.app_id == 'sonfsmservice1function1css1':
 
                 payload = yaml.load(message)
 
                 self.assertTrue(isinstance(payload, dict), msg='message is not a dictionary')
 
-                if isinstance(payload['IP'], str):
+                if 'IP' in payload and isinstance(payload['IP'], str):
                     self.assertTrue(payload['IP'] == "10.100.32.250", msg='Wrong IP address')
+                elif 'status' in payload:
+                    self.assertTrue(payload['status'] == 'COMPLETED')
                 else:
                     self.assertEqual(True, False, msg='IP address is not a string')
             self.res_eventFinished()
+
 
         self.smr_proc.start()
         #time.sleep(4)
@@ -173,13 +176,14 @@ class testConfFSM(unittest.TestCase):
         #time.sleep(4)
         self.waitForRegEvent(timeout=5, msg="Registration request not received.")
 
-        self.manoconn.subscribe(on_ip_receive, 'son.configuration')
+        self.manoconn.subscribe(on_ip_receive, vpn_css.vpn_css.CssFSM.get_listening_topic_name())
         #time.sleep(4)
         self.slm_proc.start()
         #time.sleep(4)
         self.waitForResEvent(timeout=5, msg="Configuration request not received.")
+        time.sleep(3)
 
-
+        self.waitForResEvent(timeout=5, msg="Status response not received.")
 
 
 if __name__ == '__main__':
