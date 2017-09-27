@@ -4,7 +4,7 @@
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "vpn-vnf"
-version: "0.6"
+version: "0.7"
 author: "Luis Conceicao, UBIWHERE"
 description: "Implementation of OpenVPN function"
  
@@ -15,6 +15,7 @@ virtual_deployment_units:
   - id: "1"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2"
     vm_image_format: "qcow2"
+    vm_image_md5: '5fcbbe0d13c27b66f36416dd2f21f6be'
     resource_requirements:
       cpu:
         vcpus: 1
