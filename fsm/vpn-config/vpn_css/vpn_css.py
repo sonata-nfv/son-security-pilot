@@ -45,11 +45,11 @@ LOG.setLevel(logging.DEBUG)
 
 class CssFSM(sonSMbase):
 
-    _listening_topic_root = ('son', 'configuration', 'psa', 'vpn', 'v1')
+    # _listening_topic_root = ('son', 'configuration', 'psa', 'vpn', 'v1')
 
-    @staticmethod
-    def get_listening_topic_name():
-        return '.'.join(CssFSM._listening_topic_root)
+    # @staticmethod
+    # def get_listening_topic_name():
+    #     return '.'.join(CssFSM._listening_topic_root)
 
     def __init__(self):
 
@@ -76,6 +76,7 @@ class CssFSM(sonSMbase):
         self.specific_manager_name = 'css'
         self.id_number = '1'
         self.version = 'v0.1'
+        self.topic = ''
         self.description = "An FSM that subscribes to start, stop and configuration topic"
 
         super(self.__class__, self).__init__(specific_manager_type=self.specific_manager_type,
@@ -99,9 +100,10 @@ class CssFSM(sonSMbase):
                               message=yaml.dump(message))
 
         # Subscribing to the topics that the fsm needs to listen on
-        topic = CssFSM.get_listening_topic_name()
-        self.manoconn.subscribe(self.message_received, topic)
-        LOG.info("Subscribed to " + topic + " topic.")
+#        topic = CssFSM.get_listening_topic_name()
+        self.topic = 'generic.fsm.' + self.sfuuid
+        self.manoconn.subscribe(self.message_received, self.topic)
+        LOG.info("Subscribed to " + self.topic + " topic.")
 
     def message_received(self, ch, method, props, payload):
         """
@@ -144,9 +146,9 @@ class CssFSM(sonSMbase):
         if response is not None:
             # Generated response for the FLM
             LOG.info("Response to request generated:" + str(response))
-            topic = CssFSM.get_listening_topic_name()
+            # topic = CssFSM.get_listening_topic_name()
             corr_id = props.correlation_id
-            self.manoconn.notify(topic,
+            self.manoconn.notify(self.topic,
                                  yaml.dump(response),
                                  correlation_id=corr_id)
             return
