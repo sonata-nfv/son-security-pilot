@@ -312,7 +312,7 @@ class CssFSM(sonSMbase):
                           become_method=None, become_user='root',
                           verbosity=None, check=False)
 
-        variable_manager.extra_vars = {'hosts': mgmt_ip}
+        variable_manager.extra_vars = {'__hosts': mgmt_ip}
 
         passwords = {}
 
