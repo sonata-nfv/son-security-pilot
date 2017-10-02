@@ -91,10 +91,12 @@ class testConfFSM(unittest.TestCase):
     def waitForRegEvent(self, timeout=5, msg="Event timed out."):
         if not self.wait_for_reg_event.wait(timeout):
             self.assertEqual(True, False, msg=msg)
+        self.wait_for_reg_event.clear()
 
     def waitForResEvent(self, timeout=5, msg="Event timed out."):
         if not self.wait_for_res_event.wait(timeout):
             self.assertEqual(True, False, msg=msg)
+        self.wait_for_res_event.clear()
 
     def test_configuration_fsm(self):
 
@@ -183,8 +185,8 @@ class testConfFSM(unittest.TestCase):
         self.waitForResEvent(timeout=5, msg="Configuration request not received.")
         time.sleep(3)
 
-        self.waitForResEvent(timeout=5, msg="Status response not received.")
-
+        self.waitForResEvent(timeout=25, msg="Status response not received.")
 
 if __name__ == '__main__':
+    unittest.main(warnings='ignore')
     unittest.main()
