@@ -302,7 +302,7 @@ class CssFSM(sonSMbase):
                               'ssh_common_args', 'ssh_extra_args',
                               'sftp_extra_args', 'scp_extra_args',
                               'become', 'become_method', 'become_user',
-                              'verbosity', 'check'])
+                              'verbosity', 'check', 'diff'])
         options = Options(listtags=False, listtasks=False, listhosts=False,
                           syntax=False, connection='ssh', module_path=None,
                           forks=100, remote_user='slotlocker',
@@ -310,7 +310,7 @@ class CssFSM(sonSMbase):
                           ssh_extra_args=None, sftp_extra_args=None,
                           scp_extra_args=None, become=True,
                           become_method=None, become_user='root',
-                          verbosity=None, check=False)
+                          verbosity=None, check=False, diff=True)
 
         variable_manager.extra_vars = {'__hosts': mgmt_ip}
 
