@@ -45,11 +45,11 @@ LOG.setLevel(logging.DEBUG)
 
 class CssFSM(sonSMbase):
 
-    # _listening_topic_root = ('son', 'configuration', 'psa', 'vpn', 'v1')
+    _listening_topic_root = ('generic', 'fsm')
 
-    # @staticmethod
-    # def get_listening_topic_name():
-    #     return '.'.join(CssFSM._listening_topic_root)
+    @staticmethod
+    def get_listening_topic_name():
+        return '.'.join(CssFSM._listening_topic_root)
 
     def __init__(self):
 
