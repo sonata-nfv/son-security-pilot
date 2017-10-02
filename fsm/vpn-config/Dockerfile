@@ -31,15 +31,15 @@ ENV broker_exchange son-kernel
 # install package dependencies
 RUN apt-get clean \
     && apt-get update \
-    && apt-get install -y wget git build-essential libffi-dev libssl-dev 
-#    && wget https://download.docker.com/linux/static/stable/x86_64/docker-17.06.2-ce.tgz \
-#    && tar -xzf docker-*-ce.tgz \
-#    && cp docker/docker /usr/bin/ \
-#    && rm -rf docker-*-ce.tgz docker \
+    && apt-get install -y wget git build-essential libffi-dev libssl-dev \
+    && wget https://download.docker.com/linux/static/stable/x86_64/docker-17.06.2-ce.tgz \
+    && tar -xzf docker-*-ce.tgz \
+    && cp docker/docker /usr/bin/ \
+    && rm -rf docker-*-ce.tgz docker \
 #    && pip install --no-cache-dir 'ansible<=2.3.2.0' docker \
 #    && pip install paramiko \
 #    && sed -i 's/def __init__(self, verbosity=0)/def __init__(self, verbosity=4)/' '/usr/local/lib/python3.5/site-packages/ansible/utils/display.py' \
-#    && apt-get clean
+    && apt-get clean
 
 # install paramiko
 RUN pip install paramiko

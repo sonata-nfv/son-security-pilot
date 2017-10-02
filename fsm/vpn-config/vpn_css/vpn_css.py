@@ -32,6 +32,7 @@ import yaml
 import paramiko
 import os
 import sys
+import tempfile
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
@@ -234,11 +235,11 @@ class CssFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
-        result = self.vpn_configure(content)
+        result = self.vpn_configure(vnfrs[0])
 
         # Create a response for the FLM
         response = {}
-        response['status'] = 'COMPLETED'
+        response['status'] = 'COMPLETED' if result else 'ERROR'
 
         # TODO: complete the response
 
@@ -261,18 +262,17 @@ class CssFSM(sonSMbase):
 
         return response
 
-    def vpn_configure(self, content):
+    def vpn_configure(self, vnfr):
 
         LOG.info('Start retrieving the IP address ...')
 
-        vnfr = content['vnfr']
         vdu = vnfr['virtual_deployment_units'][0]
         cps = vdu['vnfc_instance'][0]['connection_points']
 
         mgmt_ip = None
         for cp in cps:
-            if cp['type'] == 'management':
-                mgmt_ip = cp['interface']['address']
+            if 'netmask' not in cp['type'] and 'address' in cp['type']:
+                mgmt_ip = cp['type']['address']
                 LOG.info("management ip: " + str(mgmt_ip))
 
         if not mgmt_ip:
@@ -282,14 +282,16 @@ class CssFSM(sonSMbase):
         LOG.info("IP address:'{0}'".format(mgmt_ip))
 
         # configure vm using ansible playbook
-        variable_manager = VariableManager()
         loader = DataLoader()
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(b'[vpnserver]\n')
+            fp.write(b'mn.vnf_vpn')
+            fp.flush()
+            inventory = InventoryManager(loader=loader, sources=[fp.name])
+        variable_manager = VariableManager(loader=loader, inventory=inventory)
 
-        inventory = InventoryManager(loader=loader,
-                              variable_manager=variable_manager)
-
-        playbook_path = 'fsm/vpn-config/ansible/site.yml'
-
+        playbook_path = os.path.abspath('./ansible/site.yml')
+        LOG.debug('Targeting the ansible playbook: %s', playbook_path)
         if not os.path.exists(playbook_path):
             LOG.error('The playbook does not exist')
             return
@@ -301,7 +303,7 @@ class CssFSM(sonSMbase):
                               'ssh_common_args', 'ssh_extra_args',
                               'sftp_extra_args', 'scp_extra_args',
                               'become', 'become_method', 'become_user',
-                              'verbosity', 'check'])
+                              'verbosity', 'check', 'diff'])
         options = Options(listtags=False, listtasks=False, listhosts=False,
                           syntax=False, connection='ssh', module_path=None,
                           forks=100, remote_user='slotlocker',
@@ -309,9 +311,9 @@ class CssFSM(sonSMbase):
                           ssh_extra_args=None, sftp_extra_args=None,
                           scp_extra_args=None, become=True,
                           become_method=None, become_user='root',
-                          verbosity=None, check=False)
+                          verbosity=None, check=False, diff=True)
 
-        variable_manager.extra_vars = {'hosts': mgmt_ip}
+        variable_manager.extra_vars = {'__hosts': mgmt_ip}
 
         passwords = {}
 
