@@ -34,8 +34,8 @@ import os
 import sys
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
-from ansible.vars import VariableManager
-from ansible.inventory import Inventory
+from ansible.vars.manager import VariableManager
+from ansible.inventory.manager import InventoryManager
 from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
 
@@ -45,11 +45,11 @@ LOG.setLevel(logging.DEBUG)
 
 class CssFSM(sonSMbase):
 
-    # _listening_topic_root = ('son', 'configuration', 'psa', 'vpn', 'v1')
+    _listening_topic_root = ('generic', 'fsm')
 
-    # @staticmethod
-    # def get_listening_topic_name():
-    #     return '.'.join(CssFSM._listening_topic_root)
+    @staticmethod
+    def get_listening_topic_name():
+        return '.'.join(CssFSM._listening_topic_root)
 
     def __init__(self):
 
@@ -285,7 +285,7 @@ class CssFSM(sonSMbase):
         variable_manager = VariableManager()
         loader = DataLoader()
 
-        inventory = Inventory(loader=loader,
+        inventory = InventoryManager(loader=loader,
                               variable_manager=variable_manager)
 
         playbook_path = 'fsm/vpn-config/ansible/site.yml'
