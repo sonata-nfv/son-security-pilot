@@ -63,8 +63,8 @@ class fakeflm(object):
 
         LOG.info("Sending VNFR")
         vnfr = open('test/vnfr.yml', 'r')
-        message = {'fsm_type': 'configure', 'content': {'vnfrs': [yaml.load(vnfr)], 'nsr': None}}
-        self.manoconn.publish(CssFSM.get_listening_topic_name(), json.dumps(message))
+        message = {'fsm_type': 'configure', 'content': {'vnfrs': yaml.load(vnfr), 'nsr': None}}
+        self.manoconn.publish(CssFSM.get_listening_topic_name() + '.', json.dumps(message))
         vnfr.close()
         self.end = True
 
