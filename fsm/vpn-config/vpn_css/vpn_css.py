@@ -32,6 +32,7 @@ import yaml
 import paramiko
 import os
 import sys
+import tempfile
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
