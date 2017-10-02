@@ -234,11 +234,11 @@ class CssFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
-        result = self.vpn_configure(content)
+        result = self.vpn_configure(vnfrs[0])
 
         # Create a response for the FLM
         response = {}
-        response['status'] = 'COMPLETED'
+        response['status'] = 'COMPLETED' if result else 'ERROR'
 
         # TODO: complete the response
 
@@ -261,11 +261,10 @@ class CssFSM(sonSMbase):
 
         return response
 
-    def vpn_configure(self, content):
+    def vpn_configure(self, vnfr):
 
         LOG.info('Start retrieving the IP address ...')
 
-        vnfr = content['vnfr']
         vdu = vnfr['virtual_deployment_units'][0]
         cps = vdu['vnfc_instance'][0]['connection_points']
 
