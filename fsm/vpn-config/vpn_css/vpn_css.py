@@ -270,8 +270,8 @@ class CssFSM(sonSMbase):
 
         mgmt_ip = None
         for cp in cps:
-            if cp['type'] == 'management':
-                mgmt_ip = cp['interface']['address']
+            if 'netmask' not in cp['type'] and 'address' in cp['type']:
+                mgmt_ip = cp['type']['address']
                 LOG.info("management ip: " + str(mgmt_ip))
 
         if not mgmt_ip:
