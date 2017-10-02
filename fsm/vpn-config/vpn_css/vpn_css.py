@@ -281,14 +281,16 @@ class CssFSM(sonSMbase):
         LOG.info("IP address:'{0}'".format(mgmt_ip))
 
         # configure vm using ansible playbook
-        variable_manager = VariableManager()
         loader = DataLoader()
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(b'[vpnserver]\n')
+            fp.write(b'mn.vnf_vpn')
+            fp.flush()
+            inventory = InventoryManager(loader=loader, sources=[fp.name])
+        variable_manager = VariableManager(loader=loader, inventory=inventory)
 
-        inventory = InventoryManager(loader=loader,
-                              variable_manager=variable_manager)
-
-        playbook_path = 'fsm/vpn-config/ansible/site.yml'
-
+        playbook_path = os.path.abspath('./ansible/site.yml')
+        LOG.debug('Targeting the ansible playbook: %s', playbook_path)
         if not os.path.exists(playbook_path):
             LOG.error('The playbook does not exist')
             return
