@@ -79,6 +79,8 @@ class CssFSM(sonSMbase):
         self.version = 'v0.1'
         self.topic = ''
         self.description = "An FSM that subscribes to start, stop and configuration topic"
+        self.is_running_in_emulator = 'SON_EMULATOR' in os.environ
+        LOG.debug('Running in the emulator is %s', self.is_running_in_emulator)
 
         super(self.__class__, self).__init__(specific_manager_type=self.specific_manager_type,
                                              service_name=self.service_name,
@@ -285,7 +287,10 @@ class CssFSM(sonSMbase):
         loader = DataLoader()
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(b'[vpnserver]\n')
-            fp.write(b'mn.vnf_vpn')
+            if self.is_running_in_emulator:
+                fp.write(b'mn.vnf_vpn')
+            else:
+                fp.write(mgmt_ip.encode('utf-8'))
             fp.flush()
             inventory = InventoryManager(loader=loader, sources=[fp.name])
         variable_manager = VariableManager(loader=loader, inventory=inventory)
@@ -312,6 +317,8 @@ class CssFSM(sonSMbase):
                           scp_extra_args=None, become=True,
                           become_method=None, become_user='root',
                           verbosity=None, check=False, diff=True)
+        if self.is_running_in_emulator:
+            options = options._replace(connection='docker', become=False)
 
         variable_manager.extra_vars = {'__hosts': mgmt_ip}
 
