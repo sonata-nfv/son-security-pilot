@@ -58,7 +58,7 @@ WORKDIR /son-sm/son-sm-template
 RUN python setup.py install
 
 # run fsm
-ADD fsm/vpn-config /vpn-config
+COPY . /vpn-config
 
 WORKDIR /vpn-config
 RUN python setup.py develop

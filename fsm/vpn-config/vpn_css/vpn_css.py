@@ -276,12 +276,18 @@ class CssFSM(sonSMbase):
             if 'netmask' not in cp['type'] and 'address' in cp['type']:
                 mgmt_ip = cp['type']['address']
                 LOG.info("management ip: " + str(mgmt_ip))
-
         if not mgmt_ip:
-            LOG.error("Couldn't obtain IP address from VNFR")
+            LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
             return
 
-        LOG.info("IP address:'{0}'".format(mgmt_ip))
+        cpinput_ip = None
+        if len(cps) >= 1 and 'type' in cps[1] and 'address' in cps[1]['type']:
+            cpinput_ip = cps[1]['type']['address']
+        if not cpinput_ip:
+            LOG.error("Couldn't obtain cpinput IP address from VNFR")
+            return
+
+        LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'".format(mgmt_ip, cpinput_ip))
 
         # configure vm using ansible playbook
         loader = DataLoader()
@@ -320,7 +326,8 @@ class CssFSM(sonSMbase):
         if self.is_running_in_emulator:
             options = options._replace(connection='docker', become=False)
 
-        variable_manager.extra_vars = {'__hosts': mgmt_ip}
+        variable_manager.extra_vars = {'LOCAL_IP_ADDRESS': cpinput_ip,
+                                       'SON_EMULATOR': self.is_running_in_emulator }
 
         passwords = {}
 

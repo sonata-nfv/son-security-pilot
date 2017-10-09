@@ -3,7 +3,7 @@ EXTRA_SONPACKAGE_ARGS:=
 
 all: package package-emu
 
-docker-images: docker-image-squid docker-image-fw
+docker-images: docker-image-squid docker-image-fw docker-image-vpn
 
 docker-image-squid:
 	cd install/roles/docker-squid/files && \
@@ -35,4 +35,4 @@ package-emu: docker-images gen_emu
 gen_emu:
 	$(MAKE) -C projects gen_emu
 
-.PHONY: gen_emu
+.PHONY: gen_emu docker-images
