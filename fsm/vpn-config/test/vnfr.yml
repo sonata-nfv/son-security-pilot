@@ -21,28 +21,28 @@
     vm_image: sonata-vtc
     vnfc_instance:
     - connection_points:
-      - id: vdu01:eth0
+      - id: vdu01:cpeth0
         type: {address: 10.100.32.251}
-      - id: vdu01:eth1
-        type: {address: 192.0.0.10, netmask: 255.255.255.248}
-      - id: vdu01:eth2
+      - id: vdu01:cpeth1
+        type: {address: 10.10.0.2, netmask: 255.255.255.248}
+      - id: vdu01:cpeth2
         type: {address: 192.0.0.18, netmask: 255.255.255.248}
       id: 27be35b4-2452-4b6f-b878-f67a317b7ab0
       vc_id: 4359a2b1-c9ac-4f95-ba1d-d24f07de17b1
       vim_id: 1111-22222222-33333333-4444
   virtual_links:
-  - connection_points_reference: ['vdu01:eth0', 'vnf:mgmt']
+  - connection_points_reference: ['vdu01:cpeth0', 'vnf:cpmgmt']
     connectivity_type: E-LAN
     dhcp: true
-    id: mgmt
-  - connection_points_reference: ['vdu01:eth1', 'vnf:input']
+    id: vlmgmt
+  - connection_points_reference: ['vdu01:cpeth1', 'vnf:cpinput']
     connectivity_type: E-Line
     dhcp: true
-    id: input
-  - connection_points_reference: ['vdu01:eth2', 'vnf:output']
+    id: vlinput
+  - connection_points_reference: ['vdu01:cpeth2', 'vnf:cpoutput']
     connectivity_type: E-Line
     dhcp: true
-    id: output
+    id: vloutput
 - created_at: '2016-09-13T12:37:14.667+00:00'
   descriptor_reference: ba758582-1b4a-4019-8c66-ff8a44183bb7
   descriptor_version: vnfr-schema-01
