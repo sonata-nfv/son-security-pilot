@@ -1,0 +1,32 @@
+- name: inject public server ip in server.conf
+  template: src=server.conf dest=/etc/openvpn/server.conf
+  notify: restart openvpn
+
+# - name: slurp ca.crt
+#   slurp:
+#     src: /etc/openvpn/ca.crt
+#   register: CA
+
+- name: inject public server ip in client.ovpn
+  template: src=client.ovpn dest=/root/client.ovpn
+
+- name: inject keys in /root/client.ovpn
+  shell: |
+    set -e
+    echo '<ca>' >> /root/client.ovpn
+    cat /etc/openvpn/ca.crt >> /root/client.ovpn
+    echo '</ca>' >> /root/client.ovpn
+    echo '<cert>' >> /root/client.ovpn
+    openssl x509 -outform PEM -in /etc/openvpn/easy-rsa/keys/client1.crt >> /root/client.ovpn
+    echo '</cert>' >> /root/client.ovpn
+    echo '<key>' >> /root/client.ovpn
+    cat /etc/openvpn/easy-rsa/keys/client1.key >> /root/client.ovpn
+    echo '</key>' >> /root/client.ovpn
+
+- name: masquerade the vpn server traffic to cpoutput
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: 13.13.0.0/24
+    out_interface: eth0 # cpoutput
+    jump: MASQUERADE
