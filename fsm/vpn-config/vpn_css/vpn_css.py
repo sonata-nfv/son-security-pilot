@@ -326,7 +326,8 @@ class CssFSM(sonSMbase):
         if self.is_running_in_emulator:
             options = options._replace(connection='docker', become=False)
 
-        variable_manager.extra_vars = {'LOCAL_IP_ADDRESS': cpinput_ip}
+        variable_manager.extra_vars = {'LOCAL_IP_ADDRESS': cpinput_ip,
+                                       'SON_EMULATOR': self.is_running_in_emulator }
 
         passwords = {}
 
