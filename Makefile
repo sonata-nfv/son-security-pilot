@@ -21,8 +21,8 @@ docker-image-vpn:
 		docker build -t sonata-psa/vpn .
 
 docker-image-fw:
-	docker pull sonatanfv/sonata-empty-vnf # ubuntu:16.04
-	docker tag sonatanfv/sonata-empty-vnf sonata-psa/fw
+	cd install/roles/docker-firewall/files && \
+	  docker build -t sonata-psa/fw .
 
 package:
 	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa
