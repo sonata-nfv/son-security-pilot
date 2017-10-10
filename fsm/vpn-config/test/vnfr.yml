@@ -69,19 +69,19 @@
       - id: vdu01:eth0
         type: {address: 10.100.32.250}
       - id: vdu01:eth1
-        type: {address: 192.0.0.27, netmask: 255.255.255.248}
+        type: {address: 10.30.0.2, netmask: 255.255.255.248}
       - id: vdu01:eth2
-        type: {address: 192.0.0.35, netmask: 255.255.255.248}
+        type: {address: 10.10.1.2, netmask: 255.255.255.248}
       id: 27be35b4-2452-4b6f-b878-f67a317b7ab0
       vc_id: dda5647e-9fe9-42d6-94f5-876d464cb2ea
       vim_id: 1111-22222222-33333333-4444
   virtual_links:
-  - connection_points_reference: ['vdu01:eth0', mgmt]
+  - connection_points_reference: ['1:cpeth0', 'vnf:cpmgmt']
     connectivity_type: E-LAN
-    id: mgmt
-  - connection_points_reference: ['vdu01:eth1', 'vnf:input']
+    id: vlmgmt
+  - connection_points_reference: ['1:cpeth1', 'vnf:cpinput']
     connectivity_type: E-Line
-    id: input
-  - connection_points_reference: ['vdu01:eth2', 'vnf:output']
+    id: vlinput
+  - connection_points_reference: ['1:cpeth2', 'vnf:cpoutput']
     connectivity_type: E-Line
-    id: output
+    id: vloutput

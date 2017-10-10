@@ -237,7 +237,7 @@ class CssFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
-        result = self.vpn_configure(vnfrs[0])
+        result = self.vpn_configure(vnfrs[0], vnfrs[1])  # TODO: the order of vnfrs is random
 
         # Create a response for the FLM
         response = {}
@@ -264,7 +264,7 @@ class CssFSM(sonSMbase):
 
         return response
 
-    def vpn_configure(self, vnfr):
+    def vpn_configure(self, vnfr, vnfr_fw):
 
         LOG.info('Start retrieving the IP address ...')
 
@@ -287,7 +287,15 @@ class CssFSM(sonSMbase):
             LOG.error("Couldn't obtain cpinput IP address from VNFR")
             return
 
-        LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'".format(mgmt_ip, cpinput_ip))
+        fw_cps = vnfr_fw['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
+        fw_cpinput_ip = None
+        if len(fw_cps) >= 1 and 'type' in fw_cps[1] and 'address' in fw_cps[1]['type']:
+            fw_cpinput_ip = fw_cps[1]['type']['address']
+        if not fw_cpinput_ip:
+            LOG.error("Couldn't obtain firewall cpinput IP address from VNFR")
+            return
+
+        LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; fw_cpinput_ip:'{2}'".format(mgmt_ip, cpinput_ip, fw_cpinput_ip))
 
         # configure vm using ansible playbook
         loader = DataLoader()
