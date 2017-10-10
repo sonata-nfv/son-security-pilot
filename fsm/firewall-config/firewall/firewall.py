@@ -162,22 +162,22 @@ class FirewallFSM(sonSMbase):
                            [0]['vnfc_instance'][0]['connection_points'][0]
                            ['type']['address'])
 
-         if not mgmt_ip:
-             LOG.error("Couldn't obtain IP address from VNFR")
-             return
+        if not mgmt_ip:
+            LOG.error("Couldn't obtain IP address from VNFR")
+            return
 
-	#SSH connection to pfsense
-	port = 22
-	username = 'root'
-	password = 'pfsense'
-	ssh = paramiko.SSHClient()
-	ssh.set_missing_host_key_policy(
-    	paramiko.AutoAddPolicy())
-	ssh.connect(mgmt_ip, port, username, password)
-	#activate firewall
-	command = "pfctl -e" 
-	(stdin, stdout, stderr) = ssh.exec_command(command)
-	ssh.close()
+        #SSH connection to pfsense
+        port = 22
+        username = 'root'
+        password = 'pfsense'
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(
+        paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, username, password)
+        #activate firewall
+        command = "pfctl -e" 
+        (stdin, stdout, stderr) = ssh.exec_command(command)
+        ssh.close()
 
         # Create a response for the FLM
         response = {}
@@ -208,22 +208,22 @@ class FirewallFSM(sonSMbase):
                            [0]['vnfc_instance'][0]['connection_points'][0]
                            ['type']['address'])
 
-         if not mgmt_ip:
-             LOG.error("Couldn't obtain IP address from VNFR")
-             return
+        if not mgmt_ip:
+            LOG.error("Couldn't obtain IP address from VNFR")
+            return
 
-	#SSH connection to pfsense
-	port = 22
-	username = 'root'
-	password = 'pfsense'
-	ssh = paramiko.SSHClient()
-	ssh.set_missing_host_key_policy(
-    	paramiko.AutoAddPolicy())
-	ssh.connect(mgmt_ip, port, username, password)
-	#desactivate firewall
-	command = "pfctl -d" 
-	(stdin, stdout, stderr) = ssh.exec_command(command)
-	ssh.close()
+        #SSH connection to pfsense
+        port = 22
+        username = 'root'
+        password = 'pfsense'
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(
+            paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, username, password)
+        #desactivate firewall
+        command = "pfctl -d" 
+        (stdin, stdout, stderr) = ssh.exec_command(command)
+        ssh.close()
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
@@ -245,7 +245,7 @@ class FirewallFSM(sonSMbase):
         vnfrs = content['vnfrs']
 
 
-	mgmt_ip = None
+        mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
                        'pfsense.raw'
 
@@ -260,19 +260,19 @@ class FirewallFSM(sonSMbase):
             LOG.error("Couldn't obtain IP address from VNFR")
             return
 
-	#SSH connection to pfsense
-	port = 22
-	username = 'root'
-	password = 'pfsense'
-	ssh = paramiko.SSHClient()
-	ssh.set_missing_host_key_policy(
-    	paramiko.AutoAddPolicy())
-	ssh.connect(mgmt_ip, port, username, password)
+        #SSH connection to pfsense
+        port = 22
+        username = 'root'
+        password = 'pfsense'
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(
+            paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, username, password)
 
-	#Activate firewall
-	command = "pfctl -e" 
-	(stdin, stdout, stderr) = ssh.exec_command(command)
-	ssh.close()
+        #Activate firewall
+        command = "pfctl -e" 
+        (stdin, stdout, stderr) = ssh.exec_command(command)
+        ssh.close()
 
         # Create a response for the FLM
         response = {}
