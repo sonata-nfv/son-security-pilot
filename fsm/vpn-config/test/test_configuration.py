@@ -53,7 +53,7 @@ class testConfFSM(unittest.TestCase):
 
         self.slm_proc.daemon = True
         self.smr_proc.daemon = True
-        self.con_proc.daemon = True
+        # self.con_proc.daemon = True
 
         self.manoconn = messaging.ManoBrokerRequestResponseConnection('ConfTest')
 
