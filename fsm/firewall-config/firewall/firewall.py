@@ -27,6 +27,7 @@ partner consortium (www.sonata-nfv.eu).
 """
 
 import logging
+import time
 import yaml
 import paramiko
 from sonsmbase.smbase import sonSMbase
@@ -95,6 +96,7 @@ class FirewallFSM(sonSMbase):
         This method handles received messages
         """
 
+        LOG.debug('<-- message_received app_id=%s', props.app_id)
         # Decode the content of the message
         request = yaml.load(payload)
 
@@ -299,7 +301,11 @@ class FirewallFSM(sonSMbase):
 
 
 def main():
+    LOG.info('Welcome to the main in %s', __name__)
     FirewallFSM()
+    while True:
+        time.sleep(10)
+
 
 if __name__ == '__main__':
     main()
