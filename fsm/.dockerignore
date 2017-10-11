@@ -1,0 +1,4 @@
+*
+!firewall-config
+!vpn-config
+**/__pycache__
