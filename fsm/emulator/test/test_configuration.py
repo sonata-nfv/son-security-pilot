@@ -27,12 +27,13 @@ import threading
 import logging
 import time
 import sys
-
+import os
 from multiprocessing import Process
 from vnfrsender import fakeflm
 import fake_smr
 from sonmanobase import messaging
 import vpn_css.vpn_css
+import firewall.firewall
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -47,9 +48,14 @@ LOG = logging.getLogger(__name__ if __name__ != "__main__" else __file__ + ':' +
 class testConfFSM(unittest.TestCase):
 
     def setUp(self):
+        current_dir = os.getcwd()
         self.slm_proc = Process(target= fakeflm)
         self.smr_proc = Process(target= fake_smr.main)
-        self.con_proc = Process(target= vpn_css.vpn_css.main)
+        os.chdir('../vpn-config')
+        self.con_proc = Process(target=vpn_css.vpn_css.main, kwargs={'working_dir': os.path.realpath('../vpn-config')})
+        os.chdir('../firewall-config')
+        self.fw_proc = Process(target= firewall.firewall.main)
+        os.chdir(current_dir)
 
         self.slm_proc.daemon = True
         self.smr_proc.daemon = True
@@ -76,6 +82,10 @@ class testConfFSM(unittest.TestCase):
         if self.con_proc is not None:
             self.con_proc.terminate()
         del self.con_proc
+
+        if self.fw_proc is not None:
+            self.fw_proc.terminate()
+        del self.fw_proc
 
         try:
             self.manoconn.stop_connection()
@@ -175,6 +185,7 @@ class testConfFSM(unittest.TestCase):
         self.manoconn.subscribe(on_register_receive, 'specific.manager.registry.ssm.registration')
 
         self.con_proc.start()
+        self.fw_proc.start()
         #time.sleep(4)
         self.waitForRegEvent(timeout=5, msg="Registration request not received.")
 
