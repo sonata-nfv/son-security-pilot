@@ -22,6 +22,9 @@
 FROM python:3.5-slim
 MAINTAINER SONATA
 
+ENV broker_host amqp://guest:guest@broker:5672/%2F
+ENV broker_exchange son-kernel
+
 # install package dependencies
 RUN apt-get clean \
     && apt-get update \
