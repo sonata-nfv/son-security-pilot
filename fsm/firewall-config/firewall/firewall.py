@@ -27,6 +27,8 @@ partner consortium (www.sonata-nfv.eu).
 """
 
 import logging
+import os
+import time
 import yaml
 import paramiko
 from sonsmbase.smbase import sonSMbase
@@ -63,6 +65,8 @@ class FirewallFSM(sonSMbase):
         self.version = 'v0.1'
         self.description = "An FSM that subscribes to start, stop and configuration topic for Firewall VNF"
 
+        self.is_running_in_emulator = 'SON_EMULATOR' in os.environ
+        LOG.debug('Running in the emulator is %s', self.is_running_in_emulator)
         super(self.__class__, self).__init__(specific_manager_type=self.specific_manager_type,
                                              service_name=self.service_name,
                                              function_name=self.function_name,
@@ -95,6 +99,7 @@ class FirewallFSM(sonSMbase):
         This method handles received messages
         """
 
+        LOG.debug('<-- message_received app_id=%s', props.app_id)
         # Decode the content of the message
         request = yaml.load(payload)
 
@@ -102,6 +107,7 @@ class FirewallFSM(sonSMbase):
         if "fsm_type" not in request.keys():
             LOG.info("Received a non-request message, ignoring...")
             return
+        LOG.info('Handling message with fsm_type=%s', request["fsm_type"])
 
         # Create the response
         response = None
@@ -242,6 +248,10 @@ class FirewallFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
+        if self.is_running_in_emulator:
+            result = self.fw_configure(vnfrs[1])  # TODO: the order can be random
+            response = {'status': 'COMPLETED' if result else 'ERROR' }
+            return response
 
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
@@ -297,9 +307,17 @@ class FirewallFSM(sonSMbase):
 
         return response
 
+    def fw_configure(self, fw_vnfr):
+        pass
+
+
 
 def main():
+    LOG.info('Welcome to the main in %s', __name__)
     FirewallFSM()
+    while True:
+        time.sleep(10)
+
 
 if __name__ == '__main__':
     main()
