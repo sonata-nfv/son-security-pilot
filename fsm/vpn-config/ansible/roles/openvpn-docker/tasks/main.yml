@@ -28,5 +28,33 @@
     table: nat
     chain: POSTROUTING
     source: 13.13.0.0/24
-    out_interface: eth0 # cpoutput
+    out_interface: cpoutput
     jump: MASQUERADE
+
+- name: tcp port forwarding to cpinput
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: tcp
+    in_interface: eth0
+    destination_port: 1194
+    jump: DNAT
+    to_destination: "{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.address }}:1194"
+
+- name: udp port forwarding to cpinput
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: udp
+    in_interface: eth0
+    destination_port: 1194
+    jump: DNAT
+    to_destination: "{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.address }}:1194"
+
+
+- name: set default route to cpouput
+  shell: |
+    set -e
+    ip route del default
+    ip route add default dev cpoutput via 10.30.0.2
+    # TODO: pass the gateway ip in a variable

@@ -31,6 +31,12 @@ import os
 import time
 import yaml
 import paramiko
+import tempfile
+from collections import namedtuple
+from ansible.parsing.dataloader import DataLoader
+from ansible.vars.manager import VariableManager
+from ansible.inventory.manager import InventoryManager
+from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
 
 LOG = logging.getLogger(__name__)
@@ -308,11 +314,57 @@ class FirewallFSM(sonSMbase):
         return response
 
     def fw_configure(self, fw_vnfr):
-        pass
+        fw_cpinput_ip = '10.30.0.2'
+        fw_cpinput_netmask = '255.255.255.252'
+        fw_cpinput_network = '10.30.0.2/30'
+
+        # configure vm using ansible playbook
+        loader = DataLoader()
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(b'[firewallserver]\n')
+            if self.is_running_in_emulator:
+                fp.write(b'mn.vnf_fw')
+            else:
+                fp.write(mgmt_ip.encode('utf-8'))
+            fp.flush()
+            inventory = InventoryManager(loader=loader, sources=[fp.name])
+        variable_manager = VariableManager(loader=loader, inventory=inventory)
+        playbook_path = os.path.abspath('./ansible/site.yml')
+        LOG.debug('Targeting the ansible playbook: %s', playbook_path)
+        if not os.path.exists(playbook_path):
+            LOG.error('The playbook does not exist')
+            return
+        Options = namedtuple('Options',
+                             ['listtags', 'listtasks', 'listhosts',
+                              'syntax', 'connection', 'module_path',
+                              'forks', 'remote_user', 'private_key_file',
+                              'ssh_common_args', 'ssh_extra_args',
+                              'sftp_extra_args', 'scp_extra_args',
+                              'become', 'become_method', 'become_user',
+                              'verbosity', 'check', 'diff'])
+        options = Options(listtags=False, listtasks=False, listhosts=False,
+                          syntax=False, connection='ssh', module_path=None,
+                          forks=100, remote_user='slotlocker',
+                          private_key_file=None, ssh_common_args=None,
+                          ssh_extra_args=None, sftp_extra_args=None,
+                          scp_extra_args=None, become=True,
+                          become_method=None, become_user='root',
+                          verbosity=None, check=False, diff=True)
+        options = options._replace(connection='docker', become=False)
+        variable_manager.extra_vars = {'FW_CPINPUT_NETWORK': fw_cpinput_network,
+                                       'SON_EMULATOR': self.is_running_in_emulator }
+        pbex = PlaybookExecutor(playbooks=[playbook_path],
+                                inventory=inventory,
+                                variable_manager=variable_manager,
+                                loader=loader, options=options,
+                                passwords={})
+        results = pbex.run()
+        return
 
 
-
-def main():
+def main(working_dir=None):
+    if working_dir:
+        os.chdir(working_dir)
     LOG.info('Welcome to the main in %s', __name__)
     FirewallFSM()
     while True:

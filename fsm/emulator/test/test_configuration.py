@@ -54,7 +54,7 @@ class testConfFSM(unittest.TestCase):
         os.chdir('../vpn-config')
         self.con_proc = Process(target=vpn_css.vpn_css.main, kwargs={'working_dir': os.path.realpath('../vpn-config')})
         os.chdir('../firewall-config')
-        self.fw_proc = Process(target= firewall.firewall.main)
+        self.fw_proc = Process(target= firewall.firewall.main, kwargs={'working_dir': os.path.realpath('../firewall-config')})
         os.chdir(current_dir)
 
         self.slm_proc.daemon = True
