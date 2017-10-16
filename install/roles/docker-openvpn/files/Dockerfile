@@ -20,6 +20,8 @@ RUN sed -i -e 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
     cd /etc/openvpn/easy-rsa && ./build-key --batch client1 && \
     echo 'Done'
 
+EXPOSE 1194
+
 COPY ./run /etc/service/openvpn/
 
 ENTRYPOINT ["/sbin/runit"]
