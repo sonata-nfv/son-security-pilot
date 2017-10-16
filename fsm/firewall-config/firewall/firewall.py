@@ -312,7 +312,9 @@ class FirewallFSM(sonSMbase):
 
 
 
-def main():
+def main(working_dir=None):
+    if working_dir:
+        os.chdir(working_dir)
     LOG.info('Welcome to the main in %s', __name__)
     FirewallFSM()
     while True:
