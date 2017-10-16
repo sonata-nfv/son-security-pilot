@@ -1,5 +1,5 @@
 VPN_VOLUMES=-v "$$(pwd)/vpn-config/test/:/vpn-config/test/" -v "$$(pwd)/vpn-config/vpn_css/:/vpn-config/vpn_css/" -v "$$(pwd)/vpn-config/ansible:/vpn-config/ansible/"
-FIREWALL_VOLUMES=-v "$$(pwd)/firewall-config/firewall:/firewall-config/firewall" 
+FIREWALL_VOLUMES=-v "$$(pwd)/firewall-config/firewall:/firewall-config/firewall" -v "$$(pwd)/firewall-config/ansible:/firewall-config/ansible" 
 EMULATOR_VOLUMES=-v "$$(pwd)/emulator/:/emulator/"
 
 EMULATOR_DOCKER_CMD=cd .. && docker run -it --rm=true --link 'broker:broker' --env 'SON_EMULATOR=1' \
