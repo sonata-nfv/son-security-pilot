@@ -1,0 +1,13 @@
+---
+- name: Install an iptable firewall
+  hosts: firewallserver
+  vars:
+    ansible_python_interpreter: "/usr/local/bin/python3"
+  remote_user: root
+  pre_tasks:
+    - debug:
+        msg: "hostvars={{ hostvars }}"
+        verbosity: 0
+  roles:
+    - firewall 
+
