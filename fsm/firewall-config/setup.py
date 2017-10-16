@@ -63,7 +63,7 @@ setup(
     keywords='NFV orchestrator',
 
     packages=find_packages("firewall-config"),
-    install_requires=['pytest', 'ansible','paramiko'],
+    install_requires=['pytest', 'ansible>=2.4.0.0', 'paramiko'],
     setup_requires=['pytest-runner'],
 
     # To provide executable scripts, use entry points in preference to the
