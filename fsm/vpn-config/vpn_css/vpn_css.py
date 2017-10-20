@@ -278,14 +278,14 @@ class CssFSM(sonSMbase):
                 LOG.info("management ip: " + str(mgmt_ip))
         if not mgmt_ip:
             LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
-            return
+            return False
 
         cpinput_ip = None
         if len(cps) >= 1 and 'type' in cps[1] and 'address' in cps[1]['type']:
             cpinput_ip = cps[1]['type']['address']
         if not cpinput_ip:
             LOG.error("Couldn't obtain cpinput IP address from VNFR")
-            return
+            return False
 
         fw_cps = vnfr_fw['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
         fw_cpinput_ip = None
@@ -293,7 +293,7 @@ class CssFSM(sonSMbase):
             fw_cpinput_ip = fw_cps[1]['type']['address']
         if not fw_cpinput_ip:
             LOG.error("Couldn't obtain firewall cpinput IP address from VNFR")
-            return
+            return False
 
         LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; fw_cpinput_ip:'{2}'".format(mgmt_ip, cpinput_ip, fw_cpinput_ip))
 
@@ -313,7 +313,7 @@ class CssFSM(sonSMbase):
         LOG.debug('Targeting the ansible playbook: %s', playbook_path)
         if not os.path.exists(playbook_path):
             LOG.error('The playbook does not exist')
-            return
+            return False
 
         Options = namedtuple('Options',
                              ['listtags', 'listtasks', 'listhosts',
@@ -346,8 +346,8 @@ class CssFSM(sonSMbase):
                                 passwords=passwords)
 
         results = pbex.run()
-
-        return
+        LOG.debug('Results from ansible = %s, %s', results, type(results))
+        return results == 0
 
 
 def main(working_dir=None):
