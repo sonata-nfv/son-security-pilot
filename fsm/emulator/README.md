@@ -51,11 +51,6 @@ At the top level director, use the command (adapt the file name for newer servic
 son-access --platform emu push --upload eu.sonata-nfv.sonata-psa-gen-emu.0.8.son
 ```
 
-Then, the PSA service is instantiated with the command:
-```
-son-access --platform emu push --deploy latest
-```
-
 
 ## Creating the PSA service FSMs
 
