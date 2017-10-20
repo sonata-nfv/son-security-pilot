@@ -71,19 +71,19 @@ class testConfFSM(unittest.TestCase):
 
     def tearDown(self):
 
-        if self.smr_proc is not None:
+        if self.smr_proc and self.smr_proc.is_alive():
             self.smr_proc.terminate()
         del self.smr_proc
 
-        if self.slm_proc is not None:
+        if self.slm_proc and self.slm_proc.is_alive():
             self.slm_proc.terminate()
         del self.slm_proc
 
-        if self.con_proc is not None:
+        if self.con_proc and self.con_proc.is_alive():
             self.con_proc.terminate()
         del self.con_proc
 
-        if self.fw_proc is not None:
+        if self.fw_proc and self.fw_proc.is_alive():
             self.fw_proc.terminate()
         del self.fw_proc
 
