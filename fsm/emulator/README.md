@@ -93,3 +93,41 @@ In it, the command:
 cd /emulator && python test/test_configuration.py
 ```
 will start the FSMs workflow.
+
+
+## Injecting the host traffic in the PSA service
+
+### Creating a separate routing table 
+
+Starting the vpn client will redirect all the host traffic into the PSA service.
+But as this service is also running on the same host (in Docker containers), their outgoing traffics will also be intercepted.
+To avoid this loop, the traffic leaving the PSA service through the `cpoutput` interface need to pass by a separate routing table.
+
+First, create an empty routing table called `backup.out` with the command:
+```
+sudo echo "901   backup.out" >> /etc/iproute2/rt_tables
+```
+
+Here, the `10.10.1.0/24` network corresponds to the `cpoutput` interface for the PSA service.
+This value value can be found with: `ip addr show sap.cpoutput`.
+The following commands will attach the network `10.10.1.0/24` to the `backup.out` table.
+The traffic initiated by this network will be handled by the new routing table.
+```
+sudo ip rule add from 10.10.1.0/24 table backup.out
+```
+
+Finally, the next command sets up the routes so that:
+* The traffic targeting the `10.10.1.0/24` goes in the `sap.cpoutput` interface with its ip
+* The outgoing traffic has a default route to leave the host through the `eth0` interface and the `1.2.3.4` gateway. (The parameters for this rule an by find with the command `route -n` and look at the line corresponding to the `0.0.0.0` destination).
+```
+sudo ip route add 10.10.1.0/24 dev sap.cpoutput src 10.10.1.1 table backup.out
+sudo ip route add default via 1.2.3.4 dev eth0 table backup.out
+```
+
+** Note that when the PSA service is stopped, the corresponding interface will be remove. When it happens, the kernel will delete the route corresponding to their network. During development, when you re-start the PSA service, the `sudo ip route add 10.10.1.0/24 dev sap.cpoutput src 10.10.1.1 table backup.out` command needs to be executed again.**
+
+### Extra
+
+You can show the current `backup.out` table's rules with: `ip route show table backup.out`.
+To see with table is attached to a network, you can use the `ip rule` command.
+
