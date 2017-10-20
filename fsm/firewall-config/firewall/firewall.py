@@ -333,7 +333,7 @@ class FirewallFSM(sonSMbase):
         LOG.debug('Targeting the ansible playbook: %s', playbook_path)
         if not os.path.exists(playbook_path):
             LOG.error('The playbook does not exist')
-            return
+            return False
         Options = namedtuple('Options',
                              ['listtags', 'listtasks', 'listhosts',
                               'syntax', 'connection', 'module_path',
@@ -359,7 +359,7 @@ class FirewallFSM(sonSMbase):
                                 loader=loader, options=options,
                                 passwords={})
         results = pbex.run()
-        return
+        return True
 
 
 def main(working_dir=None):
