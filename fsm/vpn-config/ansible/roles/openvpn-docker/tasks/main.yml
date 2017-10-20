@@ -31,27 +31,6 @@
     out_interface: cpoutput
     jump: MASQUERADE
 
-- name: tcp port forwarding to cpinput
-  iptables:
-    table: nat
-    chain: PREROUTING
-    protocol: tcp
-    in_interface: eth0
-    destination_port: 1194
-    jump: DNAT
-    to_destination: "{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.address }}:1194"
-
-- name: udp port forwarding to cpinput
-  iptables:
-    table: nat
-    chain: PREROUTING
-    protocol: udp
-    in_interface: eth0
-    destination_port: 1194
-    jump: DNAT
-    to_destination: "{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.address }}:1194"
-
-
 - name: set default route to cpouput
   shell: |
     set -e
