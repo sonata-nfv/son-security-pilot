@@ -29,12 +29,14 @@ partner consortium (www.sonata-nfv.eu).
 
 import logging
 from mininet.log import setLogLevel
+from emuvim.api.sonata import dummygatekeeper
 from emuvim.dcemulator.net import DCNetwork
 from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint
 from emuvim.api.sonata import SonataDummyGatekeeperEndpoint
 from mininet.node import RemoteController
 
 logging.basicConfig(level=logging.DEBUG)
+dummygatekeeper.BIDIRECTIONAL_CHAIN = True
 
 
 def create_topology1():
