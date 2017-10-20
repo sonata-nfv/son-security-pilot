@@ -124,7 +124,7 @@ sudo ip route add 10.10.1.0/24 dev sap.cpoutput src 10.10.1.1 table backup.out
 sudo ip route add default via 1.2.3.4 dev eth0 table backup.out
 ```
 
-** Note that when the PSA service is stopped, the corresponding interface will be remove. When it happens, the kernel will delete the route corresponding to their network. During development, when you re-start the PSA service, the `sudo ip route add 10.10.1.0/24 dev sap.cpoutput src 10.10.1.1 table backup.out` command needs to be executed again.**
+**Note that when the PSA service is stopped, the corresponding interface will be removed. When it happens, the kernel will delete the route corresponding to their network. During development, when you re-start the PSA service, the `sudo ip route add 10.10.1.0/24 dev sap.cpoutput src 10.10.1.1 table backup.out` command needs to be executed again.**
 
 ### Extra
 
