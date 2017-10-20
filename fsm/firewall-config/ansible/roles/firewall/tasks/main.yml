@@ -1,9 +1,9 @@
-- name: masquerade the vpn server traffic to cpoutput
+- name: masquerade the vpn server traffic coming from cpinput to cpoutput
   iptables:
     table: nat
     chain: POSTROUTING
     source: "{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.network }}/{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.netmask }}"
-    out_interface: eth0 # cpoutput
+    out_interface: cpoutput
     jump: MASQUERADE
 
 - name: forward from cpinput
