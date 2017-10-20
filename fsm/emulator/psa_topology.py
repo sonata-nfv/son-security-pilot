@@ -29,12 +29,14 @@ partner consortium (www.sonata-nfv.eu).
 
 import logging
 from mininet.log import setLogLevel
+from emuvim.api.sonata import dummygatekeeper
 from emuvim.dcemulator.net import DCNetwork
 from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint
 from emuvim.api.sonata import SonataDummyGatekeeperEndpoint
 from mininet.node import RemoteController
 
 logging.basicConfig(level=logging.DEBUG)
+dummygatekeeper.BIDIRECTIONAL_CHAIN = True
 
 
 def create_topology1():
@@ -52,7 +54,7 @@ def create_topology1():
     rapi1.start()
 
     # add the SONATA dummy gatekeeper to each DC
-    sdkg1 = SonataDummyGatekeeperEndpoint("0.0.0.0", 5000, deploy_sap=False)
+    sdkg1 = SonataDummyGatekeeperEndpoint("0.0.0.0", 5000, deploy_sap=True, auto_deploy=True)
     sdkg1.connectDatacenter(dc1)
     # run the dummy gatekeeper (in another thread, don't block)
     sdkg1.start()
