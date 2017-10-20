@@ -5,6 +5,7 @@
 * The `son-cli` tools suite
 * 2 terminals
 * `sudo` rights
+* `openvpn` client CLI 
 
 
 ## Creating the PSA service package
@@ -126,3 +127,19 @@ sudo ip route add default via 1.2.3.4 dev eth0 table backup.out
 You can show the current `backup.out` table's rules with: `ip route show table backup.out`.
 To see with table is attached to a network, you can use the `ip rule` command.
 
+
+## Connecting to the PSA VPN entrypoint
+
+When the vpn FSM configure the VPN, it generates a client configuration file.
+This file needs to be retreive to connect to the server automatically.
+It contains the server address and the various authentication keys.
+This command will copy the `client.ovpn` file from the VPN container to the current local directory:
+```
+docker cp mn.vnf_vpn:/root/client.ovpn .
+```
+
+The PSA service contains a VPN server used as an entrypoint to protect the traffic between the end-user and the VNFs (when the service hosted in a remote platform).
+The following command will start a OpenVPN client. It will connect to the PSA service and redirect the host's traffic into the PSA service:
+```
+sudo openvpn --config client.ovpn
+```
