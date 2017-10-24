@@ -3,7 +3,7 @@ EXTRA_SONPACKAGE_ARGS:=
 
 all: package package-emu
 
-docker-images: docker-image-squid docker-image-fw docker-image-vpn
+docker-images: docker-image-squid docker-image-fw docker-image-vpn docker-image-cache
 
 docker-image-squid:
 	cd install/roles/docker-squid/files && \
@@ -23,6 +23,10 @@ docker-image-vpn:
 docker-image-fw:
 	cd install/roles/docker-firewall/files && \
 	  docker build -t sonata-psa/fw .
+
+docker-image-cache:
+	cd install/roles/docker-addblk/files && \
+          docker build -t sonata-psa/cache .
 
 package:
 	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa
