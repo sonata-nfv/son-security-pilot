@@ -34,6 +34,7 @@ import fake_smr
 from sonmanobase import messaging
 import vpn_css.vpn_css
 import firewall.firewall
+import sonfsmvprxsquidconfiguration1.sonfsmvprxsquidconfiguration1
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -58,6 +59,7 @@ class testConfFSM(unittest.TestCase):
         self.con_proc = Process(target=vpn_css.vpn_css.main, kwargs={'working_dir': os.path.realpath('../vpn-config')})
         os.chdir('../firewall-config')
         self.fw_proc = Process(target= firewall.firewall.main, kwargs={'working_dir': os.path.realpath('../firewall-config')})
+        self.cache_proc = Process(target=sonfsmvprxsquidconfiguration1.sonfsmvprxsquidconfiguration1.main, kwargs={'working_dir': os.path.realpath('../cache-config')})
         os.chdir(current_dir)
 
         self.slm_proc.daemon = True
@@ -195,6 +197,7 @@ class testConfFSM(unittest.TestCase):
 
         self.fw_proc.start()
         self.con_proc.start()
+        self.cache_proc.start()
         self.waitForRegEvent(timeout=5, msg="Registration request not received.")
 
         self.manoconn.subscribe(on_ip_receive, vpn_css.vpn_css.CssFSM.get_listening_topic_name() + '.#')
