@@ -92,6 +92,10 @@ class testConfFSM(unittest.TestCase):
             self.fw_proc.terminate()
         del self.fw_proc
 
+        if self.cache_proc and self.cache_proc.is_alive():
+            self.cache_proc.terminate()
+        del self.cache_proc
+
         try:
             self.manoconn.stop_connection()
         except Exception as e:
@@ -165,7 +169,7 @@ class testConfFSM(unittest.TestCase):
 
                 global _register_count
                 _register_count += 1
-                if _register_count >= 2:
+                if _register_count >= 3:
                     self.reg_eventFinished()
 
         def on_ip_receive(ch, method, properties, message):
@@ -177,12 +181,12 @@ class testConfFSM(unittest.TestCase):
             if properties.app_id == 'fake-flm':
                 if 'nsr' in payload['content']:
                     self.res_eventFinished()
-            elif properties.app_id in ['sonfsmservice1function1css1', 'sonfsmpsa-servicefirewall-vnffirewall-config1']:
+            elif properties.app_id in ['sonfsmservice1function1css1', 'sonfsmpsa-servicefirewall-vnffirewall-config1', 'sonfsmpsa-servicecache-vnfcache-config1']:
                 if 'status' in payload:
                     self.assertTrue(payload['status'] == 'COMPLETED')
                     global _status_count
                     _status_count += 1
-                    if _status_count >= 2:
+                    if _status_count >= 3:
                         self.res_eventFinished()
             else:
                 self.assertEqual(True, False, msg=('Unknown sender: ' + properties.app_id))
