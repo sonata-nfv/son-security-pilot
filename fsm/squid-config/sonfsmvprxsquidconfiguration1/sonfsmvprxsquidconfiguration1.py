@@ -23,20 +23,21 @@ acknowledge the contributions of their colleagues of the SONATA
 partner consortium (www.sonata-nfv.eu).
 """
 
+import time
 import logging
 import yaml
 import os
+import sys
+import tempfile
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
-from ansible.vars import VariableManager
-from ansible.inventory import Inventory
+from ansible.vars.manager import VariableManager
+from ansible.inventory.manager import InventoryManager
 from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
 
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("fsm-vprx-1")
+LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
 class sonfsmvprxsquidconfiguration1(sonSMbase):
@@ -156,8 +157,14 @@ class sonfsmvprxsquidconfiguration1(sonSMbase):
             results = pbex.run()
             return
 
-def main():
+def main(working_dir=None):
+    if working_dir:
+        os.chdir(working_dir)
+    LOG.info('Welcome to the main in %s', __name__)
     sonfsmvprxsquidconfiguration1()
+    while True:
+        time.sleep(10)
+
 
 if __name__ == '__main__':
     main()
