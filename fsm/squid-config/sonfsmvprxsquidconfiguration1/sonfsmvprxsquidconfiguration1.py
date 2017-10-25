@@ -163,7 +163,6 @@ class sonfsmvprxsquidconfiguration1(sonSMbase):
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/squid-vnf/squid-3.5.12-img.qcow2'
 
-       
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
@@ -270,16 +269,13 @@ class sonfsmvprxsquidconfiguration1(sonSMbase):
         return response
 
     def cache_configure(self, fw_vnfr):
-        fw_cpinput_ip = '10.30.0.2'
-        fw_cpinput_netmask = '255.255.255.252'
-        fw_cpinput_network = '10.30.0.2/30'
 
         # configure vm using ansible playbook
         loader = DataLoader()
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(b'[cacheserver]\n')
             if self.is_running_in_emulator:
-                fp.write(b'mn.vnf_fw')
+                fp.write(b'mn.vnf_cache')
             else:
                 fp.write(mgmt_ip.encode('utf-8'))
             fp.flush()
@@ -307,8 +303,7 @@ class sonfsmvprxsquidconfiguration1(sonSMbase):
                           become_method=None, become_user='root',
                           verbosity=None, check=False, diff=True)
         options = options._replace(connection='docker', become=False)
-        variable_manager.extra_vars = {'FW_CPINPUT_NETWORK': fw_cpinput_network,
-                                       'SON_EMULATOR': self.is_running_in_emulator }
+        variable_manager.extra_vars = {'SON_EMULATOR': self.is_running_in_emulator }
         pbex = PlaybookExecutor(playbooks=[playbook_path],
                                 inventory=inventory,
                                 variable_manager=variable_manager,
