@@ -1,7 +1,8 @@
 FROM ubuntu:16.04
 
-RUN apt-get update -y && \
-    apt-get install -y runit squid wget net-tools inetutils-ping iptables && \
+RUN sed -i 's/archive/nl.archive/g' /etc/apt/sources.list && \
+    apt-get update -y && \
+    apt-get install -y runit squid wget net-tools inetutils-ping iptables python3 && \
     mkdir -p /etc/squid /etc/service/squid && \
     wget -O /etc/squid/ad_block.txt "http://pgl.yoyo.org/adservers/serverlist.php?hostformat=nohtml&showintro=0&mimetype=plaintext" && \
     touch /etc/service/squid/down && \
