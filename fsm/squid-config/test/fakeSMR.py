@@ -4,7 +4,9 @@ Created on Jun 13, 2017
 @author: ubuntu
 '''
 
+import time
 import logging
+import json
 import yaml
 from sonmanobase import messaging
 
@@ -28,6 +30,7 @@ class fakesmr(object):
         self.manoconn = messaging.ManoBrokerRequestResponseConnection(self.name)
 
         self.declare_subscriptions()
+        LOG.info('End __init__')
 
     def declare_subscriptions(self):
         """
@@ -38,6 +41,7 @@ class fakesmr(object):
     def on_register_receive(self,ch, method, properties, payload):
 
         message = yaml.load(payload)
+        LOG.info('message = %s', message)
 
         response = {
             "status": "registered",
@@ -52,11 +56,13 @@ class fakesmr(object):
             "error": None
         }
 
-        return yaml.dump(response)
+        return json.dumps(response)
 
 
 def main():
     fakesmr()
+    while True:
+        time.sleep(10)
 
 
 if __name__ == '__main__':

@@ -21,10 +21,17 @@ acknowledge the contributions of their colleagues of the SONATA
 partner consortium (www.sonata-nfv.eu).
 """
 
+import os
 import time
 import logging
+import tempfile
 import yaml
 import paramiko
+from collections import namedtuple
+from ansible.parsing.dataloader import DataLoader
+from ansible.vars.manager import VariableManager
+from ansible.inventory.manager import InventoryManager
+from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
 
 LOG = logging.getLogger(__name__)
@@ -32,9 +39,8 @@ LOG.setLevel(logging.DEBUG)
 
 class faceFSM(sonSMbase):
 
-    _topic_root = ('son', 'configuration', 'psa', 'proxy', 'v1')
-    username = 'admin'
-    password = 'admin'
+    username = 'ubuntu'
+    keyfile = '../ansible/roles/squid/files/son-install.pem'
     option = 1
 
     def __init__(self):
@@ -56,10 +62,15 @@ class faceFSM(sonSMbase):
         :param description: description
         """
     
+        if 'KEYFILE' in os.environ:
+            keyfile = os.environ['KEYFILE'] 
+
         self.specific_manager_type = 'fsm'
-        self.service_name = 'psa'
-        self.function_name = 'proxy'
+        #self.service_name = 'psa'
+        #self.function_name = 'proxy'
         self.specific_manager_name = 'placement'
+        self.service_name = 'sonata-psa'
+        self.function_name = 'cache-vnf'
         self.id_number = '1'
         self.version = 'v0.1'
         self.description = 'FSM that implements the subscription of the start, stop, configuration topics'
@@ -99,16 +110,16 @@ class faceFSM(sonSMbase):
         
         if str(request["fsm_type"]) == "start":
             LOG.info("Start event received: " + str(request["content"]))
-            response = self.start_event(request["content"])
+            response = self.start_ev(request["content"])
         elif str(request["fsm_type"]) == "stop":
             LOG.info("Stop event received: " + str(request["content"]))
-            response = self.stop_event(request["content"])
+            response = self.stop_ev(request["content"])
         elif str(request["fsm_type"]) == "configure":
             LOG.info("Config event received: " + str(request["content"]))
-            response = self.configure_event(request["content"])
+            response = self.configure_ev(request["content"])
         elif str(request["fsm_type"]) == "scale":
             LOG.info("Scale event received: " + str(request["content"]))
-            response = self.scale_event(request["content"])
+            response = self.scale_ev(request["content"])
             
         if response is not None:
             # Generated response for the FLM
@@ -122,7 +133,7 @@ class faceFSM(sonSMbase):
         
         LOG.info("Request received for other type of FSM, ignoring...")
     
-    def start(self, content):
+    def start_ev(self, content):
         LOG.info("Performing life cycle start event with content = %s", str(content.keys()))
         
         vnfr = content["vnfr"]
@@ -153,7 +164,7 @@ class faceFSM(sonSMbase):
         
         return response
     
-    def stop(self, content):
+    def stop_ev(self, content):
         LOG.info("Performing life cycle stop event with content = %s", str(content.keys()))
         
         vnfr = content["vnfr"]
@@ -184,7 +195,7 @@ class faceFSM(sonSMbase):
         
         return response
     
-    def configure(self, content):
+    def configure_ev(self, content):
         LOG.info("Configuration event with content = %s", str(content.keys()))
         
         vnfr = content["vnfr"]
@@ -201,11 +212,12 @@ class faceFSM(sonSMbase):
                 LOG.info("management ip: " + str(squid_ip))
                 
         if squid_ip is not None:
-            plbk = ''
+            plbk = '../ansible/site.yml'
             if option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
                 self.ssh_execution(request["fsm_type"], squid_ip)
+
         else:
             LOG.info("No management connection point in vnfr")
             
@@ -215,7 +227,7 @@ class faceFSM(sonSMbase):
         
         return response
     
-    def scale(self, content):
+    def scale_ev(self, content):
         LOG.info("Scale event with content = %s", str(content.keys()))
         
         vnfr = content["vnfr"]
@@ -237,6 +249,7 @@ class faceFSM(sonSMbase):
                 self.playbook_execution(plbk, squid_ip)
             else:
                 self.ssh_execution(request["fsm_type"], squid_ip)
+
         else:
             LOG.info("No management connection point in vnfr")
         
@@ -249,11 +262,15 @@ class faceFSM(sonSMbase):
     def playbook_execution(self, playbook, host_ip):
         LOG.info("Executing playbook: %s", playbook)
         
-        variable_manager = VariableManager()
         loader = DataLoader()
 
-        inventory = Inventory(loader = loader,
-                              variable_manager = variable_manager)
+        inventory = None
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(host_ip.encode('utf-8'))
+            fp.flush()
+            inventory = InventoryManager(loader=loader, sources=[fp.name])
+
+        variable_manager = VariableManager(loader = loadder, inventory = inventory)
 
         if not os.path.exists(playbook):
             LOG.error('The playbook %s does not exist', playbook)
@@ -294,51 +311,56 @@ class faceFSM(sonSMbase):
         
         if function == "start":
             ssh = paramiko.SSHClient()
-            LOG.info("SSH client started")
+            LOG.info("SSH client start")
 
-            ssh.connect(host_ip, username = username, password = password)
+            ssh.connect(host_ip, username = username, key_filename = keyfile)
             LOG.info("SSH connection established")
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid start')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
+            ssh.close()
         elif function == "stop":
             ssh = paramiko.SSHClient()
-            LOG.info("SSH client started")
+            LOG.info("SSH client stop")
 
-            ssh.connect(host_ip, username = username, password = password)
+            ssh.connect(host_ip, username = username, key_filename = keyfile)
             LOG.info("SSH connection established")
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid stop')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
+            ssh.close()
         elif function == "configure":
             ssh = paramiko.SSHClient()
-            LOG.info("SSH client started")
+            LOG.info("SSH client configure")
 
-            ssh.connect(host_ip, username = username, password = password)
+            ssh.connect(host_ip, username = username, key_filename = keyfile)
             LOG.info("SSH connection established")
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid restart')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
+            ssh.close()
         elif function == "scale":
             ssh = paramiko.SSHClient()
-            LOG.info("SSH client started")
+            LOG.info("SSH client scale")
 
-            ssh.connect(host_ip, username = username, password = password)
+            ssh.connect(host_ip, username = username, key_filename = keyfile)
             LOG.info("SSH connection established")
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid start')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
+            ssh.close()
         else:
             LOG.info("Invalid operation on FSM %s", function)
-
+            return
+        
     
 def main():
     faceFSM()
