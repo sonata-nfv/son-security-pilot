@@ -8,7 +8,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "sonata-psa"
-version: "0.6"
+version: "0.9"
 author: "SONATA Consortium"
 description: >
   "Reconfigurable personal security appliance."
@@ -21,7 +21,7 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.6"
+    vnf_version: "0.7"
   - vnf_id: "vnf_cache"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "cache-vnf"
@@ -29,7 +29,7 @@ network_functions:
   - vnf_id: "vnf_fw"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "fw-vnf"
-    vnf_version: "0.6"
+    vnf_version: "0.8"
 #  - vnf_id: "vnf_ids"
 #    vnf_vendor: "eu.sonata-nfv"
 #    vnf_name: "ids-vnf"
@@ -86,10 +86,15 @@ virtual_links:
     connection_points_reference:
       - "cpinput"
       - "vnf_vpn:cpinput"
-  - id: "vpn-2-fw"
+  - id: "vpn-2-cache"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vnf_vpn:cpoutput"
+      - "vnf_cache:cpinput"
+  - id: "cache-2-fw"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vnf_cache:cpoutput"
       - "vnf_fw:cpinput"
   - id: "fw-2-output"
     connectivity_type: "E-Line"
@@ -115,9 +120,13 @@ forwarding_graphs:
             position: 2
           - connection_point_ref: "vnf_vpn:cpoutput"
             position: 3
-          - connection_point_ref: "vnf_fw:cpinput"
+          - connection_point_ref: "vnf_cache:cpinput"
             position: 4
-          - connection_point_ref: "vnf_fw:cpoutput"
+          - connection_point_ref: "vnf_cache:cpoutput"
             position: 5
-          - connection_point_ref: "cpoutput"
+          - connection_point_ref: "vnf_fw:cpinput"
             position: 6
+          - connection_point_ref: "vnf_fw:cpoutput"
+            position: 7
+          - connection_point_ref: "cpoutput"
+            position: 8

@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+exec 2>/dev/stderr 1>/dev/stdout
+exec /usr/sbin/dnsmasq --no-daemon

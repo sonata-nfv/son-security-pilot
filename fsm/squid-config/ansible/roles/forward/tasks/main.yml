@@ -1,0 +1,65 @@
+- name: empty the all iptables rules
+  iptables:
+    flush: true
+
+- name: masquerade the cache server traffic coming from cpinput to cpoutput
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.network }}/{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.netmask }}"
+    out_interface: cpoutput
+    jump: MASQUERADE
+
+- name: block ads ips
+  shell: |
+    set -e
+    cat /etc/squid/ad_block.txt | sed -r -e '1i*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]' -e 's~(.+)~-A FORWARD -d \1/32 -j REJECT --reject-with icmp-port-unreachable~'  -e '$aCOMMIT' | iptables-restore
+
+- name: forward from cpinput to cpoutput ip
+  iptables:
+    chain: FORWARD
+    in_interface: cpinput
+    # destination: "{{ hostvars[inventory_hostname].ansible_cpoutput.ipv4.address }}"
+    jump: ACCEPT
+
+- name: set default route to cpouput
+  shell: |
+    set -e
+    ip route del default
+    ip route add default dev cpoutput via 10.30.1.2
+    # TODO: pass the gateway ip in a variable
+
+- name: intercept dns queries (tcp)
+  iptables:
+    table: nat
+    chain: PREROUTING
+    in_interface: cpinput
+    protocol: tcp
+    destination_port: 53
+    jump: DNAT
+    to_destination: "{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.address }}"
+
+- name: intercept dns queries (udp)
+  iptables:
+    table: nat
+    chain: PREROUTING
+    in_interface: cpinput
+    protocol: udp
+    destination_port: 53
+    jump: DNAT
+    to_destination: "{{ hostvars[inventory_hostname].ansible_cpinput.ipv4.address }}"
+
+- name: start the dnsmasq server
+  command: echo 'Notifying dnsmasq for a restart'
+  notify: restart dnsmasq
+
+# iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+
+#cat /etc/squid/ad_block.txt | sed -r 's~(.+)~-A FORWARD -d \1/32 -j REJECT --reject-with icmp-port-unreachable~' | iptables-restore --table=filter
+
+
+#cat /etc/squid/ad_block.txt | sed -r -e '1i*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]' -e 's~(.+)~-A FORWARD -d \1/32 -j REJECT --reject-with icmp-port-unreachable~' | more
+
+
+# cat /etc/squid/ad_block.txt | sed -r -e '1i*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]' -e 's~(.+)~-A FORWARD -d \1/32 -j REJECT --reject-with icmp-port-unreachable~'  -e '$aCOMMIT' | iptables-restore 

@@ -30,6 +30,14 @@ import time
 import logging
 import yaml
 import paramiko
+import os
+import sys
+import tempfile
+from collections import namedtuple
+from ansible.parsing.dataloader import DataLoader
+from ansible.vars.manager import VariableManager
+from ansible.inventory.manager import InventoryManager
+from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
 
 LOG = logging.getLogger(__name__)
@@ -37,6 +45,12 @@ LOG.setLevel(logging.DEBUG)
 
 
 class CssFSM(sonSMbase):
+
+    _listening_topic_root = ('generic', 'fsm')
+
+    @staticmethod
+    def get_listening_topic_name():
+        return '.'.join(CssFSM._listening_topic_root)
 
     def __init__(self):
 
@@ -63,7 +77,10 @@ class CssFSM(sonSMbase):
         self.specific_manager_name = 'css'
         self.id_number = '1'
         self.version = 'v0.1'
+        self.topic = ''
         self.description = "An FSM that subscribes to start, stop and configuration topic"
+        self.is_running_in_emulator = 'SON_EMULATOR' in os.environ
+        LOG.debug('Running in the emulator is %s', self.is_running_in_emulator)
 
         super(self.__class__, self).__init__(specific_manager_type=self.specific_manager_type,
                                              service_name=self.service_name,
@@ -86,15 +103,17 @@ class CssFSM(sonSMbase):
                               message=yaml.dump(message))
 
         # Subscribing to the topics that the fsm needs to listen on
-        topic = "generic.fsm." + str(self.sfuuid)
-        self.manoconn.subscribe(self.message_received, topic)
-        LOG.info("Subscribed to " + topic + " topic.")
+#        topic = CssFSM.get_listening_topic_name()
+        self.topic = 'generic.fsm.' + self.sfuuid
+        self.manoconn.subscribe(self.message_received, self.topic)
+        LOG.info("Subscribed to " + self.topic + " topic.")
 
     def message_received(self, ch, method, props, payload):
         """
         This method handles received messages
         """
 
+        LOG.debug('<-- message_received app_id=%s', props.app_id)
         # Decode the content of the message
         request = yaml.load(payload)
 
@@ -102,6 +121,7 @@ class CssFSM(sonSMbase):
         if "fsm_type" not in request.keys():
             LOG.info("Received a non-request message, ignoring...")
             return
+        LOG.info('Handling message with fsm_type=%s', request["fsm_type"])
 
         # Create the response
         response = None
@@ -129,9 +149,9 @@ class CssFSM(sonSMbase):
         if response is not None:
             # Generated response for the FLM
             LOG.info("Response to request generated:" + str(response))
-            topic = "generic.fsm." + str(self.sfuuid)
+            # topic = CssFSM.get_listening_topic_name()
             corr_id = props.correlation_id
-            self.manoconn.notify(topic,
+            self.manoconn.notify(self.topic,
                                  yaml.dump(response),
                                  correlation_id=corr_id)
             return
@@ -217,9 +237,11 @@ class CssFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
+        result = self.vpn_configure(vnfrs[0], vnfrs[1])  # TODO: the order of vnfrs is random
+
         # Create a response for the FLM
         response = {}
-        response['status'] = 'COMPLETED'
+        response['status'] = 'COMPLETED' if result else 'ERROR'
 
         # TODO: complete the response
 
@@ -242,12 +264,100 @@ class CssFSM(sonSMbase):
 
         return response
 
+    def vpn_configure(self, vnfr, vnfr_fw):
 
-def main():
+        LOG.info('Start retrieving the IP address ...')
+
+        vdu = vnfr['virtual_deployment_units'][0]
+        cps = vdu['vnfc_instance'][0]['connection_points']
+
+        mgmt_ip = None
+        for cp in cps:
+            if 'netmask' not in cp['type'] and 'address' in cp['type']:
+                mgmt_ip = cp['type']['address']
+                LOG.info("management ip: " + str(mgmt_ip))
+        if not mgmt_ip:
+            LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
+            return False
+
+        cpinput_ip = None
+        if len(cps) >= 1 and 'type' in cps[1] and 'address' in cps[1]['type']:
+            cpinput_ip = cps[1]['type']['address']
+        if not cpinput_ip:
+            LOG.error("Couldn't obtain cpinput IP address from VNFR")
+            return False
+
+        fw_cps = vnfr_fw['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
+        fw_cpinput_ip = None
+        if len(fw_cps) >= 1 and 'type' in fw_cps[1] and 'address' in fw_cps[1]['type']:
+            fw_cpinput_ip = fw_cps[1]['type']['address']
+        if not fw_cpinput_ip:
+            LOG.error("Couldn't obtain firewall cpinput IP address from VNFR")
+            return False
+
+        LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; fw_cpinput_ip:'{2}'".format(mgmt_ip, cpinput_ip, fw_cpinput_ip))
+
+        # configure vm using ansible playbook
+        loader = DataLoader()
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(b'[vpnserver]\n')
+            if self.is_running_in_emulator:
+                fp.write(b'mn.vnf_vpn')
+            else:
+                fp.write(mgmt_ip.encode('utf-8'))
+            fp.flush()
+            inventory = InventoryManager(loader=loader, sources=[fp.name])
+        variable_manager = VariableManager(loader=loader, inventory=inventory)
+
+        playbook_path = os.path.abspath('./ansible/site.yml')
+        LOG.debug('Targeting the ansible playbook: %s', playbook_path)
+        if not os.path.exists(playbook_path):
+            LOG.error('The playbook does not exist')
+            return False
+
+        Options = namedtuple('Options',
+                             ['listtags', 'listtasks', 'listhosts',
+                              'syntax', 'connection', 'module_path',
+                              'forks', 'remote_user', 'private_key_file',
+                              'ssh_common_args', 'ssh_extra_args',
+                              'sftp_extra_args', 'scp_extra_args',
+                              'become', 'become_method', 'become_user',
+                              'verbosity', 'check', 'diff'])
+        options = Options(listtags=False, listtasks=False, listhosts=False,
+                          syntax=False, connection='ssh', module_path=None,
+                          forks=100, remote_user='slotlocker',
+                          private_key_file=None, ssh_common_args=None,
+                          ssh_extra_args=None, sftp_extra_args=None,
+                          scp_extra_args=None, become=True,
+                          become_method=None, become_user='root',
+                          verbosity=None, check=False, diff=True)
+        if self.is_running_in_emulator:
+            options = options._replace(connection='docker', become=False)
+
+        variable_manager.extra_vars = {'LOCAL_IP_ADDRESS': cpinput_ip,
+                                       'SON_EMULATOR': self.is_running_in_emulator }
+
+        passwords = {}
+
+        pbex = PlaybookExecutor(playbooks=[playbook_path],
+                                inventory=inventory,
+                                variable_manager=variable_manager,
+                                loader=loader, options=options,
+                                passwords=passwords)
+
+        results = pbex.run()
+        LOG.debug('Results from ansible = %s, %s', results, type(results))
+        return results == 0
+
+
+def main(working_dir=None):
+    if working_dir:
+        os.chdir(working_dir)
     LOG.info('Welcome to the main in %s', __name__)
     CssFSM()
     while True:
         time.sleep(10)
+
 
 if __name__ == '__main__':
     main()
