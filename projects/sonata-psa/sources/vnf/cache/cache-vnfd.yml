@@ -83,3 +83,21 @@ connection_points:
     interface: "ipv4"
     type: "internal"
 
+##
+## Specific operations on the FSM
+##
+##
+
+function_specific_managers:
+  - id: "sonfsmservice1function1css1"
+    description: "FSM to manage cache VNF"
+    image: "sonatanfv/fsm-css"
+    options:
+      - key: "type"
+        value: "start"
+      - key: "type"
+        value: "stop"
+      - key: "type"
+        value: "configure"
+      - key: "type"
+        value: "scale"
