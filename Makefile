@@ -31,6 +31,10 @@ docker-image-cache:
 package:
 	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa
 	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa
+	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-vpn-fsm
+	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-vpn-fsm
+	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-vpn-tor
+	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-vpn-tor
 
 package-emu: docker-images gen_emu
 	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-gen-emu
