@@ -17,7 +17,7 @@ RUN apt-get clean \
     && apt-get install -y git build-essential libffi-dev libssl-dev
 
 RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git
-RUN git clone --recursive -b vpsa-install https://github.com/arocha7/son-security-pilot.git
+RUN git clone --recursive https://github.com/miguelmesquita/son-security-pilot.git
 
 WORKDIR /son-sm/son-mano-framework/son-mano-base
 RUN python setup.py install
