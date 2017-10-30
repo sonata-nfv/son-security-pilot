@@ -22,7 +22,7 @@
     vnfc_instance:
     - connection_points:
       - id: vdu01:eth0
-        type: {address: 172.31.6.117}
+        type: {address: 192.168.112.137}
       - id: vdu01:eth1
         type: {address: 192.0.0.10, netmask: 255.255.255.248}
       - id: vdu01:eth2

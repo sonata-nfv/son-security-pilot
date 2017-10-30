@@ -17,7 +17,7 @@ RUN apt-get clean \
     && apt-get install -y git build-essential libffi-dev libssl-dev
 
 RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git
-RUN git clone --recursive -b vpsa-install https://github.com/arocha7/son-security-pilot.git
+RUN git clone --recursive https://github.com/miguelmesquita/son-security-pilot.git
 
 WORKDIR /son-sm/son-mano-framework/son-mano-base
 RUN python setup.py install
@@ -26,17 +26,19 @@ WORKDIR /son-sm/son-sm-template
 RUN python setup.py install
 
 WORKDIR /son-security-pilot/install/roles/docker-squid/files
-COPY squid.conf /etc/squid3/squid.conf
+COPY ansible/roles/squid/files /etc/squid3
 
-ADD squid-config /squid-config
+#CMD mkdir /squid-config
+ADD . /squid-config
 
 WORKDIR /squid-config
 RUN python setup.py develop
 
-#COPY deploy/vcdn/roles/files/entrypoint.sh /sbin/entrypoint.sh
+COPY ansible/roles/squid/files/entrypoint.sh /sbin
 RUN chmod 755 /sbin/entrypoint.sh
 
 EXPOSE 3128/tcp
 VOLUME ["${SQUID_CACHE_DIR}"]
 
-CMD ["/sbin/entrypoint.sh"]
+#CMD ["/sbin/entrypoint.sh"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]

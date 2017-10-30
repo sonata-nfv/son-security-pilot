@@ -3,11 +3,11 @@
 ## Some general information regarding this
 ## VNF descriptor.
 ##
-descriptor_version: "vnfd-schema-02"
+descriptor_version: "1.0"
 vendor: "eu.sonata-nfv"
 name: "cache-vnf"
 version: "0.1"
-author: "Michael Bredel, NEC, michael.bredel@neclab.eu"
+author: "Miguel Mesquita, AlticeLabs, mesquita@alticelabs.com"
 description: "The Squid HTTP proxy VNF for the PSA pilot"
 
 ##
@@ -15,7 +15,7 @@ description: "The Squid HTTP proxy VNF for the PSA pilot"
 ##
 virtual_deployment_units:
   - id: "1"
-    vm_image: "http://<url-to-image-server>sonata-squid.qcow2"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/squid-vnf/squid-3.5.12-img.qcow2"
     vm_image_format: "qcow2"
     resource_requirements:
       cpu:
@@ -82,3 +82,22 @@ connection_points:
   - id: "cpoutput"
     interface: "ipv4"
     type: "internal"
+
+##
+## Specific operations on the FSM
+##
+##
+
+function_specific_managers:
+  - id: "sonfsmservice1function1css1"
+    description: "FSM to manage cache VNF"
+    image: "sonatanfv/fsm-css"
+    options:
+      - key: "type"
+        value: "start"
+      - key: "type"
+        value: "stop"
+      - key: "type"
+        value: "configure"
+      - key: "type"
+        value: "scale"

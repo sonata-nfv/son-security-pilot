@@ -4,7 +4,7 @@ from sonfsmvprxsquidconfiguration1 import sonfsmvprxsquidconfiguration1
 
 
 def main():
-    sonfsmvprxsquidconfiguration1.main()
+    faceFSM.main()
 
 if __name__ == '__main__':
     main()
