@@ -49,11 +49,14 @@ RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git \
 
 COPY firewall-config/ /firewall-config
 COPY vpn-config/ /vpn-config
+COPY squid-config/ /cache-config
 
 RUN cd /firewall-config \
     && python setup.py develop \
     && cd /vpn-config \
-    && python setup.py develop	
+    && python setup.py develop \
+    && cd /cache-config \
+    && python setup.py develop
 
 CMD ["/bin/bash"]
 

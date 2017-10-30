@@ -34,6 +34,7 @@ import fake_smr
 from sonmanobase import messaging
 import vpn_css.vpn_css
 import firewall.firewall
+import sonfsmvprxsquidconfiguration1.sonfsmvprxsquidconfiguration1
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -58,6 +59,7 @@ class testConfFSM(unittest.TestCase):
         self.con_proc = Process(target=vpn_css.vpn_css.main, kwargs={'working_dir': os.path.realpath('../vpn-config')})
         os.chdir('../firewall-config')
         self.fw_proc = Process(target= firewall.firewall.main, kwargs={'working_dir': os.path.realpath('../firewall-config')})
+        self.cache_proc = Process(target=sonfsmvprxsquidconfiguration1.sonfsmvprxsquidconfiguration1.main, kwargs={'working_dir': os.path.realpath('../cache-config')})
         os.chdir(current_dir)
 
         self.slm_proc.daemon = True
@@ -89,6 +91,10 @@ class testConfFSM(unittest.TestCase):
         if self.fw_proc and self.fw_proc.is_alive():
             self.fw_proc.terminate()
         del self.fw_proc
+
+        if self.cache_proc and self.cache_proc.is_alive():
+            self.cache_proc.terminate()
+        del self.cache_proc
 
         try:
             self.manoconn.stop_connection()
@@ -163,7 +169,7 @@ class testConfFSM(unittest.TestCase):
 
                 global _register_count
                 _register_count += 1
-                if _register_count >= 2:
+                if _register_count >= 3:
                     self.reg_eventFinished()
 
         def on_ip_receive(ch, method, properties, message):
@@ -175,12 +181,12 @@ class testConfFSM(unittest.TestCase):
             if properties.app_id == 'fake-flm':
                 if 'nsr' in payload['content']:
                     self.res_eventFinished()
-            elif properties.app_id in ['sonfsmservice1function1css1', 'sonfsmpsa-servicefirewall-vnffirewall-config1']:
+            elif properties.app_id in ['sonfsmservice1function1css1', 'sonfsmpsa-servicefirewall-vnffirewall-config1', 'sonfsmpsa-servicecache-vnfcache-config1']:
                 if 'status' in payload:
                     self.assertTrue(payload['status'] == 'COMPLETED')
                     global _status_count
                     _status_count += 1
-                    if _status_count >= 2:
+                    if _status_count >= 3:
                         self.res_eventFinished()
             else:
                 self.assertEqual(True, False, msg=('Unknown sender: ' + properties.app_id))
@@ -195,6 +201,7 @@ class testConfFSM(unittest.TestCase):
 
         self.fw_proc.start()
         self.con_proc.start()
+        self.cache_proc.start()
         self.waitForRegEvent(timeout=5, msg="Registration request not received.")
 
         self.manoconn.subscribe(on_ip_receive, vpn_css.vpn_css.CssFSM.get_listening_topic_name() + '.#')

@@ -1,4 +1,5 @@
 *
 !firewall-config
 !vpn-config
+!squid-config
 **/__pycache__
