@@ -1,4 +1,3 @@
----
 ##
 ## Some general information regarding this
 ## VNF descriptor.
@@ -91,7 +90,7 @@ connection_points:
 function_specific_managers:
   - id: "sonfsmservice1function1css1"
     description: "FSM to manage cache VNF"
-    image: "sonatanfv/fsm-css"
+    image: "sonatanfv/psa-vprx-fsm-css"
     options:
       - key: "type"
         value: "start"

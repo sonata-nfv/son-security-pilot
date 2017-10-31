@@ -1,0 +1,8 @@
+descriptor_extension: yml
+package:
+  description: SONATA PSA
+  maintainer: Luis Conceicao, UBIWHERE, lconceicao@ubiwhere.com
+  name: "sonata-vprx-fsm-ccs"
+  vendor: "eu.sonata-nfv"
+  version: "0.1"
+version: '0.1'

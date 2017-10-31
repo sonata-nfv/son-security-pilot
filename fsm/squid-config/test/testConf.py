@@ -12,16 +12,16 @@ import time
 import sys
 
 from multiprocessing import Process
-from vnfrsender import fakeflm
+from fakeFLM import fakeflm
 from fakeSMR import fakesmr
 from sonmanobase import messaging
-from configuration.configuration import ConfigurationFSM
+from sonfsmvprxsquidconfiguration1.sonfsm_face import faceFSM
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger('amqp-storm').setLevel(logging.INFO)
 LOG = logging.getLogger("son-mano-plugins:sm_template_test")
 logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
-LOG.setLevel(logging.INFO)
+LOG.setLevel(logging.DEBUG)
 
 
 
@@ -32,7 +32,7 @@ class testConf(unittest.TestCase):
 
         self.slm_proc = Process(target= fakeflm)
         self.smr_proc = Process(target= fakesmr)
-        self.con_proc = Process(target= ConfigurationFSM)
+        self.con_proc = Process(target= faceFSM)
 
         self.slm_proc.daemon = True
         self.smr_proc.daemon = True
@@ -83,7 +83,7 @@ class testConf(unittest.TestCase):
 
 
         def on_register_receive(ch, method, properties, message):
-            print(properties.app_id)
+            LOG.debug('on_register_receive with id=%s, message=%s', properties.app_id, message)
 
             if properties.app_id != 'fake-smr':
                 msg = yaml.load(message)
@@ -134,11 +134,14 @@ class testConf(unittest.TestCase):
 
 
         def on_ip_receive(ch, method, properties, message):
+            LOG.info('on_ip_receive message=%s', message)
+            LOG.info('app_id = %s', properties.app_id)
 
-            if properties.app_id == 'sonfsmservice1firewallconfiguration1':
+            if properties.app_id == 'sonfsmvprxsquidconfiguration1':
 
                 payload = yaml.load(message)
 
+                LOG.info('IP = %s', payload['IP'])
                 self.assertTrue(isinstance(payload, dict), msg='message is not a dictionary')
 
                 if isinstance(payload['IP'], str):
@@ -148,13 +151,17 @@ class testConf(unittest.TestCase):
             self.res_eventFinished()
 
         self.smr_proc.start()
-        #time.sleep(4)
+        time.sleep(4)
 
         self.manoconn.subscribe(on_register_receive, 'specific.manager.registry.ssm.registration')
 
         self.con_proc.start()
+
         #time.sleep(4)
         self.waitForRegEvent(timeout=5, msg="Registration request not received.")
+        LOG.info("aqui3")
+        self.con_proc.on_registration_ok()
+        LOG.info("aqui4")
 
         self.manoconn.subscribe(on_ip_receive, 'son.configuration')
         #time.sleep(4)
