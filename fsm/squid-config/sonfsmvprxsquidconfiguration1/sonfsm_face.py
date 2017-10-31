@@ -74,6 +74,7 @@ class faceFSM(sonSMbase):
         self.id_number = '1'
         self.version = 'v0.1'
         self.description = 'FSM that implements the subscription of the start, stop, configuration topics'
+
                 
         super(self.__class__, self).__init__(specific_manager_type = self.specific_manager_type,
                                              service_name = self.service_name,
