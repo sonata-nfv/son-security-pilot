@@ -54,6 +54,7 @@ class sonfsmvprxsquidconfiguration1(sonSMbase):
         :param description: description
         """
 
+        LOG.debug('Initialization of sonfsmvprxsquidconfiguration1 from %s', __file__)
         self.specific_manager_type = 'fsm'
         self.service_name = 'vprx'
         self.function_name = 'squid'
@@ -81,8 +82,10 @@ class sonfsmvprxsquidconfiguration1(sonSMbase):
                                   {'name': self.specific_manager_id, 'status': 'Registration is done, '
                                                               'initialising the configuration...'}))
 
-        # subscribes to related topic (could be any other topic)
-        self.manoconn.subscribe(self.on_configuration, topic=self.amqp_topic)
+        topic = "generic.fsm." + str(self.sfuuid)
+        #self.manoconn.subscribe(self.on_configuration, topic=self.amqp_topic)
+        self.manoconn.subscribe(self.message_received, topic)
+        LOG.info("Subscribed to " + topic + " topic.")
 
     def on_configuration(self, ch, method, props, response):
 
