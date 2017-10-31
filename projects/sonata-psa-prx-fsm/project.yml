@@ -3,6 +3,6 @@ package:
   description: Project for the development of PRX + fsm service
   maintainer: Felipe Vicens, ATOS, felipe.vicens@atos.net
   name: sonata-psa-prx-fsm
-  vendor: eu.sonata
+  vendor: eu.sonata-nfv
   version: '0.1'
 version: '0.5'
