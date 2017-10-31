@@ -1,0 +1,88 @@
+##
+## This is a network service descriptor
+## for the SONATA PSA pilot containing the
+## PRX
+## 
+## @author Felipe Vicens, ATOS, felipe.vicens@atos.net
+##
+---
+descriptor_version: "1.0"
+
+vendor: "eu.sonata-nfv.service-descriptor"
+name: "psa-prx-fsm"
+version: "0.1.1"
+author: "Felipe Vicens, ATOS"
+description: >
+  "The network service descriptor for the SONATA PSA pilot,
+   comprising PRX function"
+
+##
+## The various network functions this service
+## is composed of.
+##
+network_functions:
+  - vnf_id: "vnf_prx"
+    vnf_vendor: "eu.sonata-nfv"
+    vnf_name: "prx-vnf"
+    vnf_version: "0.1"
+
+## The NS connection points to the 
+## outside world.
+##
+connection_points:
+  - id: "mgmt"
+    interface: "ipv4"
+    type: "management"
+  - id: "input"
+    interface: "ipv4"
+    type: "external"
+  - id: "output"
+    interface: "ipv4"
+    type: "external"
+
+##
+## The virtual links that interconnect
+## the different connections points.
+##
+virtual_links:
+  - id: "mgmt"
+    connectivity_type: "E-LAN"
+    connection_points_reference:
+      - "vnf_prx:mgmt"
+      - "mgmt"
+  - id: "input-2-prx"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "input"
+      - "vnf_prx:input"
+  - id: "prx-2-output"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vnf_prx:output"
+      - "output"
+
+##
+## The forwarding graphs.
+##
+forwarding_graphs:
+  - fg_id: "fg01"
+    number_of_endpoints: 2
+    number_of_virtual_links: 3
+    constituent_virtual_links: 
+      - "mgmt"
+      - "input-2-prx"
+      - "prx-2-output"
+    constituent_vnfs:
+      - "vnf_prx"
+    network_forwarding_paths:
+      - fp_id: "fg01:fp01"
+        policy: "none"
+        connection_points:
+          - connection_point_ref: "input"
+            position: 1
+          - connection_point_ref: "vnf_prx:input"
+            position: 2
+          - connection_point_ref: "vnf_prx:output"
+            position: 3
+          - connection_point_ref: "output"
+            position: 4
