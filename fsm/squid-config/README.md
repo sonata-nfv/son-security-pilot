@@ -1,1 +1,1 @@
-FSM do Sonata para a VNF Squid
+Sonata's FSM for cache VNF

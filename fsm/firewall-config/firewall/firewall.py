@@ -26,12 +26,11 @@ acknowledge the contributions of their colleagues of the SONATA
 partner consortium (www.sonata-nfv.eu).
 """
 
-import time
 import logging
+import os
+import time
 import yaml
 import paramiko
-import os
-import sys
 import tempfile
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
@@ -44,13 +43,7 @@ LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 
 
-class CssFSM(sonSMbase):
-
-    _listening_topic_root = ('generic', 'fsm')
-
-    @staticmethod
-    def get_listening_topic_name():
-        return '.'.join(CssFSM._listening_topic_root)
+class FirewallFSM(sonSMbase):
 
     def __init__(self):
 
@@ -70,18 +63,16 @@ class CssFSM(sonSMbase):
         :param description: description
         """
 
-        LOG.debug('Initialize CssFSM from %s', __file__)
         self.specific_manager_type = 'fsm'
-        self.service_name = 'service1'
-        self.function_name = 'function1'
-        self.specific_manager_name = 'css'
+        self.service_name = 'psa-service'
+        self.function_name = 'firewall-vnf'
+        self.specific_manager_name = 'firewall-config'
         self.id_number = '1'
         self.version = 'v0.1'
-        self.topic = ''
-        self.description = "An FSM that subscribes to start, stop and configuration topic"
+        self.description = "An FSM that subscribes to start, stop and configuration topic for Firewall VNF"
+
         self.is_running_in_emulator = 'SON_EMULATOR' in os.environ
         LOG.debug('Running in the emulator is %s', self.is_running_in_emulator)
-
         super(self.__class__, self).__init__(specific_manager_type=self.specific_manager_type,
                                              service_name=self.service_name,
                                              function_name=self.function_name,
@@ -89,6 +80,8 @@ class CssFSM(sonSMbase):
                                              id_number=self.id_number,
                                              version=self.version,
                                              description=self.description)
+
+
 
     def on_registration_ok(self):
 
@@ -103,10 +96,9 @@ class CssFSM(sonSMbase):
                               message=yaml.dump(message))
 
         # Subscribing to the topics that the fsm needs to listen on
-#        topic = CssFSM.get_listening_topic_name()
-        self.topic = 'generic.fsm.' + self.sfuuid
-        self.manoconn.subscribe(self.message_received, self.topic)
-        LOG.info("Subscribed to " + self.topic + " topic.")
+        topic = "generic.fsm." + str(self.sfuuid)
+        self.manoconn.subscribe(self.message_received, topic)
+        LOG.info("Subscribed to " + topic + " topic.")
 
     def message_received(self, ch, method, props, payload):
         """
@@ -149,9 +141,9 @@ class CssFSM(sonSMbase):
         if response is not None:
             # Generated response for the FLM
             LOG.info("Response to request generated:" + str(response))
-            # topic = CssFSM.get_listening_topic_name()
+            topic = "generic.fsm." + str(self.sfuuid)
             corr_id = props.correlation_id
-            self.manoconn.notify(self.topic,
+            self.manoconn.notify(topic,
                                  yaml.dump(response),
                                  correlation_id=corr_id)
             return
@@ -169,34 +161,33 @@ class CssFSM(sonSMbase):
         # the required data
 
         vnfr = content["vnfr"]
-        vnfd = content["vnfd"]
-        LOG.info("VNFR: " + yaml.dump(vnfr))
+        mgmt_ip = None
+        vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
+                       'pfSense.raw'
 
-        vdu = vnfr['virtual_deployment_units'][0]
-        cps = vdu['vnfc_instance'][0]['connection_points']
+       
+        if (vnfr['virtual_deployment_units']
+                    [0]['vm_image']) == vm_image:
+             mgmt_ip = (vnfr['virtual_deployment_units']
+                           [0]['vnfc_instance'][0]['connection_points'][0]
+                           ['type']['address'])
 
-        man_ip = None
-        for cp in cps:
-            if cp['type'] == 'management':
-                man_ip = cp['interface']['address']
-                LOG.info("management ip: " + str(man_ip))
+        if not mgmt_ip:
+            LOG.error("Couldn't obtain IP address from VNFR")
+            return
 
-        if man_ip is not None:
-            username = "root"
-            password = "natoar32"
-
-            ssh = paramiko.SSHClient()
-            LOG.info("SSH client started")
-
-            ssh.connect(man_ip, username=username, password=password)
-            LOG.info("SSH connection established")
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('ls')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
-        else:
-            LOG.info("No management connection point in vnfr")
+        #SSH connection to pfsense
+        port = 22
+        username = 'root'
+        password = 'pfsense'
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(
+        paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, username, password)
+        #activate firewall
+        command = "pfctl -e" 
+        (stdin, stdout, stderr) = ssh.exec_command(command)
+        ssh.close()
 
         # Create a response for the FLM
         response = {}
@@ -215,8 +206,34 @@ class CssFSM(sonSMbase):
         # TODO: Add the stop logic. The content is a dictionary that contains
         # the required data
 
-        vnfr = content['vnfr']
+        vnfr = content["vnfr"]
+        mgmt_ip = None
+        vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
+                       'pfSense.raw'
 
+       
+        if (vnfr['virtual_deployment_units']
+                    [0]['vm_image']) == vm_image:
+             mgmt_ip = (vnfr['virtual_deployment_units']
+                           [0]['vnfc_instance'][0]['connection_points'][0]
+                           ['type']['address'])
+
+        if not mgmt_ip:
+            LOG.error("Couldn't obtain IP address from VNFR")
+            return
+
+        #SSH connection to pfsense
+        port = 22
+        username = 'root'
+        password = 'pfsense'
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(
+            paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, username, password)
+        #desactivate firewall
+        command = "pfctl -d" 
+        (stdin, stdout, stderr) = ssh.exec_command(command)
+        ssh.close()
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
@@ -237,11 +254,43 @@ class CssFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
-        result = self.vpn_configure(vnfrs[0], vnfrs[1])  # TODO: the order of vnfrs is random
+        if self.is_running_in_emulator:
+            result = self.fw_configure(vnfrs[1])  # TODO: the order can be random
+            response = {'status': 'COMPLETED' if result else 'ERROR' }
+            return response
+
+        mgmt_ip = None
+        vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
+                       'pfsense.raw'
+
+        for x in range(len(vnfrs)):
+                if (vnfrs[x]['virtual_deployment_units']
+                        [0]['vm_image']) == vm_image:
+                    mgmt_ip = (vnfrs[x]['virtual_deployment_units']
+                               [0]['vnfc_instance'][0]['connection_points'][0]
+                               ['type']['address'])
+
+        if not mgmt_ip:
+            LOG.error("Couldn't obtain IP address from VNFR")
+            return
+
+        #SSH connection to pfsense
+        port = 22
+        username = 'root'
+        password = 'pfsense'
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(
+            paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, username, password)
+
+        #Activate firewall
+        command = "pfctl -e" 
+        (stdin, stdout, stderr) = ssh.exec_command(command)
+        ssh.close()
 
         # Create a response for the FLM
         response = {}
-        response['status'] = 'COMPLETED' if result else 'ERROR'
+        response['status'] = 'COMPLETED'
 
         # TODO: complete the response
 
@@ -264,57 +313,27 @@ class CssFSM(sonSMbase):
 
         return response
 
-    def vpn_configure(self, vnfr, vnfr_fw):
-
-        LOG.info('Start retrieving the IP address ...')
-
-        vdu = vnfr['virtual_deployment_units'][0]
-        cps = vdu['vnfc_instance'][0]['connection_points']
-
-        mgmt_ip = None
-        for cp in cps:
-            if 'netmask' not in cp['type'] and 'address' in cp['type']:
-                mgmt_ip = cp['type']['address']
-                LOG.info("management ip: " + str(mgmt_ip))
-        if not mgmt_ip:
-            LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
-            return False
-
-        cpinput_ip = None
-        if len(cps) >= 1 and 'type' in cps[1] and 'address' in cps[1]['type']:
-            cpinput_ip = cps[1]['type']['address']
-        if not cpinput_ip:
-            LOG.error("Couldn't obtain cpinput IP address from VNFR")
-            return False
-
-        fw_cps = vnfr_fw['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
-        fw_cpinput_ip = None
-        if len(fw_cps) >= 1 and 'type' in fw_cps[1] and 'address' in fw_cps[1]['type']:
-            fw_cpinput_ip = fw_cps[1]['type']['address']
-        if not fw_cpinput_ip:
-            LOG.error("Couldn't obtain firewall cpinput IP address from VNFR")
-            return False
-
-        LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; fw_cpinput_ip:'{2}'".format(mgmt_ip, cpinput_ip, fw_cpinput_ip))
+    def fw_configure(self, fw_vnfr):
+        fw_cpinput_ip = '10.30.0.2'
+        fw_cpinput_netmask = '255.255.255.252'
+        fw_cpinput_network = '10.30.0.2/30'
 
         # configure vm using ansible playbook
         loader = DataLoader()
         with tempfile.NamedTemporaryFile() as fp:
-            fp.write(b'[vpnserver]\n')
+            fp.write(b'[firewallserver]\n')
             if self.is_running_in_emulator:
-                fp.write(b'mn.vnf_vpn')
+                fp.write(b'mn.vnf_fw')
             else:
                 fp.write(mgmt_ip.encode('utf-8'))
             fp.flush()
             inventory = InventoryManager(loader=loader, sources=[fp.name])
         variable_manager = VariableManager(loader=loader, inventory=inventory)
-
         playbook_path = os.path.abspath('./ansible/site.yml')
         LOG.debug('Targeting the ansible playbook: %s', playbook_path)
         if not os.path.exists(playbook_path):
             LOG.error('The playbook does not exist')
             return False
-
         Options = namedtuple('Options',
                              ['listtags', 'listtasks', 'listhosts',
                               'syntax', 'connection', 'module_path',
@@ -331,30 +350,23 @@ class CssFSM(sonSMbase):
                           scp_extra_args=None, become=True,
                           become_method=None, become_user='root',
                           verbosity=None, check=False, diff=True)
-        if self.is_running_in_emulator:
-            options = options._replace(connection='docker', become=False)
-
-        variable_manager.extra_vars = {'LOCAL_IP_ADDRESS': cpinput_ip,
+        options = options._replace(connection='docker', become=False)
+        variable_manager.extra_vars = {'FW_CPINPUT_NETWORK': fw_cpinput_network,
                                        'SON_EMULATOR': self.is_running_in_emulator }
-
-        passwords = {}
-
         pbex = PlaybookExecutor(playbooks=[playbook_path],
                                 inventory=inventory,
                                 variable_manager=variable_manager,
                                 loader=loader, options=options,
-                                passwords=passwords)
-
+                                passwords={})
         results = pbex.run()
-        LOG.debug('Results from ansible = %s, %s', results, type(results))
-        return results == 0
+        return True
 
 
 def main(working_dir=None):
     if working_dir:
         os.chdir(working_dir)
     LOG.info('Welcome to the main in %s', __name__)
-    CssFSM()
+    FirewallFSM()
     while True:
         time.sleep(10)
 

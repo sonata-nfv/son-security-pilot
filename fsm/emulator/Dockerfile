@@ -22,46 +22,41 @@
 FROM python:3.5-slim
 MAINTAINER SONATA
 
-# configrurations
-ENV mongo_host mongo
-ENV mongo_port 27017
 ENV broker_host amqp://guest:guest@broker:5672/%2F
 ENV broker_exchange son-kernel
 
 # install package dependencies
 RUN apt-get clean \
     && apt-get update \
-    && apt-get install -y wget git build-essential libffi-dev libssl-dev \
+    # build-essential libffi-dev  
+    && apt-get install -y wget git libssl-dev \
     && wget https://download.docker.com/linux/static/stable/x86_64/docker-17.06.2-ce.tgz \
     && tar -xzf docker-*-ce.tgz \
     && cp docker/docker /usr/bin/ \
     && rm -rf docker-*-ce.tgz docker \
+    && pip install --no-cache-dir paramiko ansible \
 #    && pip install --no-cache-dir 'ansible<=2.3.2.0' docker \
 #    && pip install paramiko \
 #    && sed -i 's/def __init__(self, verbosity=0)/def __init__(self, verbosity=4)/' '/usr/local/lib/python3.5/site-packages/ansible/utils/display.py' \
     && apt-get clean
 
-# install paramiko
-RUN pip install paramiko
+# clone son-sm repo to install dependencies, then install fsm dependencies (sonsmbase and sonmanobase)
+RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git \
+    && cd /son-sm/son-mano-framework/son-mano-base \
+    && python setup.py install \
+    && cd /son-sm/son-sm-template \
+    && python setup.py install
 
-# install ansible
-RUN pip install ansible
+COPY firewall-config/ /firewall-config
+COPY vpn-config/ /vpn-config
+COPY squid-config/ /cache-config
 
-# clone son-sm repo to install dependencies
-RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git
+RUN cd /firewall-config \
+    && python setup.py develop \
+    && cd /vpn-config \
+    && python setup.py develop \
+    && cd /cache-config \
+    && python setup.py develop
 
-# install fsm dependencies (sonsmbase and sonmanobase)
-WORKDIR /son-sm/son-mano-framework/son-mano-base
-RUN python setup.py install
-
-WORKDIR /son-sm/son-sm-template
-RUN python setup.py install
-
-# run fsm
-COPY . /vpn-config
-
-WORKDIR /vpn-config
-RUN python setup.py develop
-
-CMD ["vpn-css"]
+CMD ["/bin/bash"]
 
