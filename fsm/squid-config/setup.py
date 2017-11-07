@@ -39,6 +39,6 @@ setup(
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
-        'console_scripts': ['fsm-squid=sonfsmvprxsquidconfiguration1.sonfsm_face.__main__:main'],
+        'console_scripts': ['fsm-squid=sonfsm_face.__main__:main'],
     },
 )

@@ -9,6 +9,7 @@ ENV broker_exchange son-kernel
 
 RUN apt-get clean \
     && apt-get update \
+    && apt-get install -y wget \
     && apt-get install -y git build-essential libffi-dev libssl-dev \
     && wget https://download.docker.com/linux/static/stable/x86_64/docker-17.06.2-ce.tgz \
     && tar -xzf docker-*-ce.tgz \
@@ -16,8 +17,8 @@ RUN apt-get clean \
     && rm -rf docker-*-ce.tgz docker \
     && apt-get clean
 
-RUN sudo apt-get -y install python3-pip \
-    && sudo apt-get update
+RUN apt-get -y install python3-pip \
+    && apt-get update
 
 RUN pip3 install paramiko
 RUN pip3 install ansible
