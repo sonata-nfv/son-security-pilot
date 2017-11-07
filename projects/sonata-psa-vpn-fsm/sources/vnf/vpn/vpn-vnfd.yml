@@ -15,6 +15,7 @@ virtual_deployment_units:
   - id: "vdu01"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2"
     vm_image_format: "qcow2"
+    vm_image_md5: "15b0a750-2ebf-4edf-ab0e-dbf4cf077139"
     resource_requirements:
       cpu:
         vcpus: 1
