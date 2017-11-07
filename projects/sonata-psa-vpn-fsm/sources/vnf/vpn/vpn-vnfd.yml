@@ -110,7 +110,7 @@ monitoring_rules:
 function_specific_managers:
   - id: "fsmpsaservicevpn-vnfvpn-config1"
     description: "FSM for the configuration of the VPN"
-    image: "lconceicao/psa-fsm-vpn-config"
+    image: "sonatanfv/psa-vpn-fsm-css"
     options:
       - key: "type"
         value: "start"
