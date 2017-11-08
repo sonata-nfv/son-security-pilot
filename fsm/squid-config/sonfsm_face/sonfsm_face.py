@@ -39,7 +39,7 @@ LOG.setLevel(logging.DEBUG)
 
 class faceFSM(sonSMbase):
 
-    username = 'ubuntu'
+    username = 'sonata'
     #keyfile = '../ansible/roles/squid/files/son-install.pem'
     keyfile = '../ansible/roles/squid/files/sonata.pem'
     option = 1
