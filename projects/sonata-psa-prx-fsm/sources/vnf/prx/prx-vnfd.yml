@@ -108,7 +108,7 @@ monitoring_rules:
 ## Function Specific Managers
 ##
 function_specific_managers:
-  - id: "sonfsmpsaserviceprx-vnfprx-config1"
+  - id: "fsmpsaserviceprx-vnfprx-config1"
     description: "FSM for the configuration of the vPRX"
     image: "sonatanfv/psa-vprx-fsm-css"
     options:
