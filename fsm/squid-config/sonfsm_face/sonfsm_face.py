@@ -75,6 +75,7 @@ class faceFSM(sonSMbase):
         self.id_number = '1'
         self.version = 'v0.1'
         self.description = 'FSM that implements the subscription of the start, stop, configuration topics'
+        self.topic = ''
 
                 
         super(self.__class__, self).__init__(specific_manager_type = self.specific_manager_type,
@@ -93,9 +94,9 @@ class faceFSM(sonSMbase):
                    'status': state}
         self.manoconn.publish(topic = 'specific.manager.registry.ssm.status',
                               message = yaml.dump(message))
-        topic = "generic.fsm." + str(self.sfuuid)
-        self.manoconn.subscribe(self.message_received, topic)
-        LOG.info("Subscribed to " + topic + " topic.")
+        self.topic = "generic.fsm." + str(self.sfuuid)
+        self.manoconn.subscribe(self.message_received, self.topic)
+        LOG.info("Subscribed to " + self.topic + " topic.")
         
     def message_received(self, ch, method, props, payload):
         LOG.debug("Received message in %s", __file__)
@@ -126,9 +127,9 @@ class faceFSM(sonSMbase):
         if response is not None:
             # Generated response for the FLM
             LOG.info("Response to request generated:" + str(response))
-            topic = "generic.fsm." + str(self.sfuuid)
+            #topic = "generic.fsm." + str(self.sfuuid)
             corr_id = props.correlation_id
-            self.manoconn.notify(topic,
+            self.manoconn.notify(self.topic,
                                  yaml.dump(response),
                                  correlation_id = corr_id)
             return
