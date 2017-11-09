@@ -15,6 +15,7 @@ RUN apt-get clean \
     && tar -xzf docker-*-ce.tgz \
     && cp docker/docker /usr/bin/ \
     && rm -rf docker-*-ce.tgz docker \
+    && apt-get install -y python3-amqp python3-amqplib \
     && apt-get clean
 
 RUN apt-get -y install python3-pip \
