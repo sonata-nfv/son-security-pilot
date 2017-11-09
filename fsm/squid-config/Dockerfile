@@ -21,7 +21,6 @@ RUN apt-get update && apt-get -y install python3-pip ssh \
     && apt-get update && pip3 install paramiko && pip3 install ansible \
     && apt-get install -y python3-amqp python3-amqplib
 
-
 #RUN git clone --recursive https://github.com/sonata-nfv/son-sm.git
 #RUN git clone --recursive https://github.com/miguelmesquita/son-security-pilot.git
 
