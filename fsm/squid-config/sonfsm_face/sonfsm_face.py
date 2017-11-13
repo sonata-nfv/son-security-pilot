@@ -42,6 +42,9 @@ class faceFSM(sonSMbase):
     username = 'sonata'
     #keyfile = '../ansible/roles/squid/files/son-install.pem'
     keyfile = '../ansible/roles/squid/files/sonata.pem'
+    password = 'sonata'
+    monitoring_file = 'ansible/roles/squid/files/node.conf'
+    with_monitoring = false;
     option = 1
 
     def __init__(self):
@@ -63,8 +66,8 @@ class faceFSM(sonSMbase):
         :param description: description
         """
     
-        if 'KEYFILE' in os.environ:
-            keyfile = os.environ['KEYFILE'] 
+        #if 'KEYFILE' in os.environ:
+         #   keyfile = os.environ['KEYFILE'] 
 
         self.specific_manager_type = 'fsm'
         #self.service_name = 'psa'
@@ -316,7 +319,7 @@ class faceFSM(sonSMbase):
             ssh = paramiko.SSHClient()
             LOG.info("SSH client start")
 
-            ssh.connect(host_ip, username = username, key_filename = keyfile)
+            ssh.connect(host_ip, username = username, password = password)
             LOG.info("SSH connection established")
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid start')
@@ -324,11 +327,46 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
+
+            if with_monitoring == true:
+                transport = paramiko.Transport((host_ip, 22))
+                LOG.info("SFTP connection established")
+                ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = username, password = password)
+                LOG.info('output from remote: ' + str(ssh_stdout))
+                LOG.info('output from remote: ' + str(ssh_stdin))
+                LOG.info('output from remote: ' + str(ssh_stderr))
+                sftp = paramiko.SFTPClient.from_transport(transport)
+                LOG.info("SFTP connection entering")
+                if 'Monitoring' not in sftp.listdir(path='/opt'):
+                    ssh_stdin, ssh_stdout, ssh_stderr = sftp.mkdir('/opt/Monitoring')
+                    LOG.info('output from remote: ' + str(ssh_stdout))
+                    LOG.info('output from remote: ' + str(ssh_stdin))
+                    LOG.info('output from remote: ' + str(ssh_stderr))
+                localpath = monitoring_file;
+                remotepath = '/opt/Monitoring'
+                ssh_stdin, ssh_stdout, ssh_stderr = sftp.put(localpath, remotepath)
+                LOG.info('output from remote: ' + str(ssh_stdout))
+                LOG.info('output from remote: ' + str(ssh_stdin))
+                LOG.info('output from remote: ' + str(ssh_stderr))
+                sftp.close()
+                transport.close()
+
+                ssh = paramiko.SSHClient()
+                ssh.connect(host_ip, username = username, password = password)
+                LOG.info("SSH connection established")
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart mon-probe.service')
+                LOG.info('output from remote: ' + str(ssh_stdout))
+                LOG.info('output from remote: ' + str(ssh_stdin))
+                LOG.info('output from remote: ' + str(ssh_stderr))
+                ssh.close()
+
+
+
         elif function == "stop":
             ssh = paramiko.SSHClient()
             LOG.info("SSH client stop")
 
-            ssh.connect(host_ip, username = username, key_filename = keyfile)
+            ssh.connect(host_ip, username = username, password = password)
             LOG.info("SSH connection established")
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid stop')
@@ -340,7 +378,7 @@ class faceFSM(sonSMbase):
             ssh = paramiko.SSHClient()
             LOG.info("SSH client configure")
 
-            ssh.connect(host_ip, username = username, key_filename = keyfile)
+            ssh.connect(host_ip, username = username, password = password)
             LOG.info("SSH connection established")
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid restart')
@@ -352,7 +390,7 @@ class faceFSM(sonSMbase):
             ssh = paramiko.SSHClient()
             LOG.info("SSH client scale")
 
-            ssh.connect(host_ip, username = username, key_filename = keyfile)
+            ssh.connect(host_ip, username = username, password = password)
             LOG.info("SSH connection established")
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid start')
