@@ -15,6 +15,7 @@ virtual_deployment_units:
   - id: "vdu01"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2"
     vm_image_format: "qcow2"
+    vm_image_md5: "8716c9072143e4c8d8802d42c8ee6ff5"
     resource_requirements:
       cpu:
         vcpus: 1
@@ -110,7 +111,7 @@ monitoring_rules:
 function_specific_managers:
   - id: "fsmpsaservicevpn-vnfvpn-config1"
     description: "FSM for the configuration of the VPN"
-    image: "lconceicao/psa-fsm-vpn-config"
+    image: "sonatanfv/psa-vpn-fsm-css"
     options:
       - key: "type"
         value: "start"
