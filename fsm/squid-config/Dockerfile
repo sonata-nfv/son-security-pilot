@@ -54,5 +54,6 @@ RUN python setup.py develop
 #COPY ansible/roles/squid/files/entrypoint.sh /sbin
 #RUN chmod 755 /sbin/entrypoint.sh
 
-CMD ["fsm-squid"]
+CMD ["sonfsmvprxsquidconfiguration1"]
+#CMD ["fsm-squid"]
 #ENTRYPOINT ["tail", "-f", "/dev/null"]
