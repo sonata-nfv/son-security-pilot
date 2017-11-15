@@ -27,6 +27,7 @@ import logging
 import tempfile
 import yaml
 import paramiko
+import configparser
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
@@ -43,7 +44,7 @@ class faceFSM(sonSMbase):
     #keyfile = '../ansible/roles/squid/files/son-install.pem'
     keyfile = '../ansible/roles/squid/files/sonata.pem'
     password = 'sonata'
-    monitoring_file = 'ansible/roles/squid/files/node.conf'
+    monitoring_file = '.'
     with_monitoring = False
     option = 1
 
@@ -335,6 +336,8 @@ class faceFSM(sonSMbase):
                 LOG.info('output from remote: ' + str(ssh_stdout))
                 LOG.info('output from remote: ' + str(ssh_stdin))
                 LOG.info('output from remote: ' + str(ssh_stderr))
+
+                self.createConf(host_ip, 4, 'cache-vnf')
                 sftp = paramiko.SFTPClient.from_transport(transport)
                 LOG.info("SFTP connection entering")
                 if 'Monitoring' not in sftp.listdir(path='/opt'):
@@ -402,6 +405,24 @@ class faceFSM(sonSMbase):
             LOG.info("Invalid operation on FSM %s", function)
             return
         
+    def createConf(self, pw_ip, interval, name):
+
+        #config = configparser.RawConfigParser()
+        config = configparser.ConfigParser(interpolation = None)
+        config.add_section('vm_node')
+        config.add_section('Prometheus')
+        config.set('vm_node', 'node_name', name)
+        config.set('vm_node', 'post_freq', interval)
+        config.set('Prometheus', 'server_url', 'http://' + pw_ip + ':9091/metrics')
+    
+    
+        with open('node.conf', 'w') as configfile:    # save
+            config.write(configfile)
+    
+        f = open('node.conf', 'r')
+        LOG.debug('Mon Config-> ' + "\n" + f.read())
+        f.close()
+
     
 def main():
     faceFSM()
