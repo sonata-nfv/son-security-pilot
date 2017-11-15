@@ -44,7 +44,7 @@ class faceFSM(sonSMbase):
     keyfile = '../ansible/roles/squid/files/sonata.pem'
     password = 'sonata'
     monitoring_file = 'ansible/roles/squid/files/node.conf'
-    with_monitoring = False;
+    with_monitoring = False
     option = 1
 
     def __init__(self):
@@ -342,7 +342,7 @@ class faceFSM(sonSMbase):
                     LOG.info('output from remote: ' + str(ssh_stdout))
                     LOG.info('output from remote: ' + str(ssh_stdin))
                     LOG.info('output from remote: ' + str(ssh_stderr))
-                localpath = monitoring_file;
+                localpath = monitoring_file
                 remotepath = '/opt/Monitoring'
                 ssh_stdin, ssh_stdout, ssh_stderr = sftp.put(localpath, remotepath)
                 LOG.info('output from remote: ' + str(ssh_stdout))
