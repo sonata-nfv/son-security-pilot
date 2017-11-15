@@ -44,7 +44,7 @@ class faceFSM(sonSMbase):
     keyfile = '../ansible/roles/squid/files/sonata.pem'
     password = 'sonata'
     monitoring_file = 'ansible/roles/squid/files/node.conf'
-    with_monitoring = false;
+    with_monitoring = False;
     option = 1
 
     def __init__(self):
@@ -328,7 +328,7 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
 
-            if with_monitoring == true:
+            if with_monitoring == True:
                 transport = paramiko.Transport((host_ip, 22))
                 LOG.info("SFTP connection established")
                 ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = username, password = password)
