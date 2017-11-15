@@ -45,7 +45,7 @@ class faceFSM(sonSMbase):
     keyfile = '../ansible/roles/squid/files/sonata.pem'
     password = 'sonata'
     monitoring_file = '.'
-    with_monitoring = False
+    with_monitoring = True
     option = 1
 
     def __init__(self):
