@@ -1,0 +1,8 @@
+descriptor_extension: yml
+package:
+  description: Project for the development of vFW + fsm service
+  maintainer: Felipe Vicens, ATOS, felipe.vicens@atos.net
+  name: sonata-psa-vfw-fsm
+  vendor: sonata
+  version: '0.1'
+version: '0.5'
