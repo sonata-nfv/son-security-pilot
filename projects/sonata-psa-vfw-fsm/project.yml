@@ -3,6 +3,6 @@ package:
   description: Project for the development of vFW + fsm service
   maintainer: Felipe Vicens, ATOS, felipe.vicens@atos.net
   name: sonata-psa-vfw-fsm
-  vendor: sonata
+  vendor: eu.sonata-nfv
   version: '0.1'
 version: '0.5'
