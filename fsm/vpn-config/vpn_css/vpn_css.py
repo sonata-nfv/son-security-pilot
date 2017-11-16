@@ -72,9 +72,9 @@ class CssFSM(sonSMbase):
 
         LOG.debug('Initialize CssFSM from %s', __file__)
         self.specific_manager_type = 'fsm'
-        self.service_name = 'service1'
-        self.function_name = 'function1'
-        self.specific_manager_name = 'css'
+        self.service_name = 'psaservice'
+        self.function_name = 'vpn-vnf'
+        self.specific_manager_name = 'vpn-config'
         self.id_number = '1'
         self.version = 'v0.1'
         self.topic = ''
