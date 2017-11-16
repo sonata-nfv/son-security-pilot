@@ -36,7 +36,7 @@ virtual_deployment_units:
     connection_points:
       - id: "eth0"
         interface: "ipv4"
-        type: "internal"
+        type: "management"
       - id: "eth1"
         interface: "ipv4"
         type: "internal"
@@ -54,10 +54,10 @@ connection_points:
     type: "management"
   - id: "input"
     interface: "ipv4"
-    type: "external"
+    type: "internal"
   - id: "output"
     interface: "ipv4"
-    type: "external"
+    type: "internal"
  
 ##
 ## The virtual links that interconnect
