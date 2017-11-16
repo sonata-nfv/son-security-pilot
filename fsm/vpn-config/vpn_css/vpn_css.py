@@ -39,6 +39,7 @@ from ansible.vars.manager import VariableManager
 from ansible.inventory.manager import InventoryManager
 from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
+from .ssh import Client
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -187,6 +188,18 @@ class CssFSM(sonSMbase):
 
         username = "root"
         password = "sonata"
+        sp_ip = '10.30.0.112'
+        # Configuring the monitoring probe
+        ssh_client = Client(mgmt_ip, 'sonata', 'sonata', LOG)
+        LOG.info('Mon Config: Create new conf file')
+        self.createConf(sp_ip, 4, 'vpn-vnf')
+        ssh_client.sendFile('node.conf')
+        ssh_client.sendCommand('ls /tmp/')
+        ssh_client.sendCommand('sudo mv /tmp/node.conf /opt/Monitoring/node.conf')
+        ssh_client.sendCommand('sudo systemctl restart mon-probe.service')
+        ssh_client.close()
+        LOG.info('Mon Config: Completed')
+
 
         ssh = paramiko.SSHClient()
         LOG.info("SSH client started")
@@ -378,6 +391,24 @@ class CssFSM(sonSMbase):
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
+
+    def createConf(self, pw_ip, interval, name):
+
+        config = configparser.RawConfigParser()
+        config.add_section('vm_node')
+        config.add_section('Prometheus')
+        config.set('vm_node', 'node_name', name)
+        config.set('vm_node', 'post_freq', interval)
+        config.set('Prometheus', 'server_url', 'http://'+pw_ip+':9091/metrics')
+    
+    
+        with open('node.conf', 'w') as configfile:    # save
+            config.write(configfile)
+    
+        f = open('node.conf', 'r')
+        LOG.debug('Mon Config-> '+"\n"+f.read())
+        f.close()
+        
 
         # configure vm using ansible playbook
         # loader = DataLoader()
