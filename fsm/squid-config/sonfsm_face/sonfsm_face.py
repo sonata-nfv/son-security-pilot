@@ -159,7 +159,7 @@ class faceFSM(sonSMbase):
                 
         if squid_ip is not None:
             plbk = ''
-            if option == 0:
+            if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
                 self.ssh_execution(request["fsm_type"], squid_ip)
@@ -190,7 +190,7 @@ class faceFSM(sonSMbase):
                 
         if squid_ip is not None:
             plbk = ''
-            if option:
+            if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
                 self.ssh_execution(request["fsm_type"], squid_ip)
@@ -220,7 +220,7 @@ class faceFSM(sonSMbase):
                 
         if squid_ip is not None:
             plbk = '../ansible/site.yml'
-            if option == 0:
+            if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
                 self.ssh_execution(request["fsm_type"], squid_ip)
@@ -252,7 +252,7 @@ class faceFSM(sonSMbase):
                 
         if squid_ip is not None:
             plbk = ''
-            if option == 0:
+            if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
                 self.ssh_execution(request["fsm_type"], squid_ip)
