@@ -1,7 +1,8 @@
 EXTRA_SONVALIDATE_ARGS:=
 EXTRA_SONPACKAGE_ARGS:=
 
-all: package package-emu
+#all: package package-emu
+all: package
 
 #docker-images: docker-image-squid docker-image-fw docker-image-vpn docker-image-cache
 
@@ -41,9 +42,9 @@ package:
 	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-vfw-fsm
 
 #package-emu: docker-images gen_emu
-package-emu:
-	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-gen-emu
-	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-gen-emu
+#package-emu:
+#	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-gen-emu
+#	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-gen-emu
 
 #gen_emu:
 #	$(MAKE) -C projects gen_emu
