@@ -41,7 +41,7 @@ package:
 	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-vfw-fsm
 
 #package-emu: docker-images gen_emu
-package-emu: gen_emu
+package-emu:
 	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-gen-emu
 	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-gen-emu
 
