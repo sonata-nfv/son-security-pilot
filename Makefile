@@ -18,7 +18,7 @@ all: package package-emu
 
 #docker-image-vpn:
 #	cd install/roles/docker-openvpn/files && \
-		docker build -t sonata-psa/vpn .
+#		docker build -t sonata-psa/vpn .
 
 #docker-image-fw:
 #	cd install/roles/docker-firewall/files && \
