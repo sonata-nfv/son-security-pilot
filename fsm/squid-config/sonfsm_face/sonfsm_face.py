@@ -162,7 +162,8 @@ class faceFSM(sonSMbase):
             if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
-                self.ssh_execution(request["fsm_type"], squid_ip)
+                opt = 0
+                self.ssh_execution(opt, squid_ip)
         else:
             LOG.info("No management connection point in vnfr")
             
@@ -193,7 +194,8 @@ class faceFSM(sonSMbase):
             if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
-                self.ssh_execution(request["fsm_type"], squid_ip)
+                opt = 1
+                self.ssh_execution(opt, squid_ip)
         else:
             LOG.info("No management connection point in vnfr")
             
@@ -223,7 +225,8 @@ class faceFSM(sonSMbase):
             if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
-                self.ssh_execution(request["fsm_type"], squid_ip)
+                opt = 2
+                self.ssh_execution(opt, squid_ip)
 
         else:
             LOG.info("No management connection point in vnfr")
@@ -255,7 +258,8 @@ class faceFSM(sonSMbase):
             if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
-                self.ssh_execution(request["fsm_type"], squid_ip)
+                opt = 3
+                self.ssh_execution(opt, squid_ip)
 
         else:
             LOG.info("No management connection point in vnfr")
@@ -316,7 +320,7 @@ class faceFSM(sonSMbase):
     def ssh_execution(self, function, host_ip):
         LOG.info("Executing ssh connection with function: %s", function)
         
-        if function == "start":
+        if function == 0:
             ssh = paramiko.SSHClient()
             LOG.info("SSH client start")
 
@@ -365,7 +369,7 @@ class faceFSM(sonSMbase):
 
 
 
-        elif function == "stop":
+        elif function == 1:
             ssh = paramiko.SSHClient()
             LOG.info("SSH client stop")
 
@@ -377,7 +381,7 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
-        elif function == "configure":
+        elif function == 2:
             ssh = paramiko.SSHClient()
             LOG.info("SSH client configure")
 
@@ -389,7 +393,7 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
-        elif function == "scale":
+        elif function == 3:
             ssh = paramiko.SSHClient()
             LOG.info("SSH client scale")
 
