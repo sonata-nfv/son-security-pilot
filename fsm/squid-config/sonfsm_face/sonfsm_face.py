@@ -331,6 +331,7 @@ class faceFSM(sonSMbase):
             ssh = paramiko.SSHClient()
             LOG.info("SSH client start")
 
+            ssh.load_system_host_keys()
             ssh.connect(host_ip, username = self.username, password = self.password)
             LOG.info("SSH connection established")
 
