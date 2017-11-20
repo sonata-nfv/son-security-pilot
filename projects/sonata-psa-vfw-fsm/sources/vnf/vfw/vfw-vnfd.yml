@@ -75,7 +75,7 @@ connection_points:
 
 
 function_specific_managers:
-  - id: "sonfsmpsavfwcss1"
+  - id: "sonfsmpsa-servicefirewall-vnffirewall-config1"
     description: "FSM to do a first FSM test"
     image: "sonatanfv/psa-vfw-fsm-css"
     options:
