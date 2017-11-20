@@ -15,7 +15,7 @@ virtual_deployment_units:
   - id: "1"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/pfSense.raw"
     vm_image_format: "raw"
-    vm_image_md5: "a549753af4d67c6bd93e5e53a305dd1d"
+    vm_image_md5: "500f32465fea6f646557df49dc018171"
     resource_requirements:
       cpu:
         vcpus: 1
