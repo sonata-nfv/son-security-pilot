@@ -180,7 +180,7 @@ class CssFSM(sonSMbase):
         for cp in cps:
             if cp['type'] == 'management':
                 mgmt_ip = cp['interface']['address']
-                LOG.info("management ip: " + str(man_ip))
+                LOG.info("management ip: " + str(mgmt_ip))
 
         if not mgmt_ip:
             LOG.info("No management connection point in vnfr")
