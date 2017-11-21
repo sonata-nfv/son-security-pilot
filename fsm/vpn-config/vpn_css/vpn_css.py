@@ -190,6 +190,7 @@ class CssFSM(sonSMbase):
         username = "root"
         password = "sonata"
         sp_ip = '10.30.0.112'
+
         # Configuring the monitoring probe
         ssh_client = Client(mgmt_ip, 'sonata', 'sonata', LOG)
         LOG.info('Mon Config: Create new conf file')
@@ -201,9 +202,11 @@ class CssFSM(sonSMbase):
         ssh_client.close()
         LOG.info('Mon Config: Completed')
 
-
         ssh = paramiko.SSHClient()
         LOG.info("SSH client started")
+
+        # allows automatic adding of unknown hosts to 'known_hosts'
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         ssh.connect(mgmt_ip, username=username, password=password)
         LOG.info("SSH connection established")
