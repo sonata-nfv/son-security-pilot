@@ -330,14 +330,12 @@ class faceFSM(sonSMbase):
         while retry < num_retries:
             try:
                 ssh.connect(host_ip, username = self.username, password = self.password)
+                break
 
-            except socket.error as value:
-                if value in (51, 61, 111):
-                    LOG.info('SSH Connection refused, will retry in 5 seconds')
-                    time.sleep(5)
-                    retry += 1
-                else:
-                    raise
+            except socket.error as err:
+                LOG.info('SSH Connection refused, will retry in 5 seconds')
+                time.sleep(5)
+                retry += 1
             except paramiko.BadHostKeyException:
                 LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
                 retry += 1
@@ -360,8 +358,23 @@ class faceFSM(sonSMbase):
 
             if self.with_monitoring == True:
                 transport = paramiko.Transport((host_ip, 22))
+                while retry < num_retries:
+                    try:
+                        ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, password = self.password)
+                        break
+                    except socket.error as err:
+                        LOG.info('SSH Connection refused, will retry in 5 seconds')
+                        time.sleep(5)
+                        retry += 1
+                    except paramiko.BadHostKeyException:
+                        LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
+                        retry += 1
+                    except EOFError:
+                        LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                        time.sleep(5)
+                        retry += 1
+
                 LOG.info("SFTP connection established")
-                ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, password = self.password)
                 LOG.info('output from remote: ' + str(ssh_stdout))
                 LOG.info('output from remote: ' + str(ssh_stdin))
                 LOG.info('output from remote: ' + str(ssh_stderr))
@@ -384,7 +397,23 @@ class faceFSM(sonSMbase):
                 transport.close()
 
                 ssh = paramiko.SSHClient()
-                ssh.connect(host_ip, username = self.username, password = self.password)
+
+                while retry < num_retries:
+                    try:
+                        ssh.connect(host_ip, username = self.username, password = self.password)
+                        break
+                    except socket.error as err:
+                        LOG.info('SSH Connection refused, will retry in 5 seconds')
+                        time.sleep(5)
+                        retry += 1
+                    except paramiko.BadHostKeyException:
+                        LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
+                        retry += 1
+                    except EOFError:
+                        LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                        time.sleep(5)
+                        retry += 1
+
                 LOG.info("SSH connection established")
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart mon-probe.service')
                 LOG.info('output from remote: ' + str(ssh_stdout))
