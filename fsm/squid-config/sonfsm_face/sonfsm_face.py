@@ -319,16 +319,40 @@ class faceFSM(sonSMbase):
     
     def ssh_execution(self, function, host_ip):
         LOG.info("Executing ssh connection with function: %s", function)
-        
-        if function == 0:
-            ssh = paramiko.SSHClient()
-            LOG.info("SSH client start")
 
-            ssh.load_system_host_keys()
-            ssh.connect(host_ip, username = self.username, password = self.password)
+        num_retries = 5
+        
+        ssh = paramiko.SSHClient()
+        LOG.info("SSH client start")
+
+        ssh.load_system_host_keys()
+        retry = 0
+        while retry < num_retries:
+            try:
+                ssh.connect(host_ip, username = self.username, password = self.password)
+
+            except socket.error as value:
+                if value in (51, 61, 111):
+                    LOG.info('SSH Connection refused, will retry in 5 seconds')
+                    time.sleep(5)
+                    retry += 1
+                else:
+                    raise
+            except paramiko.BadHostKeyException:
+                LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
+                retry += 1
+            except EOFError:
+                LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                time.sleep(5)
+                retry += 1
+        if retry == num_retries:
+            LOG.info('Could not establish SSH connection')
+
+        if function == 0:
+
             LOG.info("SSH connection established")
 
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid start')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid start')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
@@ -371,37 +395,31 @@ class faceFSM(sonSMbase):
 
 
         elif function == 1:
-            ssh = paramiko.SSHClient()
             LOG.info("SSH client stop")
 
-            ssh.connect(host_ip, username = self.username, password = self.password)
             LOG.info("SSH connection established")
 
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid stop')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid stop')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
         elif function == 2:
-            ssh = paramiko.SSHClient()
             LOG.info("SSH client configure")
 
-            ssh.connect(host_ip, username = self.username, password = self.password)
             LOG.info("SSH connection established")
 
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid restart')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid restart')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
         elif function == 3:
-            ssh = paramiko.SSHClient()
             LOG.info("SSH client scale")
 
-            ssh.connect(host_ip, username = self.username, password = self.password)
             LOG.info("SSH connection established")
 
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service squid start')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid start')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
