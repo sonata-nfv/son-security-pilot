@@ -336,10 +336,6 @@ class faceFSM(sonSMbase):
                 ssh.connect(host_ip, username = self.username, password  = self.password)
                 break
 
-            except socket.error as err:
-                LOG.info('SSH Connection refused, will retry in 5 seconds')
-                time.sleep(5)
-                retry += 1
             except paramiko.BadHostKeyException:
                 LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
                 retry += 1
@@ -347,6 +343,11 @@ class faceFSM(sonSMbase):
                 LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
                 time.sleep(5)
                 retry += 1
+            except:
+                LOG.info('SSH Connection refused, will retry in 5 seconds')
+                time.sleep(5)
+                retry += 1
+
         if retry == num_retries:
             LOG.info('Could not establish SSH connection within max retries')
             return;
@@ -369,15 +370,15 @@ class faceFSM(sonSMbase):
 #                        ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, pkey = self.private_key)
                         ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, password = self.password)
                         break
-                    except socket.error as err:
-                        LOG.info('SSH Connection refused, will retry in 5 seconds')
-                        time.sleep(5)
-                        retry += 1
                     except paramiko.BadHostKeyException:
                         LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
                         retry += 1
                     except EOFError:
                         LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                        time.sleep(5)
+                        retry += 1
+                    except:
+                        LOG.info('SSH Connection refused, will retry in 5 seconds')
                         time.sleep(5)
                         retry += 1
 
@@ -415,15 +416,15 @@ class faceFSM(sonSMbase):
 #                        ssh.connect(host_ip, username = self.username, pkey = self.private_key)
                         ssh.connect(host_ip, username = self.username, password = self.password)
                         break
-                    except socket.error as err:
-                        LOG.info('SSH Connection refused, will retry in 5 seconds')
-                        time.sleep(5)
-                        retry += 1
                     except paramiko.BadHostKeyException:
                         LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
                         retry += 1
                     except EOFError:
                         LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                        time.sleep(5)
+                        retry += 1
+                    except:
+                        LOG.info('SSH Connection refused, will retry in 5 seconds')
                         time.sleep(5)
                         retry += 1
 
