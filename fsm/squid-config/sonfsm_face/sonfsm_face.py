@@ -157,25 +157,18 @@ class faceFSM(sonSMbase):
             if cp['type'] == 'management':
                 squid_ip = cp['interface']['address']
                 LOG.info("management ip: " + str(squid_ip))
-
-        cpinput_ip = None
-        if len(cpts) >= 1 and 'type' in cpts[1] and 'address' in cpts[1]['type']:
-            cpinput_ip = cpts[1]['type']['address']
-        if cpinput_ip:
-            LOG.info("cpinput ip: " + str(cpinput_ip))
-        else:
-            LOG.error("Couldn't obtain cpinput IP address from VNFR")
-
-        if squid_ip is not None and cpinput_ip is not None:
+                
+                
+        if squid_ip is not None:
             plbk = ''
             if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
                 opt = 0
-                self.ssh_execution(opt, squid_ip, cpinput_ip=cpinput_ip)
+                self.ssh_execution(opt, squid_ip)
         else:
-            LOG.info("No management/cpinput connection point in vnfr")
-
+            LOG.info("No management connection point in vnfr")
+            
         response = {}
         response['status'] = 'COMPLETED'
         
@@ -326,7 +319,7 @@ class faceFSM(sonSMbase):
         results = pbex.run()
         return
     
-    def ssh_execution(self, function, host_ip, cpinput_ip=None):
+    def ssh_execution(self, function, host_ip):
         LOG.info("Executing ssh connection with function: %s", function)
 
         num_retries = 5
@@ -366,21 +359,6 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service dnsmasq start')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
-            if cpinput_ip:
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('iptables -t nat -A PREROUTING --in-interface eth1 --protocol tcp --destination-port 53 -j DNAT --to-destination {}'.format(cpinput_ip))
-                LOG.info('output from remote: ' + str(ssh_stdout))
-                LOG.info('output from remote: ' + str(ssh_stdin))
-                LOG.info('output from remote: ' + str(ssh_stderr))
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('iptables -t nat -A PREROUTING --in-interface eth1 --protocol udp --destination-port 53 -j DNAT --to-destination {}'.format(cpinput_ip))
-                LOG.info('output from remote: ' + str(ssh_stdout))
-                LOG.info('output from remote: ' + str(ssh_stdin))
-                LOG.info('output from remote: ' + str(ssh_stderr))
-
             ssh.close()
 
             retry = 0
@@ -471,11 +449,6 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service dnsmasq stop')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
         elif function == 2:
             LOG.info("SSH client configure")
@@ -486,16 +459,6 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('wget -O /etc/dnsmasq.d/ad_block.conf "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=dnsmasq&showintro=1&mimetype=plaintext"')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('service dnsmasq restart')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
-
             ssh.close()
         elif function == 3:
             LOG.info("SSH client scale")
