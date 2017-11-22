@@ -41,8 +41,7 @@ LOG.setLevel(logging.DEBUG)
 class faceFSM(sonSMbase):
 
     username = 'sonata'
-    #keyfile = '../ansible/roles/squid/files/son-install.pem'
-    keyfile = '../ansible/roles/squid/files/sonata.pem'
+    #keyfile = '../ansible/roles/squid/files/sonata.pem'
     password = 'sonata'
     monitoring_file = '.'
     with_monitoring = True
@@ -114,6 +113,9 @@ class faceFSM(sonSMbase):
             return
         
         response = None
+        if self.private_key == None:
+            LOG.info("private key with value null")
+            return
         
         if str(request["fsm_type"]) == "start":
             LOG.info("Start event received: " + str(request["content"]))
@@ -330,7 +332,7 @@ class faceFSM(sonSMbase):
         retry = 0
         while retry < num_retries:
             try:
-                ssh.connect(host_ip, username = self.username, password = self.password)
+                ssh.connect(host_ip, username = self.username, pkey  = self.private_key)
                 break
 
             except socket.error as err:
@@ -345,7 +347,8 @@ class faceFSM(sonSMbase):
                 time.sleep(5)
                 retry += 1
         if retry == num_retries:
-            LOG.info('Could not establish SSH connection')
+            LOG.info('Could not establish SSH connection within max retries')
+            return;
 
         if function == 0:
 
@@ -357,11 +360,12 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
 
+            retry = 0
             if self.with_monitoring == True:
                 transport = paramiko.Transport((host_ip, 22))
                 while retry < num_retries:
                     try:
-                        ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, password = self.password)
+                        ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, pkey = self.private_key)
                         break
                     except socket.error as err:
                         LOG.info('SSH Connection refused, will retry in 5 seconds')
@@ -374,6 +378,10 @@ class faceFSM(sonSMbase):
                         LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
                         time.sleep(5)
                         retry += 1
+
+                if retry == num_retries:
+                    LOG.info('Could not establish SSH connection within max retries for transport purposes')
+                    return;
 
                 LOG.info("SFTP connection established")
                 LOG.info('output from remote: ' + str(ssh_stdout))
@@ -399,9 +407,10 @@ class faceFSM(sonSMbase):
 
                 ssh = paramiko.SSHClient()
 
+                retry = 0
                 while retry < num_retries:
                     try:
-                        ssh.connect(host_ip, username = self.username, password = self.password)
+                        ssh.connect(host_ip, username = self.username, pkey = self.private_key)
                         break
                     except socket.error as err:
                         LOG.info('SSH Connection refused, will retry in 5 seconds')
@@ -414,6 +423,10 @@ class faceFSM(sonSMbase):
                         LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
                         time.sleep(5)
                         retry += 1
+
+                if retry == num_retries:
+                    LOG.info('Could not establish SSH connection within max retries for monitoring start purposes')
+                    return;
 
                 LOG.info("SSH connection established")
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart mon-probe.service')
