@@ -43,7 +43,7 @@ class faceFSM(sonSMbase):
     username = 'sonata'
     #keyfile = '../ansible/roles/squid/files/sonata.pem'
     password = 'sonata'
-    monitoring_file = '.'
+    monitoring_file = './node.conf'
     with_monitoring = True
     option = 1
 
@@ -400,7 +400,7 @@ class faceFSM(sonSMbase):
                     LOG.info('output from remote: ' + str(ssh_stdin))
                     LOG.info('output from remote: ' + str(ssh_stderr))
                 localpath = self.monitoring_file
-                remotepath = '/opt/Monitoring'
+                remotepath = '/tmp'
                 ssh_stdin, ssh_stdout, ssh_stderr = sftp.put(localpath, remotepath)
                 LOG.info('output from remote: ' + str(ssh_stdout))
                 LOG.info('output from remote: ' + str(ssh_stdin))
@@ -433,6 +433,10 @@ class faceFSM(sonSMbase):
                     return;
 
                 LOG.info("SSH connection established")
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/node.conf /opt/Monitoring')
+                LOG.info('output from remote: ' + str(ssh_stdout))
+                LOG.info('output from remote: ' + str(ssh_stdin))
+                LOG.info('output from remote: ' + str(ssh_stderr))
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart mon-probe.service')
                 LOG.info('output from remote: ' + str(ssh_stdout))
                 LOG.info('output from remote: ' + str(ssh_stdin))
