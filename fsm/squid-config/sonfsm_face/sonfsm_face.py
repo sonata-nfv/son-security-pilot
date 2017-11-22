@@ -113,9 +113,9 @@ class faceFSM(sonSMbase):
             return
         
         response = None
-        if self.private_key == None:
-            LOG.info("private key with value null")
-            return
+#        if self.private_key == None:
+#            LOG.info("private key with value null")
+#            return
         
         if str(request["fsm_type"]) == "start":
             LOG.info("Start event received: " + str(request["content"]))
