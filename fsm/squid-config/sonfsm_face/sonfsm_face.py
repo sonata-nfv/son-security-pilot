@@ -113,9 +113,9 @@ class faceFSM(sonSMbase):
             return
         
         response = None
-        if self.private_key == None:
-            LOG.info("private key with value null")
-            return
+#        if self.private_key == None:
+#            LOG.info("private key with value null")
+#            return
         
         if str(request["fsm_type"]) == "start":
             LOG.info("Start event received: " + str(request["content"]))
@@ -339,7 +339,8 @@ class faceFSM(sonSMbase):
         retry = 0
         while retry < num_retries:
             try:
-                ssh.connect(host_ip, username = self.username, pkey  = self.private_key)
+#                ssh.connect(host_ip, username = self.username, pkey  = self.private_key)
+                ssh.connect(host_ip, username = self.username, password  = self.password)
                 break
 
             except socket.error as err:
@@ -387,7 +388,8 @@ class faceFSM(sonSMbase):
                 transport = paramiko.Transport((host_ip, 22))
                 while retry < num_retries:
                     try:
-                        ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, pkey = self.private_key)
+#                        ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, pkey = self.private_key)
+                        ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, password = self.password)
                         break
                     except socket.error as err:
                         LOG.info('SSH Connection refused, will retry in 5 seconds')
@@ -432,7 +434,8 @@ class faceFSM(sonSMbase):
                 retry = 0
                 while retry < num_retries:
                     try:
-                        ssh.connect(host_ip, username = self.username, pkey = self.private_key)
+#                        ssh.connect(host_ip, username = self.username, pkey = self.private_key)
+                        ssh.connect(host_ip, username = self.username, password = self.password)
                         break
                     except socket.error as err:
                         LOG.info('SSH Connection refused, will retry in 5 seconds')
