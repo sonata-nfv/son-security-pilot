@@ -44,6 +44,7 @@ class faceFSM(sonSMbase):
     #keyfile = '../ansible/roles/squid/files/sonata.pem'
     password = 'sonata'
     monitoring_file = './node.conf'
+    alternate_squid_cfg_file = './ansible/roles/squid/files/squid.conf'
     with_monitoring = True
     option = 1
 
@@ -394,11 +395,6 @@ class faceFSM(sonSMbase):
                 self.createConf(host_ip, 4, 'cache-vnf')
                 sftp = paramiko.SFTPClient.from_transport(transport)
                 LOG.info("SFTP connection entering")
-                if 'Monitoring' not in sftp.listdir(path='/opt'):
-                    ssh_stdin, ssh_stdout, ssh_stderr = sftp.mkdir('/opt/Monitoring')
-                    LOG.info('output from remote: ' + str(ssh_stdout))
-                    LOG.info('output from remote: ' + str(ssh_stdin))
-                    LOG.info('output from remote: ' + str(ssh_stderr))
                 localpath = self.monitoring_file
                 remotepath = '/tmp'
                 ssh_stdin, ssh_stdout, ssh_stderr = sftp.put(localpath, remotepath)
@@ -455,16 +451,94 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
+
         elif function == 2:
             LOG.info("SSH client configure")
+            LOG.info("SSH connection established")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid stop')
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+            ssh.close()
+            
+            transport = paramiko.Transport((host_ip, 22))
+            while retry < num_retries:
+                try:
+#                    ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, pkey = self.private_key)
+                    ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, password = self.password)
+                    break
+                except paramiko.BadHostKeyException:
+                    LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
+                    retry += 1
+                except EOFError:
+                    LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                    time.sleep(5)
+                    retry += 1
+                except:
+                    LOG.info('SSH Connection refused, will retry in 5 seconds')
+                    time.sleep(5)
+                    retry += 1
+
+            if retry == num_retries:
+                LOG.info('Could not establish SSH connection within max retries for transport purposes')
+                return;
+
+            LOG.info("SFTP connection established")
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+
+            self.createConf(host_ip, 4, 'cache-vnf')
+            sftp = paramiko.SFTPClient.from_transport(transport)
+            LOG.info("SFTP connection entering")
+            localpath = self.alternate_squid_cfg_file
+            remotepath = '/tmp'
+            ssh_stdin, ssh_stdout, ssh_stderr = sftp.put(localpath, remotepath)
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+            sftp.close()
+            transport.close()
+
+            ssh = paramiko.SSHClient()
+
+            retry = 0
+            while retry < num_retries:
+                try:
+#                    ssh.connect(host_ip, username = self.username, pkey = self.private_key)
+                    ssh.connect(host_ip, username = self.username, password = self.password)
+                    break
+                except paramiko.BadHostKeyException:
+                    LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
+                    retry += 1
+                except EOFError:
+                    LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                    time.sleep(5)
+                    retry += 1
+                except:
+                    LOG.info('SSH Connection refused, will retry in 5 seconds')
+                    time.sleep(5)
+                    retry += 1
+
+            if retry == num_retries:
+                LOG.info('Could not establish SSH connection within max retries for monitoring start purposes')
+                return;
 
             LOG.info("SSH connection established")
-
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid3/squid.conf /etc/squid3/squid.conf.old')
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid3')
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid restart')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
+
         elif function == 3:
             LOG.info("SSH client scale")
 
