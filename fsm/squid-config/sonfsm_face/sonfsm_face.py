@@ -361,6 +361,10 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /opt/monitoring /opt/Monitoring')
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
             ssh.close()
 
             retry = 0
