@@ -323,7 +323,7 @@ class faceFSM(sonSMbase):
     def ssh_execution(self, function, host_ip):
         LOG.info("Executing ssh connection with function: %s", function)
 
-        num_retries = 5
+        num_retries = 20
         
         ssh = paramiko.SSHClient()
         LOG.info("SSH client start")
@@ -342,11 +342,11 @@ class faceFSM(sonSMbase):
                 retry += 1
             except EOFError:
                 LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
-                time.sleep(5)
+                time.sleep(10)
                 retry += 1
             except:
                 LOG.info('SSH Connection refused, will retry in 5 seconds')
-                time.sleep(5)
+                time.sleep(10)
                 retry += 1
 
         if retry == num_retries:
@@ -380,11 +380,11 @@ class faceFSM(sonSMbase):
                         retry += 1
                     except EOFError:
                         LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
-                        time.sleep(5)
+                        time.sleep(10)
                         retry += 1
                     except:
                         LOG.info('SSH Connection refused, will retry in 5 seconds')
-                        time.sleep(5)
+                        time.sleep(10)
                         retry += 1
 
                 if retry == num_retries:
@@ -421,11 +421,11 @@ class faceFSM(sonSMbase):
                         retry += 1
                     except EOFError:
                         LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
-                        time.sleep(5)
+                        time.sleep(10)
                         retry += 1
                     except:
                         LOG.info('SSH Connection refused, will retry in 5 seconds')
-                        time.sleep(5)
+                        time.sleep(10)
                         retry += 1
 
                 if retry == num_retries:
@@ -476,11 +476,11 @@ class faceFSM(sonSMbase):
                     retry += 1
                 except EOFError:
                     LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
-                    time.sleep(5)
+                    time.sleep(10)
                     retry += 1
                 except:
                     LOG.info('SSH Connection refused, will retry in 5 seconds')
-                    time.sleep(5)
+                    time.sleep(10)
                     retry += 1
 
             if retry == num_retries:
@@ -517,11 +517,11 @@ class faceFSM(sonSMbase):
                     retry += 1
                 except EOFError:
                     LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
-                    time.sleep(5)
+                    time.sleep(10)
                     retry += 1
                 except:
                     LOG.info('SSH Connection refused, will retry in 5 seconds')
-                    time.sleep(5)
+                    time.sleep(10)
                     retry += 1
 
             if retry == num_retries:
