@@ -463,72 +463,23 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
-            ssh.close()
             
-            transport = paramiko.Transport((host_ip, 22))
-            while retry < num_retries:
-                try:
-#                    ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, pkey = self.private_key)
-                    ssh_stdin, ssh_stdout, ssh_stderr = transport.connect(username = self.username, password = self.password)
-                    break
-                except paramiko.BadHostKeyException:
-                    LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
-                    retry += 1
-                except EOFError:
-                    LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
-                    time.sleep(10)
-                    retry += 1
-                except:
-                    LOG.info('SSH Connection refused, will retry in 5 seconds')
-                    time.sleep(10)
-                    retry += 1
-
-            if retry == num_retries:
-                LOG.info('Could not establish SSH connection within max retries for transport purposes')
-                return;
-
+            ftp = ssh.open_sftp()
             LOG.info("SFTP connection established")
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
 
             self.createConf(host_ip, 4, 'cache-vnf')
-            sftp = paramiko.SFTPClient.from_transport(transport)
-            LOG.info("SFTP connection entering")
             localpath = self.alternate_squid_cfg_file
+            LOG.info("SFTP connection entering on %s" localpath)
             remotepath = '/tmp'
-            ssh_stdin, ssh_stdout, ssh_stderr = sftp.put(localpath, remotepath)
+            ssh_stdin, ssh_stdout, ssh_stderr = ftp.put(localpath, remotepath)
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
-            sftp.close()
-            transport.close()
+            ftp.close()
 
-            ssh = paramiko.SSHClient()
-
-            retry = 0
-            while retry < num_retries:
-                try:
-#                    ssh.connect(host_ip, username = self.username, pkey = self.private_key)
-                    ssh.connect(host_ip, username = self.username, password = self.password)
-                    break
-                except paramiko.BadHostKeyException:
-                    LOG.info("%s has an entry in ~/.ssh/known_hosts and it doesn't match" % self.server.hostname)
-                    retry += 1
-                except EOFError:
-                    LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
-                    time.sleep(10)
-                    retry += 1
-                except:
-                    LOG.info('SSH Connection refused, will retry in 5 seconds')
-                    time.sleep(10)
-                    retry += 1
-
-            if retry == num_retries:
-                LOG.info('Could not establish SSH connection within max retries for monitoring start purposes')
-                return;
-
-            LOG.info("SSH connection established")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid3/squid.conf /etc/squid3/squid.conf.old')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
