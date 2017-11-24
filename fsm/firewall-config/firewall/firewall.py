@@ -186,8 +186,22 @@ class FirewallFSM(sonSMbase):
         ssh.connect(mgmt_ip, port, username, password)
         #activate firewall
         command = "pfctl -e" 
+        (stdin, stdout, stderr) = ssh.exec_command(command) 
+        ssh.close()
+
+        #Configure and activate monitoring probe
+        sp_ip = '10.30.0.112' 
+        self.createConf(sp_ip, 4, 'vfw-vnf')
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, 'sonata', 'sonata',look_for_keys=False, timeout=5)
+        sftp = ssh.client.open_sftp()
+        sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
+        sftp.close()
+        command = "/etc/rc.d/sonmonprobe start" 
         (stdin, stdout, stderr) = ssh.exec_command(command)
         ssh.close()
+
 
         # Create a response for the FLM
         response = {}
@@ -360,6 +374,24 @@ class FirewallFSM(sonSMbase):
                                 passwords={})
         results = pbex.run()
         return True
+
+    def createConf(self, pw_ip, interval, name):
+
+        config = configparser.RawConfigParser()
+        config.add_section('vm_node')
+        config.add_section('Prometheus')
+        config.set('vm_node', 'node_name', name)
+        config.set('vm_node', 'post_freq', interval)
+        config.set('Prometheus', 'server_url', 'http://'+pw_ip+':9091/metrics')
+    
+    
+        with open('node.conf', 'w') as configfile:    # save
+            config.write(configfile)
+    
+        f = open('node.conf', 'r')
+        LOG.debug('Mon Config-> '+"\n"+f.read())
+        f.close()
+
 
 
 def main(working_dir=None):
