@@ -345,7 +345,7 @@ class faceFSM(sonSMbase):
                 time.sleep(10)
                 retry += 1
             except:
-                LOG.info('SSH Connection refused, will retry in 5 seconds')
+                LOG.info('SSH Connection refused from %s, will retry in 5 seconds', host_ip)
                 time.sleep(10)
                 retry += 1
 
