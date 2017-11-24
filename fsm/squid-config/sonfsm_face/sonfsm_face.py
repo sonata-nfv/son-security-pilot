@@ -379,7 +379,7 @@ class faceFSM(sonSMbase):
                 self.createConf(host_ip, 4, 'cache-vnf')
                 localpath = self.self.monitoring_file
                 LOG.info("SFTP connection entering on %s", localpath)
-                remotepath = '/tmp'
+                remotepath = '/tmp/node.conf'
                 ssh_stdin, ssh_stdout, ssh_stderr = ftp.put(localpath, remotepath)
                 LOG.info('output from remote: ' + str(ssh_stdout))
                 LOG.info('output from remote: ' + str(ssh_stdin))
@@ -426,7 +426,7 @@ class faceFSM(sonSMbase):
 
             localpath = self.alternate_squid_cfg_file
             LOG.info("SFTP connection entering on %s", localpath)
-            remotepath = '/tmp'
+            remotepath = '/tmp/squid.conf'
             ssh_stdin, ssh_stdout, ssh_stderr = ftp.put(localpath, remotepath)
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
