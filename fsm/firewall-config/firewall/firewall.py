@@ -190,7 +190,7 @@ class FirewallFSM(sonSMbase):
         ssh.close()
 
         #Configure and activate monitoring probe
-        sp_ip = '10.30.0.112' 
+        sp_ip = 'sp.int3.sonata-nfv.eu' 
         self.createConf(sp_ip, 4, 'vfw-vnf')
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
