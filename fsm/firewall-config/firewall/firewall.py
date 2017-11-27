@@ -164,16 +164,15 @@ class FirewallFSM(sonSMbase):
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
                        'pfSense.raw'
-
        
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
                            [0]['vnfc_instance'][0]['connection_points'][0]
-                           ['type']['address'])
+                           ['type']['interface']['address'])
 
         if not mgmt_ip:
-            LOG.error("Couldn't obtain IP address from VNFR")
+            LOG.error("Couldn't obtain mgmt IP address from VNFR during start")
             return
 
         #SSH connection to pfsense
@@ -216,10 +215,10 @@ class FirewallFSM(sonSMbase):
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
                            [0]['vnfc_instance'][0]['connection_points'][0]
-                           ['type']['address'])
+                           ['type']['interface']['address'])
 
         if not mgmt_ip:
-            LOG.error("Couldn't obtain IP address from VNFR")
+            LOG.error("Couldn't obtain IP address from VNFR during stop")
             return
 
         #SSH connection to pfsense
@@ -268,10 +267,10 @@ class FirewallFSM(sonSMbase):
                         [0]['vm_image']) == vm_image:
                     mgmt_ip = (vnfrs[x]['virtual_deployment_units']
                                [0]['vnfc_instance'][0]['connection_points'][0]
-                               ['type']['address'])
+                               ['type']['interface']['address'])
 
         if not mgmt_ip:
-            LOG.error("Couldn't obtain IP address from VNFR")
+            LOG.error("Couldn't obtain mgmt IP address from VNFR during configuration")
             return
 
         #SSH connection to pfsense
