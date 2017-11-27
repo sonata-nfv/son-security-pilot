@@ -455,7 +455,7 @@ class faceFSM(sonSMbase):
         config.add_section('vm_node')
         config.add_section('Prometheus')
         config.set('vm_node', 'node_name', name)
-        config.set('vm_node', 'post_freq', interval)
+        config.set('vm_node', 'post_freq', str(interval))
         config.set('Prometheus', 'server_url', 'http://' + pw_ip + ':9091/metrics')
     
     
