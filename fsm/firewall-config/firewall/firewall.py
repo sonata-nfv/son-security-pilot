@@ -168,8 +168,8 @@ class FirewallFSM(sonSMbase):
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
-                           [0]['vnfc_instance'][0]['connection_points'][0]
-                           ['type']['interface']['address'])
+                        [0]['vnfc_instance'][0]['connection_points'][0]
+                        ['interface']['address'])
 
         if not mgmt_ip:
             LOG.error("Couldn't obtain mgmt IP address from VNFR during start")
@@ -215,7 +215,7 @@ class FirewallFSM(sonSMbase):
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
                            [0]['vnfc_instance'][0]['connection_points'][0]
-                           ['type']['interface']['address'])
+                           ['interface']['address'])
 
         if not mgmt_ip:
             LOG.error("Couldn't obtain IP address from VNFR during stop")
@@ -267,7 +267,7 @@ class FirewallFSM(sonSMbase):
                         [0]['vm_image']) == vm_image:
                     mgmt_ip = (vnfrs[x]['virtual_deployment_units']
                                [0]['vnfc_instance'][0]['connection_points'][0]
-                               ['type']['interface']['address'])
+                               ['interface']['address'])
 
         if not mgmt_ip:
             LOG.error("Couldn't obtain mgmt IP address from VNFR during configuration")
