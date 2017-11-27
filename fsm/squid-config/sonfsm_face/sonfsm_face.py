@@ -365,7 +365,6 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
-            ssh.close()
 
             retry = 0
             if self.with_monitoring == True:
