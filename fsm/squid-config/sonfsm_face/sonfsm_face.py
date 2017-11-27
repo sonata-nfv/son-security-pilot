@@ -372,18 +372,12 @@ class faceFSM(sonSMbase):
 
                 ftp = ssh.open_sftp()
                 LOG.info("SFTP connection established")
-                LOG.info('output from remote: ' + str(ssh_stdout))
-                LOG.info('output from remote: ' + str(ssh_stdin))
-                LOG.info('output from remote: ' + str(ssh_stderr))
 
                 self.createConf(host_ip, 4, 'cache-vnf')
                 localpath = self.self.monitoring_file
                 LOG.info("SFTP connection entering on %s", localpath)
                 remotepath = '/tmp/node.conf'
-                ssh_stdin, ssh_stdout, ssh_stderr = ftp.put(localpath, remotepath)
-                LOG.info('output from remote: ' + str(ssh_stdout))
-                LOG.info('output from remote: ' + str(ssh_stdin))
-                LOG.info('output from remote: ' + str(ssh_stderr))
+                sftpa = ftp.put(localpath, remotepath)
                 ftp.close()
 
                 LOG.info("SSH connection reestablished")
@@ -420,17 +414,11 @@ class faceFSM(sonSMbase):
             
             ftp = ssh.open_sftp()
             LOG.info("SFTP connection established")
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
 
             localpath = self.alternate_squid_cfg_file
             LOG.info("SFTP connection entering on %s", localpath)
             remotepath = '/tmp/squid.conf'
-            ssh_stdin, ssh_stdout, ssh_stderr = ftp.put(localpath, remotepath)
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            sftpa = ftp.put(localpath, remotepath)
             ftp.close()
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid3/squid.conf /etc/squid3/squid.conf.old')
