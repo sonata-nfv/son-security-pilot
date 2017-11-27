@@ -374,7 +374,7 @@ class faceFSM(sonSMbase):
                 LOG.info("SFTP connection established")
 
                 self.createConf(host_ip, 4, 'cache-vnf')
-                localpath = self.self.monitoring_file
+                localpath = self.monitoring_file
                 LOG.info("SFTP connection entering on %s", localpath)
                 remotepath = '/tmp/node.conf'
                 sftpa = ftp.put(localpath, remotepath)
