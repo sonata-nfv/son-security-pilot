@@ -326,7 +326,7 @@ class faceFSM(sonSMbase):
         num_retries = 20
         
         ssh = paramiko.SSHClient()
-        LOG.info("SSH client start for user %s" self.username)
+        LOG.info("SSH client start for user %s", self.username)
 
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.load_system_host_keys()
