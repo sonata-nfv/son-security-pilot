@@ -182,7 +182,28 @@ class FirewallFSM(sonSMbase):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(
         paramiko.AutoAddPolicy())
-        ssh.connect(mgmt_ip, port, username, password)
+        num_retries = 30
+        retry = 0
+        while retry < num_retries:
+            try:
+                ssh.connect(mgmt_ip, port, username, password)
+                break
+            except paramiko.BadHostKeyException as e:
+                LOG.info("Bad entry in ~/.ssh/known_hosts: %s", e)
+                retry += 1
+            except EOFError:
+                LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                time.sleep(10)
+                retry += 1
+            except Exception as e:
+                LOG.info('SSH Connection refused from %s, will retry in 5 seconds (%s)', mgmt_ip, e)
+                time.sleep(10)
+                retry += 1
+
+        if retry == num_retries:
+            LOG.error('Could not establish SSH connection within max retries')
+            return;
+
         #activate firewall
         command = "pfctl -e" 
         (stdin, stdout, stderr) = ssh.exec_command(command)
