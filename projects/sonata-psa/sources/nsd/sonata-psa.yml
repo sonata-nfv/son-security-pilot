@@ -21,15 +21,15 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.7"
-  - vnf_id: "vnf_cache"
-    vnf_vendor: "eu.sonata-nfv"
-    vnf_name: "cache-vnf"
     vnf_version: "0.1"
-  - vnf_id: "vnf_fw"
+  - vnf_id: "vnf_prx"
     vnf_vendor: "eu.sonata-nfv"
-    vnf_name: "fw-vnf"
-    vnf_version: "0.9"
+    vnf_name: "prx-vnf"
+    vnf_version: "0.1"
+  - vnf_id: "vnf_vfw"
+    vnf_vendor: "eu.sonata-nfv"
+    vnf_name: "vfw-vnf"
+    vnf_version: "0.1"
 #  - vnf_id: "vnf_ids"
 #    vnf_vendor: "eu.sonata-nfv"
 #    vnf_name: "ids-vnf"
@@ -76,7 +76,7 @@ virtual_links:
     connectivity_type: "E-LAN"
     connection_points_reference:
       - "vnf_vpn:cpmgmt"
-      - "vnf_cache:cpmgmt"
+      - "vnf_prx:cpmgmt"
       - "vnf_fw:cpmgmt"
       - "vnf_ids:cpmgmt"
       - "vnf_tor:cpmgmt"
@@ -90,16 +90,16 @@ virtual_links:
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vnf_vpn:cpoutput"
-      - "vnf_cache:cpinput"
+      - "vnf_prx:cpinput"
   - id: "cache-2-fw"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vnf_cache:cpoutput"
-      - "vnf_fw:cpinput"
+      - "vnf_prx:cpoutput"
+      - "vnf_vfw:cpinput"
   - id: "fw-2-output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vnf_fw:cpoutput"
+      - "vnf_vfw:cpoutput"
       - "cpoutput"
 ##
 ## The forwarding graphs.
@@ -109,7 +109,9 @@ forwarding_graphs:
     number_of_endpoints: 2
     number_of_virtual_links: 3
     constituent_vnfs:
-      - "vnf_vtc"
+      - "vnf_vfw"
+      - "vnf_vpn"
+      - "vnf_prx"
     network_forwarding_paths:
       - fp_id: "ns:fg01:fp01"
         policy: "none"
@@ -120,13 +122,13 @@ forwarding_graphs:
             position: 2
           - connection_point_ref: "vnf_vpn:cpoutput"
             position: 3
-          - connection_point_ref: "vnf_cache:cpinput"
+          - connection_point_ref: "vnf_prx:cpinput"
             position: 4
-          - connection_point_ref: "vnf_cache:cpoutput"
+          - connection_point_ref: "vnf_prx:cpoutput"
             position: 5
-          - connection_point_ref: "vnf_fw:cpinput"
+          - connection_point_ref: "vnf_vfw:cpinput"
             position: 6
-          - connection_point_ref: "vnf_fw:cpoutput"
+          - connection_point_ref: "vnf_vfw:cpoutput"
             position: 7
           - connection_point_ref: "cpoutput"
             position: 8

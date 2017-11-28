@@ -4,7 +4,7 @@
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "vpn-vnf"
-version: "0.7"
+version: "0.1"
 author: "Luis Conceicao, UBIWHERE"
 description: "Implementation of OpenVPN function"
  
@@ -12,18 +12,18 @@ description: "Implementation of OpenVPN function"
 ## The virtual deployment units.
 ##
 virtual_deployment_units:
-  - id: "1"
+  - id: "vdu01"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2"
     vm_image_format: "qcow2"
     vm_image_md5: "799b6db0c724b6552e092232a94a262a"
     resource_requirements:
       cpu:
-        vcpus: 1
+        vcpus: 2
       memory:
-        size: 2
+        size: 4
         size_unit: "GB"
       storage:
-        size: 20
+        size: 40
         size_unit: "GB"
     monitoring_parameters:
       - name: "vm_cpu_perc"
@@ -35,38 +35,16 @@ virtual_deployment_units:
       - name: "vm_net_tx_bps"
         unit: "bps"
     connection_points:
-      - id: "cpeth0"
+      - id: "eth0"
         interface: "ipv4"
         type: "management"
-      - id: "cpeth1"
+      - id: "eth1"
         interface: "ipv4"
         type: "internal"
-      - id: "cpeth2"
+      - id: "eth2"
         interface: "ipv4"
         type: "internal"
-
-##
-## The virtual links that interconnect
-## the different connections points.
-##
-virtual_links:
-  - id: "vlmgmt"
-    connectivity_type: "E-LAN"
-    connection_points_reference:
-      - "1:cpeth0"
-      - "cpmgmt"
-  - id: "vlinput"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "1:cpeth1"
-      - "cpinput"
-  - id: "vloutput"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "1:cpeth2"
-      - "cpoutput"
-
-
+ 
 ##
 ## The VNF connection points to the 
 ## outside world.
@@ -83,35 +61,57 @@ connection_points:
     type: "internal"
  
 ##
+## The virtual links that interconnect
+## the different connections points.
+##
+virtual_links:
+  - id: "vlmgmt"
+    connectivity_type: "E-LAN"
+    connection_points_reference:
+      - "vdu01:eth0"
+      - "cpmgmt"
+    dhcp: True
+  - id: "vlinput"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vdu01:eth1"
+      - "cpinput"
+  - id: "vloutput"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vdu01:eth2"
+      - "cpoutput"
+ 
+##
 ## The monitoring rules that react
 ## to the monitoring parameters
 ##
-##monitoring_rules:
-#  - name: "mon:rule:vm_cpu_perc"
-#    description: "Trigger events if CPU load is above 10 percent."
-#    duration: 10
-#    duration_unit: "s"
-#    condition: "1:vm_cpu_perc > 10"
-#    notification:
-#      - name: "notification01"
-#        type: "rabbitmq_message"
-#  - name: "mon:rule:vm_mem_perc"
-#    description: "Trigger events if memory consumption is above 10 percent."
-#    duration: 10
-#    duration_unit: "s"
-#    condition: "1:vm_mem_perc > 10"
-#    notification:
-#      - name: "notification02"
-#        type: "rabbitmq_message"
+monitoring_rules:
+  - name: "mon:rule:vm_cpu_perc"
+    description: "Trigger events if CPU load is above 10 percent."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:vm_cpu_perc > 10"
+    notification:
+      - name: "notification01"
+        type: "rabbitmq_message"
+  - name: "mon:rule:vm_mem_perc"
+    description: "Trigger events if memory consumption is above 10 percent."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:vm_mem_perc > 10"
+    notification:
+      - name: "notification02"
+        type: "rabbitmq_message"
 
 
 ##
 ## Function Specific Managers
 ##
 function_specific_managers:
-  - id: "sonfsmservice1function1css1"
-    description: "FSM to do a first FSM test"
-    image: "sonatanfv/fsm-css"
+  - id: "sonfsmpsaservicevpn-vnfvpn-config1"
+    description: "FSM for the configuration of the VPN"
+    image: "sonatanfv/psa-vpn-fsm-css"
     options:
       - key: "type"
         value: "start"
