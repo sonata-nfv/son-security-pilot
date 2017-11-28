@@ -183,6 +183,8 @@ class FirewallFSM(sonSMbase):
         #activate firewall
         command = "pfctl -e" 
         (stdin, stdout, stderr) = ssh.exec_command(command)
+        LOG.debug('Stdout: ' + str(stdout))
+        LOG.debug('Stderr: ' + str(stderr))
         ssh.close()
 
         # Create a response for the FLM
@@ -226,6 +228,8 @@ class FirewallFSM(sonSMbase):
         #desactivate firewall
         command = "pfctl -d" 
         (stdin, stdout, stderr) = ssh.exec_command(command)
+        LOG.debug('Stdout: ' + str(stdout))
+        LOG.debug('Stderr: ' + str(stderr))
         ssh.close()
         # Create a response for the FLM
         response = {}
@@ -275,6 +279,8 @@ class FirewallFSM(sonSMbase):
         #Activate firewall
         command = "pfctl -e" 
         (stdin, stdout, stderr) = ssh.exec_command(command)
+        LOG.debug('Stdout: ' + str(stdout))
+        LOG.debug('Stderr: ' + str(stderr))
         ssh.close()
 
         # Create a response for the FLM
