@@ -38,7 +38,7 @@ WORKDIR /son-sm-template
 RUN python setup.py install
 
 WORKDIR /
-ADD SSM/task-config-monitor /task-config-monitor
+ADD ssm/task-config-monitor /task-config-monitor
 
 WORKDIR /task-config-monitor
 RUN python setup.py develop
