@@ -30,14 +30,6 @@ network_functions:
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vfw-vnf"
     vnf_version: "0.1"
-#  - vnf_id: "vnf_ids"
-#    vnf_vendor: "eu.sonata-nfv"
-#    vnf_name: "ids-vnf"
-#    vnf_version: "0.1"
-#  - vnf_id: "vnf_tor"
-#    vnf_vendor: "eu.sonata-nfv"
-#    vnf_name: "tor-vnf"
-#    vnf_version: "0.1"
 
 ##
 ## Some service specific managers.
@@ -78,8 +70,6 @@ virtual_links:
       - "vnf_vpn:cpmgmt"
       - "vnf_prx:cpmgmt"
       - "vnf_fw:cpmgmt"
-      - "vnf_ids:cpmgmt"
-      - "vnf_tor:cpmgmt"
       - "cpmgmt"
   - id: "input-2-vpn"
     connectivity_type: "E-Line"
