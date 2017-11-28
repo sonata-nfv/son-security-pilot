@@ -1,22 +1,22 @@
----
 ##
-## Some general information regarding this
-## VNF descriptor.
+## vPRX VNF Descriptor
 ##
-descriptor_version: "1.0"
+descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
-name: "cache-vnf"
+name: "prx-vnf"
 version: "0.1"
-author: "Miguel Mesquita, AlticeLabs, mesquita@alticelabs.com"
-description: "The Squid HTTP proxy VNF for the PSA pilot"
-
+author: "Felipe Vicens, ATOS"
+description: "Implementation of Proxy function"
+ 
 ##
-## The virtual deployment unit.
+## The virtual deployment units.
 ##
 virtual_deployment_units:
-  - id: "1"
-    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/squid-vnf/squid-3.5.12-img.qcow2"
+  - id: "vdu01"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/u16squid-x86_64-v2.qcow2"
     vm_image_format: "qcow2"
+#    vm_image_md5: "02079327691b009b04fb1d4e1127bd96"
+    vm_image_md5: "838821b21771674dd29acf1663253278"
     resource_requirements:
       cpu:
         vcpus: 1
@@ -24,7 +24,7 @@ virtual_deployment_units:
         size: 2
         size_unit: "GB"
       storage:
-        size: 20
+        size: 40
         size_unit: "GB"
     monitoring_parameters:
       - name: "vm_cpu_perc"
@@ -36,38 +36,16 @@ virtual_deployment_units:
       - name: "vm_net_tx_bps"
         unit: "bps"
     connection_points:
-      - id: "cpeth0"
+      - id: "eth0"
+        interface: "ipv4"
+        type: "management"
+      - id: "eth1"
         interface: "ipv4"
         type: "internal"
-      - id: "cpeth1"
+      - id: "eth2"
         interface: "ipv4"
         type: "internal"
-      - id: "cpeth2"
-        interface: "ipv4"
-        type: "internal"
-
-##
-## The virtual links that interconnect
-## the different connections points.
-##
-virtual_links:
-  - id: "vlmgmt"
-    connectivity_type: "E-LAN"
-    connection_points_reference:
-      - "1:cpeth0"
-      - "cpmgmt"
-  - id: "vlinput"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "1:cpeth1"
-      - "cpinput"
-  - id: "vloutput"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "1:cpeth2"
-      - "cpoutput"
-
-
+ 
 ##
 ## The VNF connection points to the 
 ## outside world.
@@ -82,16 +60,59 @@ connection_points:
   - id: "cpoutput"
     interface: "ipv4"
     type: "internal"
+ 
+##
+## The virtual links that interconnect
+## the different connections points.
+##
+virtual_links:
+  - id: "vlmgmt"
+    connectivity_type: "E-LAN"
+    connection_points_reference:
+      - "vdu01:eth0"
+      - "cpmgmt"
+    dhcp: True
+  - id: "vlinput"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vdu01:eth1"
+      - "cpinput"
+  - id: "vloutput"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vdu01:eth2"
+      - "cpoutput"
+ 
+##
+## The monitoring rules that react
+## to the monitoring parameters
+##
+monitoring_rules:
+  - name: "mon:rule:vm_cpu_perc"
+    description: "Trigger events if CPU load is above 10 percent."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:vm_cpu_perc > 10"
+    notification:
+      - name: "notification01"
+        type: "rabbitmq_message"
+  - name: "mon:rule:vm_mem_perc"
+    description: "Trigger events if memory consumption is above 10 percent."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:vm_mem_perc > 10"
+    notification:
+      - name: "notification02"
+        type: "rabbitmq_message"
+
 
 ##
-## Specific operations on the FSM
+## Function Specific Managers
 ##
-##
-
 function_specific_managers:
-  - id: "sonfsmservice1function1css1"
-    description: "FSM to manage cache VNF"
-    image: "sonatanfv/fsm-css"
+  - id: "sonfsmpsaserviceprx-vnfprx-config1"
+    description: "FSM for the configuration of the vPRX"
+    image: "sonatanfv/psa-vprx-fsm-css"
     options:
       - key: "type"
         value: "start"
@@ -99,5 +120,3 @@ function_specific_managers:
         value: "stop"
       - key: "type"
         value: "configure"
-      - key: "type"
-        value: "scale"

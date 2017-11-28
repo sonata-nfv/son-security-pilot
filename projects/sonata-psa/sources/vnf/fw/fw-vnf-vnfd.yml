@@ -1,15 +1,13 @@
-
----
 ##
 ## Some general information regarding this
 ## VNF descriptor.
 ##
 descriptor_version: "vnfd-schema-01"
 vendor: "eu.sonata-nfv"
-name: "fw-vnf"
-version: "0.9"
-author: "Bruno Vidalenc, Thales, bruno.vidalenc@thaesgroup.com"
-description: "Pfsense firewall VNF "
+name: "vfw-vnf"
+version: "0.1"
+author: "Steven Van Rossem, Ghent University, steven.vanrossem@intec.ugent.be"
+description: "Firewall VNF based on an Openflow controller Ryu + OpenVswitch"
 ##
 ## The virtual deployment unit.
 ##
@@ -20,21 +18,21 @@ virtual_deployment_units:
     vm_image_md5: "500f32465fea6f646557df49dc018171"
     resource_requirements:
       cpu:
-        vcpus: 2
+        vcpus: 1
       memory:
-        size: 2
+        size: 1
         size_unit: "GB"
       storage:
         size: 1
         size_unit: "GB"
     connection_points:
-      - id: "cpeth0"
+      - id: "eth0"
+        interface: "ipv4"
+        type: "management"
+      - id: "cpinput"
         interface: "ipv4"
         type: "internal"
-      - id: "cpeth1"
-        interface: "ipv4"
-        type: "internal"
-      - id: "cpeth2"
+      - id: "cpoutput"
         interface: "ipv4"
         type: "internal"
 
@@ -46,17 +44,17 @@ virtual_links:
   - id: "vlmgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "1:cpeth0"
+      - "1:eth0"
       - "cpmgmt"
   - id: "vlinput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "1:cpeth1"
+      - "1:cpinput"
       - "cpinput"
   - id: "vloutput"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "1:cpeth2"
+      - "1:cpoutput"
       - "cpoutput"
 
 
@@ -70,9 +68,18 @@ connection_points:
     type: "management"
   - id: "cpinput"
     interface: "ipv4"
-    type: "internal"
+    type: "external"
   - id: "cpoutput"
     interface: "ipv4"
-    type: "internal"
+    type: "external"
+
+
+function_specific_managers:
+  - id: "sonfsmpsa-servicefirewall-vnffirewall-config1"
+    description: "FSM to do a first FSM test"
+    image: "sonatanfv/psa-vfw-fsm-css"
+    options:
+      - key: "type"
+        value: "start"
 
 
