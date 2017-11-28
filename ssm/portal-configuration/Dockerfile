@@ -25,7 +25,8 @@ MAINTAINER SONATA
 # configrurations
 ENV mongo_host mongo
 ENV mongo_port 27017
-ENV broker_host amqp://guest:guest@broker:5672/%2F
+#ENV broker_host amqp://guest:guest@broker:5672/%2F
+ENV broker_host amqp://wolke:wolke@10.10.243.101:5672/%2F
 ENV broker_exchange son-kernel
 
 ADD son-sm/son-mano-framework/son-mano-base /son-mano-base
@@ -38,7 +39,7 @@ WORKDIR /son-sm-template
 RUN python setup.py install
 
 WORKDIR /
-ADD ssm/portal-configuration /portal_configure
+ADD . /portal_configure
 
 WORKDIR /portal_configure
 RUN python setup.py develop

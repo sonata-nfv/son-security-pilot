@@ -53,8 +53,9 @@ setup(
     url='https://github.com/sonata-nfv/son-sm/tree/master/son-ssm-examples',
 
     # Author details
-    author='Thomas Soenen',
-    author_email='thomas.soenen@ugent.be',
+    # Please Adel Zaalouk, Peer Hasselmeyer
+    author='Andreas Ripke',
+    author_email='andreas.ripke@neclab.eu',
 
     # Choose your license
     license='Apache 2.0',
@@ -63,7 +64,7 @@ setup(
     keywords='NFV orchestrator',
 
     packages=find_packages("portal_configure"),
-    install_requires=['pika', 'pytest'],
+    install_requires=['pika', 'pytest', 'websocket_server', 'websocket_client'],
     setup_requires=['pytest-runner'],
 
     # To provide executable scripts, use entry points in preference to the
