@@ -356,7 +356,7 @@ class FirewallFSM(sonSMbase):
         results = pbex.run()
         return True
 
-    def _create_ssh_connection(mgmt_ip):
+    def _create_ssh_connection(self, mgmt_ip):
         port = 22
         username = 'root'
         password = 'pfsense'
