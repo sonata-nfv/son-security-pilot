@@ -1,12 +1,12 @@
 ##
-## TOR VNF Descriptor
+## VPN VNF Descriptor
 ##
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "tor-vnf"
 version: "0.1"
 author: "Luis Conceicao, UBIWHERE"
-description: "Implementation of TOR function to be used as a transparent proxy"
+description: "Implementation of OpenVPN function"
  
 ##
 ## The virtual deployment units.
@@ -15,9 +15,10 @@ virtual_deployment_units:
   - id: "vdu01"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/tor_css-vnf/sonata-tor_css.qcow2"
     vm_image_format: "qcow2"
+    vm_image_md5: "799b6db0c724b6552e092232a94a262e"
     resource_requirements:
       cpu:
-        vcpus: 1
+        vcpus: 2
       memory:
         size: 2
         size_unit: "GB"
@@ -36,7 +37,7 @@ virtual_deployment_units:
     connection_points:
       - id: "eth0"
         interface: "ipv4"
-        type: "internal"
+        type: "management"
       - id: "eth1"
         interface: "ipv4"
         type: "internal"
@@ -54,10 +55,10 @@ connection_points:
     type: "management"
   - id: "input"
     interface: "ipv4"
-    type: "external"
+    type: "internal"
   - id: "output"
     interface: "ipv4"
-    type: "external"
+    type: "internal"
  
 ##
 ## The virtual links that interconnect
@@ -75,13 +76,11 @@ virtual_links:
     connection_points_reference:
       - "vdu01:eth1"
       - "input"
-    dhcp: True
   - id: "output"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth2"
       - "output"
-    dhcp: True
  
 ##
 ## The monitoring rules that react
@@ -104,3 +103,15 @@ monitoring_rules:
     notification:
       - name: "notification02"
         type: "rabbitmq_message"
+
+
+##
+## Function Specific Managers
+##
+function_specific_managers:
+  - id: "sonfsmpsaservicevpn-vnftor-config1"
+    description: "FSM for the configuration of the TOR"
+    image: "sonatanfv/psa-tor-fsm-css"
+    options:
+      - key: "type"
+        value: "start"
