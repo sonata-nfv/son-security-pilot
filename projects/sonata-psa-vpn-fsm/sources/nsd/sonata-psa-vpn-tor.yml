@@ -23,7 +23,7 @@ description: >
 network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
-    vnf_name: "vpn-vnf"
+    vnf_name: "vpn-vnf-single"
     vnf_version: "0.1"
 
 ## The NS connection points to the 
