@@ -9,21 +9,21 @@
 descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
-name: "psa-tor-fsm"
+name: "psa-vpn-fsm"
 version: "0.1.1"
 author: "Luis Conceicao, UBIWHERE"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
-   comprising TOR function"
+   comprising VPN function"
 
 ##
 ## The various network functions this service
 ## is composed of.
 ##
 network_functions:
-  - vnf_id: "vnf_tor"
+  - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
-    vnf_name: "tor-vnf"
+    vnf_name: "vpn-vnf"
     vnf_version: "0.1"
 
 ## The NS connection points to the 
@@ -60,17 +60,17 @@ virtual_links:
   - id: "mgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "vnf_tor:mgmt"
+      - "vnf_vpn:mgmt"
       - "mgmt"
-  - id: "input-2-tor"
+  - id: "input-2-vpn"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "input"
-      - "vnf_tor:input"
-  - id: "tor-2-output"
+      - "vnf_vpn:input"
+  - id: "vpn-2-output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vnf_tor:output"
+      - "vnf_vpn:output"
       - "output"
 
 ##
@@ -82,19 +82,19 @@ forwarding_graphs:
     number_of_virtual_links: 3
     constituent_virtual_links: 
       - "mgmt"
-      - "input-2-tor"
-      - "tor-2-output"
+      - "input-2-vpn"
+      - "vpn-2-output"
     constituent_vnfs:
-      - "vnf_tor"
+      - "vnf_vpn"
     network_forwarding_paths:
       - fp_id: "fg01:fp01"
         policy: "none"
         connection_points:
           - connection_point_ref: "input"
             position: 1
-          - connection_point_ref: "vnf_tor:input"
+          - connection_point_ref: "vnf_vpn:input"
             position: 2
-          - connection_point_ref: "vnf_tor:output"
+          - connection_point_ref: "vnf_vpn:output"
             position: 3
           - connection_point_ref: "output"
             position: 4
