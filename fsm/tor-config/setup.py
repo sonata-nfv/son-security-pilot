@@ -43,7 +43,7 @@ setup(
 
     version='0.1',
 
-    description='VPN configuration FSM',
+    description='TOR configuration FSM',
     long_description=long_description,
 
     # The project's main homepage.
@@ -60,13 +60,13 @@ setup(
     keywords='NFV orchestrator',
 
     packages=find_packages("tor-config"),
-    install_requires=['pytest', 'ansible'],
+    install_requires=['pytest', 'ansible>=2.4.0.0'],
     setup_requires=['pytest-runner'],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
-        'console_scripts': ['tor-config=tor.__main__:main'],
+        'console_scripts': ['tor-css=tor_css.tor_css:main'],
     },
 )
