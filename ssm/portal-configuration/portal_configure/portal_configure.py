@@ -250,7 +250,7 @@ class Portal_Configure(sonSMbase):
             if (vnfr['virtual_deployment_units'][0]['vm_image']) == 'http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2':
                 vpn_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
                 LOG.info("vVPN's management IP retrieved: "+vpn_ip)
-                
+
             if (vnfr['virtual_deployment_units'][0]['vm_image']) == 'http://files.sonata-nfv.eu/son-psa-pilot/tor-vnf/sonata-tor.qcow2':
                 tor_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
                 LOG.info("vTOR's management IP retrieved: "+tor_ip)
@@ -260,14 +260,13 @@ class Portal_Configure(sonSMbase):
                 prx_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
                 LOG.info("vProxy's management IP retrieved: "+prx_ip)
 
-        try:
-            iprev = reverse(vpn_ip)
-            LOG.info("Got the reverse IP to be turned to integer: "+iprev)
-            ipInt = int(netaddr.IPAddress(iprev))
-            LOG.info("Got the Integer from the IP: "+str(ipInt))
+#        try:
+        iprev = reverse(vpn_ip)
+        LOG.info("Got the reverse IP to be turned to integer: "+iprev)
+        ipInt = int(netaddr.IPAddress(iprev))
+        LOG.info("Got the Integer from the IP: "+str(ipInt))
 
 
-        
     def setup_portal_conn(self):
         """
         Setup the connection with the portal.
