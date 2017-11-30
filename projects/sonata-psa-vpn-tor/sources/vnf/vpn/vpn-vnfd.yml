@@ -15,14 +15,15 @@ virtual_deployment_units:
   - id: "vdu01"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2"
     vm_image_format: "qcow2"
+    vm_image_md5: "799b6db0c724b6552e092232a94a262a"
     resource_requirements:
       cpu:
-        vcpus: 1
+        vcpus: 2
       memory:
-        size: 2
+        size: 4
         size_unit: "GB"
       storage:
-        size: 20
+        size: 40
         size_unit: "GB"
     monitoring_parameters:
       - name: "vm_cpu_perc"
@@ -36,16 +37,16 @@ virtual_deployment_units:
     connection_points:
       - id: "eth0"
         interface: "ipv4"
-        type: "internal"
+        type: "management"
       - id: "eth1"
         interface: "ipv4"
         type: "internal"
       - id: "eth2"
         interface: "ipv4"
         type: "internal"
- 
+
 ##
-## The VNF connection points to the 
+## The VNF connection points to the
 ## outside world.
 ##
 connection_points:
@@ -54,11 +55,11 @@ connection_points:
     type: "management"
   - id: "input"
     interface: "ipv4"
-    type: "external"
+    type: "internal"
   - id: "output"
     interface: "ipv4"
-    type: "external"
- 
+    type: "internal"
+
 ##
 ## The virtual links that interconnect
 ## the different connections points.
@@ -75,14 +76,12 @@ virtual_links:
     connection_points_reference:
       - "vdu01:eth1"
       - "input"
-    dhcp: True
   - id: "output"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth2"
       - "output"
-    dhcp: True
- 
+
 ##
 ## The monitoring rules that react
 ## to the monitoring parameters
@@ -110,9 +109,9 @@ monitoring_rules:
 ## Function Specific Managers
 ##
 function_specific_managers:
-  - id: "fsmpsaservicevpn-vnfvpn-config1"
+  - id: "sonfsmpsaservicevpn-vnfvpn-config1"
     description: "FSM for the configuration of the VPN"
-    image: "lconceicao/psa-fsm-vpn-config"
+    image: "sonatanfv/psa-vpn-fsm-css"
     options:
-      - key: "myKey"
-        value: "myValue"
+      - key: "type"
+        value: "start"

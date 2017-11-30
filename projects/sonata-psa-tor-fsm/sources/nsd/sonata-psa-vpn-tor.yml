@@ -23,7 +23,7 @@ description: >
 network_functions:
   - vnf_id: "vnf_tor"
     vnf_vendor: "eu.sonata-nfv"
-    vnf_name: "tor-vnf"
+    vnf_name: "tor-vnf-single"
     vnf_version: "0.1"
 
 ## The NS connection points to the 
