@@ -121,7 +121,7 @@ class CssFSM(sonSMbase):
 
         # Don't trigger on non-request messages
         if "fsm_type" not in request.keys():
-            LOG.info("Received a non-request message, ignoring...")
+            LOG.info("Received a non-request message, ignoring...: request=%s", request)
             return
         LOG.info('Handling message with fsm_type=%s', request["fsm_type"])
 
