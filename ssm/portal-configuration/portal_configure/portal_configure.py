@@ -68,6 +68,12 @@ class Server:
         actionName = messageDict['name']
 
         def amqp_send():
+            #self.manoconn.publish(topic='specific.manager.registry.ssm.status', message=yaml.dump(
+            #                      {'name':self.specific_manager_id,'status': 'UP and Running'}))
+
+            # Subscribe to the topic that the SLM will be sending on
+            #topic = 'generic.ssm.' + str(self.sfuuid)
+            #self.manoconn.subscribe(self.received_request, topic)
 
             credentials = pika.PlainCredentials('wolke', 'wolke')
 
@@ -227,6 +233,39 @@ class Portal_Configure(sonSMbase):
         # Subscribe to the topic that the SLM will be sending on
         topic = 'generic.ssm.' + str(self.sfuuid)
         self.manoconn.subscribe(self.received_request, topic)
+
+    # Does this go here?
+    def configure_event(self, content):
+        """
+        This method handles a configure event.
+        """
+        LOG.info("Performing life cycle configure event")
+        LOG.info("content: " + str(content.keys()))
+        # TODO: Add the configure logic. The content is a dictionary that
+        # contains the required data
+
+        nsr = content['nsr']
+        vnfrs = content['vnfrs']
+        for vnfr in vnfrs:
+            if (vnfr['virtual_deployment_units'][0]['vm_image']) == 'http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2':
+                vpn_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
+                LOG.info("vVPN's management IP retrieved: "+vpn_ip)
+
+            if (vnfr['virtual_deployment_units'][0]['vm_image']) == 'http://files.sonata-nfv.eu/son-psa-pilot/tor-vnf/sonata-tor.qcow2':
+                tor_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
+                LOG.info("vTOR's management IP retrieved: "+tor_ip)
+
+            # instead of sonata-prx, might be u16squid-micro-x86-64-v04.qcow2
+            if (vnfr['virtual_deployment_units'][0]['vm_image']) == 'http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/sonata-prx.qcow2':
+                prx_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
+                LOG.info("vProxy's management IP retrieved: "+prx_ip)
+
+#        try:
+        iprev = reverse(vpn_ip)
+        LOG.info("Got the reverse IP to be turned to integer: "+iprev)
+        ipInt = int(netaddr.IPAddress(iprev))
+        LOG.info("Got the Integer from the IP: "+str(ipInt))
+
 
     def setup_portal_conn(self):
         """
