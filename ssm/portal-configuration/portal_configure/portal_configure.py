@@ -255,10 +255,14 @@ class Portal_Configure(sonSMbase):
                 tor_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
                 LOG.info("vTOR's management IP retrieved: "+tor_ip)
 
-            # instead of sonata-prx, might be u16squid-micro-x86-64-v04.qcow2
+            # instead of sonata-prx, image might be u16squid-micro-x86-64-v04.qcow2
             if (vnfr['virtual_deployment_units'][0]['vm_image']) == 'http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/sonata-prx.qcow2':
                 prx_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
                 LOG.info("vProxy's management IP retrieved: "+prx_ip)
+
+            if (vnfr['virtual_deployment_units'][0]['vm_image']) == 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/pfsense-vnf.qcow2':
+                fw_ip = vnfr['virtual_deployment_units'][0]['vnfc_instance'] [0]['connection_points'][0]['interface']['address']
+                LOG.info("vFW's management IP retrieved: "+prx_ip)
 
 #        try:
         iprev = reverse(vpn_ip)
