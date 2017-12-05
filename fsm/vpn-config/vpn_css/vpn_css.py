@@ -255,7 +255,7 @@ class CssFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
-        if len(vnfrs == 1):
+        if len(vnfrs) == 1:
             result = self.vpn_configure(nsr, vnfrs[0])
 
         elif len(vnfrs) > 1:
