@@ -330,6 +330,9 @@ class CssFSM(sonSMbase):
         ssh = paramiko.SSHClient()
         LOG.info("SSH client started")
 
+        # allows automatic adding of unknown hosts to 'known_hosts'
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
         ssh.connect(mgmt_ip, username=username, password=password)
         LOG.info("SSH connection established")
 
