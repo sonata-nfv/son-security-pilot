@@ -354,7 +354,7 @@ class CssFSM(sonSMbase):
 
         LOG.info("Add default route for input/output interface (eth1)")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "dhclient eth1".format(default_gw))
+            "dhclient eth1")
         LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
                                           str(ssh_stderr)))
 
