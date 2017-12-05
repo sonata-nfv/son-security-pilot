@@ -255,7 +255,13 @@ class CssFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
-        result = self.vpn_configure(nsr, vnfrs[0], vnfrs[1])  # TODO: the order of vnfrs is random
+        if len(vnfrs == 1):
+            result = self.vpn_configure(nsr, vnfrs[0])
+
+        elif len(vnfrs) > 1:
+            # TODO: the order of vnfrs is random
+            # TODO: ensure if vnfr[1] is the correct one by viewing the NSR SFC
+            result = self.vpn_configure(nsr, vnfrs[0], next_vnfr=vnfrs[1])
 
         # Create a response for the FLM
         response = {}
@@ -282,7 +288,7 @@ class CssFSM(sonSMbase):
 
         return response
 
-    def vpn_configure(self, nsr, vnfr, next_vnfr):
+    def vpn_configure(self, nsr, vnfr, next_vnfr=None):
 
         LOG.info('Start retrieving the IP address ...')
 
@@ -355,34 +361,6 @@ class CssFSM(sonSMbase):
         LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
                                           str(ssh_stderr)))
 
-        # find virtual link of vpn output
-        next_vnf = None
-        for vl in nsr['virtual_links']:
-            for cpr in vl['connection_points_reference']:
-                if cpr == 'vnf_vpn:cpoutput':
-                    vl_cprs = vl['connection_points_reference'].copy()
-                    vl_cprs.pop(vl_cprs.index(cpr))
-                    next_vnf = vl_cprs[0].split(':')[0]
-
-        if not next_vnf:
-            # next VNF not found, leave default GW as it is
-            LOG.info("Couldn't find the VNF following the VPN. "
-                     "Leaving default GW '{}'".format(default_gw))
-            return True
-
-        # retrieve the IP address of the next vnf
-        next_cps = next_vnfr['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
-        next_cpinput_ip = None
-        if len(next_cps) >= 1 and 'type' in next_cps[1] and 'address' in next_cps[1]['type']:
-            next_cpinput_ip = next_cps[1]['type']['address']
-
-        if not next_cpinput_ip:
-            LOG.error("Couldn't obtain next VNF cpinput IP address from VNFR")
-            return False
-
-        LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; fw_cpinput_ip:'{2}'"
-                 .format(mgmt_ip, cpinput_ip, next_cpinput_ip))
-
         # remove default GW
         LOG.info("Delete default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
@@ -390,11 +368,49 @@ class CssFSM(sonSMbase):
         LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
                                           str(ssh_stderr)))
 
-        LOG.info("Configure default GW for next VNF VM in chain")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route add default gw {0}".format(next_cpinput_ip))
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+        # next VNF exists
+        if next_vnfr:
+            # find virtual link of vpn output
+            next_vnf = None
+            for vl in nsr['virtual_links']:
+                for cpr in vl['connection_points_reference']:
+                    if cpr == 'vnf_vpn:cpoutput':
+                        vl_cprs = vl['connection_points_reference'].copy()
+                        vl_cprs.pop(vl_cprs.index(cpr))
+                        next_vnf = vl_cprs[0].split(':')[0]
+
+            if not next_vnf:
+                # next VNF not found, leave default GW as it is
+                LOG.info("Couldn't find the VNF following the VPN. "
+                         "Leaving default GW '{}'".format(default_gw))
+                return True
+
+            # retrieve the IP address of the next vnf
+            next_cps = next_vnfr['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
+            next_cpinput_ip = None
+            if len(next_cps) >= 1 and 'type' in next_cps[1] and 'address' in next_cps[1]['type']:
+                next_cpinput_ip = next_cps[1]['type']['address']
+
+            if not next_cpinput_ip:
+                LOG.error("Couldn't obtain next VNF cpinput IP address from VNFR")
+                return False
+
+            LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; fw_cpinput_ip:'{2}'"
+                     .format(mgmt_ip, cpinput_ip, next_cpinput_ip))
+
+            LOG.info("Configure default GW for next VNF VM in chain")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "route add default gw {0}".format(next_cpinput_ip))
+            LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
+                                              str(ssh_stderr)))
+
+        # next VNF doesn't exist
+        else:
+            LOG.info("Add default route for input/output interface (eth1)")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "dhclient eth1".format(default_gw))
+            LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
+                                              str(ssh_stderr)))
 
         # Create a response for the FLM
         response = {}
