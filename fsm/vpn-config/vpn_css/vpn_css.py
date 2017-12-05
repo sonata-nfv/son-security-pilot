@@ -339,37 +339,36 @@ class CssFSM(sonSMbase):
         LOG.info("Retrieve FSM IP address")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "FSM_IP=`echo $SSH_CLIENT | awk '{ print $1}'`")
-        fsm_ip = ssh_stdout
-        LOG.info("FSM IP: {0}".format(fsm_ip))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read(), ssh_stderr.read))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "echo $FSM_IP")
-
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+        fsm_ip = ssh_stdout.read()
+        LOG.info("FSM IP: {0}".format(fsm_ip))
 
         LOG.info("Get current default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "IP=$(/sbin/ip route | awk '/default/ { print $3 }')")
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read(), ssh_stderr.read))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "echo $IP")
-        default_gw = str(ssh_stdout)
+        default_gw = ssh_stdout.read()
         LOG.info("Default GW: {0}".format(default_gw))
 
         LOG.info("Configure route for FSM IP")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route add -net {0} netmask 255.255.255.255 gw {1}"
             .format(fsm_ip, default_gw))
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read(), ssh_stderr.read))
 
         # remove default GW
         LOG.info("Delete default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route del default gw {0}".format(default_gw))
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read(), ssh_stderr.read))
 
         # next VNF exists
         if next_vnfr:
@@ -404,16 +403,16 @@ class CssFSM(sonSMbase):
             LOG.info("Configure default GW for next VNF VM in chain")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
                 "route add default gw {0}".format(next_cpinput_ip))
-            LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                              str(ssh_stderr)))
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read(), ssh_stderr.read))
 
         # next VNF doesn't exist
         else:
             LOG.info("Add default route for input/output interface (eth1)")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
                 "dhclient eth1")
-            LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                              str(ssh_stderr)))
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read(), ssh_stderr.read))
 
         # Create a response for the FLM
         response = {}
