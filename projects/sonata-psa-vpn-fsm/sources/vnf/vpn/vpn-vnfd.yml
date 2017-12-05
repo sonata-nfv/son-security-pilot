@@ -3,8 +3,8 @@
 ##
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
-name: "vpn-vnf-single"
-version: "0.1"
+name: "vpn-vnf"
+version: "0.33"
 author: "Luis Conceicao, UBIWHERE"
 description: "Implementation of OpenVPN function"
  
