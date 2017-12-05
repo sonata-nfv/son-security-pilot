@@ -297,16 +297,16 @@ class CssFSM(sonSMbase):
 
         mgmt_ip = None
         for cp in cps:
-            if 'netmask' not in cp['type'] and 'address' in cp['type']:
-                mgmt_ip = cp['type']['address']
+            if cp['type'] == 'management' and 'netmask' not in cp.keys():
+                mgmt_ip = cp['interface']['address']
                 LOG.info("management ip: " + str(mgmt_ip))
         if not mgmt_ip:
             LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
             return False
 
         cpinput_ip = None
-        if len(cps) >= 1 and 'type' in cps[1] and 'address' in cps[1]['type']:
-            cpinput_ip = cps[1]['type']['address']
+        if len(cps) >= 1 and cps[1]['type'] == 'internal':
+            cpinput_ip = cps[1]['interface']['address']
         if not cpinput_ip:
             LOG.error("Couldn't obtain cpinput IP address from VNFR")
             return False
