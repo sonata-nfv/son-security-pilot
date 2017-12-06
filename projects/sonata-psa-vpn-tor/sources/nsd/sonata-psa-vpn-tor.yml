@@ -2,7 +2,7 @@
 ## This is a network service descriptor
 ## for the SONATA PSA pilot containing the
 ## VPN and TOR functions.
-## 
+##
 ## @author Luis Conceicao, UBIWHERE, lconceicao@ubiwhere.com
 ##
 ---
@@ -10,7 +10,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "psa-vpn-tor"
-version: "0.1.1"
+version: "0.1.2"
 author: "Luis Conceicao, UBIWHERE"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
@@ -24,13 +24,13 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.1"
+    vnf_version: "0.5"
   - vnf_id: "vnf_tor"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "tor-vnf"
-    vnf_version: "0.1"
+    vnf_version: "0.5"
 ##
-## The NS connection points to the 
+## The NS connection points to the
 ## outside world.
 ##
 connection_points:
@@ -43,6 +43,19 @@ connection_points:
   - id: "output"
     interface: "ipv4"
     type: "external"
+
+
+service_specific_managers:
+ - id: "sonssmpsaservicetask-config-monitor1"
+   description: "An SSM functioning as task, config and monitor SSM."
+   image: "sonatanfv/psaservice-ssm-taskconfigmonitor"
+   options:
+     - key: "type"
+       value: "task"
+     - key: "type"
+       value: "configure"
+     - key: "type"
+       value: "monitor"
 
 ##
 ## The virtual links that interconnect
@@ -59,16 +72,16 @@ virtual_links:
     connectivity_type: "E-Line"
     connection_points_reference:
       - "input"
-      - "vnf_vpn:input"
+      - "vnf_vpn:inout"
   - id: "vpn-2-tor"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vnf_vpn:output"
-      - "vnf_tor:input"
+      - "vnf_vpn:inout"
+      - "vnf_tor:inout"
   - id: "tor-2-output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vnf_tor:output"
+      - "vnf_tor:inout"
       - "output"
 
 ##
@@ -78,7 +91,7 @@ forwarding_graphs:
   - fg_id: "fg01"
     number_of_endpoints: 2
     number_of_virtual_links: 4
-    constituent_virtual_links: 
+    constituent_virtual_links:
       - "mgmt"
       - "input-2-vpn"
       - "vpn-2-tor"
@@ -92,13 +105,13 @@ forwarding_graphs:
         connection_points:
           - connection_point_ref: "input"
             position: 1
-          - connection_point_ref: "vnf_vpn:input"
+          - connection_point_ref: "vnf_vpn:inout"
             position: 2
-          - connection_point_ref: "vnf_vpn:output"
+          - connection_point_ref: "vnf_vpn:inout"
             position: 3
-          - connection_point_ref: "vnf_tor:input"
+          - connection_point_ref: "vnf_tor:inout"
             position: 4
-          - connection_point_ref: "vnf_tor:output"
+          - connection_point_ref: "vnf_tor:inout"
             position: 5
           - connection_point_ref: "output"
             position: 6
