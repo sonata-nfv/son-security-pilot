@@ -360,21 +360,22 @@ class CssFSM(sonSMbase):
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(sout, serr))
         default_gw = sout.strip()
-        LOG.info("Default GW: {0}".format(default_gw))
+        LOG.info("Default GW: {0}".format(str(default_gw)))
 
         LOG.info("Configure route for FSM IP")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route add -net {0} netmask 255.255.255.255 gw {1}"
-            .format(fsm_ip, default_gw))
+            .format(str(fsm_ip), str(default_gw)))
         LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read(), ssh_stderr.read))
+                 .format(ssh_stdout.read(), ssh_stderr.read()))
+
 
         # remove default GW
         LOG.info("Delete default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route del default gw {0}".format(default_gw))
         LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read(), ssh_stderr.read))
+                 .format(ssh_stdout.read(), ssh_stderr.read()))
 
         # next VNF exists
         if next_vnfr:
@@ -410,7 +411,7 @@ class CssFSM(sonSMbase):
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
                 "route add default gw {0}".format(next_cpinput_ip))
             LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read(), ssh_stderr.read))
+                     .format(ssh_stdout.read(), ssh_stderr.read()))
 
         # next VNF doesn't exist
         else:
@@ -418,7 +419,7 @@ class CssFSM(sonSMbase):
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
                 "dhclient eth1")
             LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read(), ssh_stderr.read))
+                     .format(ssh_stdout.read(), ssh_stderr.read()))
 
         # Create a response for the FLM
         response = {}
