@@ -339,17 +339,21 @@ class CssFSM(sonSMbase):
         LOG.info("Retrieve FSM IP address")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "FSM_IP=$(echo $SSH_CLIENT | awk '{ print $1}') && echo $FSM_IP")
+        sout = ssh_stdout.read()
+        serr = ssh_stderr.read()
         LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read(), ssh_stderr.read))
-        fsm_ip = ssh_stdout.read().strip()
+                 .format(sout, serr))
+        fsm_ip = sout.strip()
         LOG.info("FSM IP: {0}".format(fsm_ip))
 
         LOG.info("Get current default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "IP=$(/sbin/ip route | awk '/default/ { print $3 }') && echo $IP")
+        sout = ssh_stdout.read()
+        serr = ssh_stderr.read()
         LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read(), ssh_stderr.read))
-        default_gw = ssh_stdout.read().strip()
+                 .format(sout, serr))
+        default_gw = sout.strip()
         LOG.info("Default GW: {0}".format(default_gw))
 
         LOG.info("Configure route for FSM IP")
