@@ -40,11 +40,12 @@ LOG.setLevel(logging.DEBUG)
 
 class faceFSM(sonSMbase):
 
+    config_options = { 'direct': './ansible/roles/squid/files/squid_direct.conf', 
+        'transparent': './ansible/roles/squid/files/squid.conf', 
+        'squidguard': './ansible/roles/squid/files/squid_guard.conf' }
     username = 'sonata'
-    #keyfile = '../ansible/roles/squid/files/sonata.pem'
     password = 'sonata'
     monitoring_file = './node.conf'
-    alternate_squid_cfg_file = './ansible/roles/squid/files/squid.conf'
     with_monitoring = True
     option = 1
 
@@ -67,9 +68,6 @@ class faceFSM(sonSMbase):
         :param description: description
         """
     
-        #if 'KEYFILE' in os.environ:
-         #   keyfile = os.environ['KEYFILE'] 
-
         self.specific_manager_type = 'fsm'
         #self.service_name = 'psa'
         #self.function_name = 'proxy'
@@ -114,9 +112,6 @@ class faceFSM(sonSMbase):
             return
         
         response = None
-#        if self.private_key == None:
-#            LOG.info("private key with value null")
-#            return
         
         if str(request["fsm_type"]) == "start":
             LOG.info("Start event received: " + str(request["content"]))
@@ -209,6 +204,7 @@ class faceFSM(sonSMbase):
     
     def configure_ev(self, content):
         LOG.info("Configuration event with content = %s", str(content.keys()))
+        config_opt = 'transparent'
         
         vnfr = content["vnfr"]
         vnfd = content["vnfd"]
@@ -216,6 +212,11 @@ class faceFSM(sonSMbase):
 
         vdu = vnfr['virtual_deployment_units'][0]
         cpts = vdu['vnfc_instance'][0]['connection_points']
+        if 'config_identifier' in vdu:
+            if vdu['config_identifier'] == 'direct':
+                config_opt = 'direct'
+            elif vdu['config_identifier'] == 'squidguard':
+                config_opt = 'squidguard'
         
         squid_ip = None
         for cp in cpts:
@@ -229,7 +230,7 @@ class faceFSM(sonSMbase):
                 self.playbook_execution(plbk, squid_ip)
             else:
                 opt = 2
-                self.ssh_execution(opt, squid_ip)
+                self.ssh_execution(opt, squid_ip, config_opt)
 
         else:
             LOG.info("No management connection point in vnfr")
@@ -320,7 +321,7 @@ class faceFSM(sonSMbase):
         results = pbex.run()
         return
     
-    def ssh_execution(self, function, host_ip):
+    def ssh_execution(self, function, host_ip, config = 'transparent'):
         LOG.info("Executing ssh connection with function: %s", function)
 
         num_retries = 20
@@ -414,10 +415,14 @@ class faceFSM(sonSMbase):
             ftp = ssh.open_sftp()
             LOG.info("SFTP connection established")
 
-            localpath = self.alternate_squid_cfg_file
+            localpath = self.config_options[config]
             LOG.info("SFTP connection entering on %s", localpath)
             remotepath = '/tmp/squid.conf'
             sftpa = ftp.put(localpath, remotepath)
+            if config == 'squidguard':
+                localpath = '' #TODO
+                remotepath = '' #TODO
+                sftpa = ftp.put(localpath, remotepath)
             ftp.close()
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid3/squid.conf /etc/squid3/squid.conf.old')
@@ -428,6 +433,13 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
+
+            if config == 'squidguard':
+                #TODO ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/ /etc/squid3')
+                LOG.info('output from remote: ' + str(ssh_stdout))
+                LOG.info('output from remote: ' + str(ssh_stdin))
+                LOG.info('output from remote: ' + str(ssh_stderr))
+
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid restart')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))

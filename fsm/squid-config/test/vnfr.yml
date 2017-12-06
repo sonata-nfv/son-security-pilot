@@ -19,6 +19,7 @@
       storage: {size: 20, size_unit: GB}
     vdu_reference: vtc-vnf:vdu01
     vm_image: squid-3.5.12-u16
+    config_identifier: 'transparent'
     vnfc_instance:
     - connection_points:
       - id: vdu01:eth0
