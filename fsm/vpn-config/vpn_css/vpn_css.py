@@ -296,18 +296,17 @@ class CssFSM(sonSMbase):
         cps = vdu['vnfc_instance'][0]['connection_points']
 
         mgmt_ip = None
+        cpinput_ip = None
         for cp in cps:
             if cp['type'] == 'management' and 'netmask' not in cp.keys():
                 mgmt_ip = cp['interface']['address']
                 LOG.info("management ip: " + str(mgmt_ip))
+            if cp['type'] == 'external':
+                cpinput_ip = cp['interface']['address']
+                LOG.info("cpinput ip: " + str(cpinput_ip))
         if not mgmt_ip:
             LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
             return False
-
-        cpinput_ip = None
-        if len(cps) >= 1 and cps[1]['type'] == 'internal':
-            cpinput_ip = cps[1]['interface']['address']
-            LOG.info("cpinput ip: " + str(cpinput_ip))
         if not cpinput_ip:
             LOG.error("Couldn't obtain cpinput IP address from VNFR")
             return False
