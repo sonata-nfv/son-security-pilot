@@ -41,9 +41,6 @@ virtual_deployment_units:
       - id: "eth1"
         interface: "ipv4"
         type: "internal"
-      - id: "eth2"
-        interface: "ipv4"
-        type: "internal"
  
 ##
 ## The VNF connection points to the 
@@ -53,12 +50,10 @@ connection_points:
   - id: "mgmt"
     interface: "ipv4"
     type: "management"
-  - id: "input"
+  - id: "inout"
     interface: "ipv4"
     type: "internal"
-  - id: "output"
-    interface: "ipv4"
-    type: "internal"
+
  
 ##
 ## The virtual links that interconnect
@@ -71,16 +66,11 @@ virtual_links:
       - "vdu01:eth0"
       - "mgmt"
     dhcp: True
-  - id: "input"
+  - id: "input-output"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth1"
-      - "input"
-  - id: "output"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "vdu01:eth2"
-      - "output"
+      - "inout"
  
 ##
 ## The monitoring rules that react
