@@ -255,7 +255,13 @@ class CssFSM(sonSMbase):
         nsr = content['nsr']
         vnfrs = content['vnfrs']
 
-        result = self.tor_configure(nsr, vnfrs[0], vnfrs[1])  # TODO: the order of vnfrs is random
+        if len(vnfrs) == 1:
+            result = self.tor_configure(nsr, vnfrs[0])
+
+        elif len(vnfrs) > 1:
+            # TODO: the order of vnfrs is random
+            # TODO: ensure if vnfr[1] is the correct one by viewing the NSR SFC
+            result = self.tor_configure(nsr, vnfrs[0], next_vnfr=vnfrs[1])
 
         # Create a response for the FLM
         response = {}
@@ -282,7 +288,7 @@ class CssFSM(sonSMbase):
 
         return response
 
-    def tor_configure(self, nsr, vnfr, next_vnfr):
+    def tor_configure(self, nsr, vnfr, next_vnfr=None):
 
         LOG.info('Start retrieving the IP address ...')
 
@@ -290,17 +296,17 @@ class CssFSM(sonSMbase):
         cps = vdu['vnfc_instance'][0]['connection_points']
 
         mgmt_ip = None
+        cpinput_ip = None
         for cp in cps:
-            if 'netmask' not in cp['type'] and 'address' in cp['type']:
-                mgmt_ip = cp['type']['address']
+            if cp['type'] == 'management' and 'netmask' not in cp.keys():
+                mgmt_ip = cp['interface']['address']
                 LOG.info("management ip: " + str(mgmt_ip))
+            if cp['type'] == 'internal':
+                cpinput_ip = cp['interface']['address']
+                LOG.info("cpinput ip: " + str(cpinput_ip))
         if not mgmt_ip:
             LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
             return False
-
-        cpinput_ip = None
-        if len(cps) >= 1 and 'type' in cps[1] and 'address' in cps[1]['type']:
-            cpinput_ip = cps[1]['type']['address']
         if not cpinput_ip:
             LOG.error("Couldn't obtain cpinput IP address from VNFR")
             return False
@@ -317,48 +323,70 @@ class CssFSM(sonSMbase):
         ssh.connect(mgmt_ip, username=username, password=password)
         LOG.info("SSH connection established")
 
+        LOG.info("run ifconfig:")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "ifconfig")
+        sout = ssh_stdout.read().decode('utf-8')
+        LOG.info("{}".format(sout))
+
         LOG.info("Retrieve FSM IP address")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "FSM_IP=`echo $SSH_CLIENT | awk '{ print $1}'`")
-        fsm_ip = ssh_stdout
+            "FSM_IP=$(echo $SSH_CLIENT | awk '{ print $1}') && echo $FSM_IP")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+        fsm_ip = sout.strip()
         LOG.info("FSM IP: {0}".format(fsm_ip))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "echo $FSM_IP")
-
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
 
         LOG.info("Get current default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "IP=$(/sbin/ip route | awk '/default/ { print $3 }')")
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "echo $IP")
-        default_gw = str(ssh_stdout)
-        LOG.info("Default GW: {0}".format(default_gw))
+            "IP=$(/sbin/ip route | awk '/default/ { print $3 }') && echo $IP")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+        default_gw = sout.strip()
+        LOG.info("Default GW: {0}".format(str(default_gw)))
 
         LOG.info("Configure route for FSM IP")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route add -net {0} netmask 255.255.255.255 gw {1}"
-            .format(fsm_ip, default_gw))
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+                .format(fsm_ip, default_gw))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
 
         # remove default GW
         LOG.info("Delete default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route del default gw {0}".format(default_gw))
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        LOG.info("Modify DHCP configuration of interfaces")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
+        )
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
+        )
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
 
         LOG.info("Add default route for input/output interface (eth1)")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "dhclient eth1")
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+            "dhclient")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
 
-        LOG.info("Set iptables rules to forward traffic to TOR")
+        LOG.info("Set iptables rules to forward traffic to TOR network")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "iptables -F && "
             "iptables -t nat -F && "
@@ -366,8 +394,9 @@ class CssFSM(sonSMbase):
             "iptables -t nat -A PREROUTING -i eth1 -p tcp --dport 22 -j REDIRECT --to-ports 22 && "
             "iptables -t nat -A PREROUTING -i eth1 -p tcp --syn -j REDIRECT --to-ports 9040"
         )
-        LOG.info("{0} | {1} | {2}".format(str(ssh_stdin), str(ssh_stdout),
-                                          str(ssh_stderr)))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
 
         # Create a response for the FLM
         response = {}

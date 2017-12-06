@@ -4,10 +4,10 @@
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "vpn-vnf"
-version: "0.1"
+version: "0.5"
 author: "Luis Conceicao, UBIWHERE"
 description: "Implementation of OpenVPN function"
- 
+
 ##
 ## The virtual deployment units.
 ##
@@ -40,10 +40,7 @@ virtual_deployment_units:
         type: "management"
       - id: "eth1"
         interface: "ipv4"
-        type: "internal"
-      - id: "eth2"
-        interface: "ipv4"
-        type: "internal"
+        type: "external"
 
 ##
 ## The VNF connection points to the
@@ -53,12 +50,10 @@ connection_points:
   - id: "mgmt"
     interface: "ipv4"
     type: "management"
-  - id: "input"
+  - id: "inout"
     interface: "ipv4"
-    type: "internal"
-  - id: "output"
-    interface: "ipv4"
-    type: "internal"
+    type: "external"
+
 
 ##
 ## The virtual links that interconnect
@@ -71,16 +66,11 @@ virtual_links:
       - "vdu01:eth0"
       - "mgmt"
     dhcp: True
-  - id: "input"
+  - id: "input-output"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth1"
-      - "input"
-  - id: "output"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "vdu01:eth2"
-      - "output"
+      - "inout"
 
 ##
 ## The monitoring rules that react
@@ -115,3 +105,5 @@ function_specific_managers:
     options:
       - key: "type"
         value: "start"
+      - key: "type"
+        value: "configure"

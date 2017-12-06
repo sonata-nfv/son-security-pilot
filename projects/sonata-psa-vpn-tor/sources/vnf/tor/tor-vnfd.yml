@@ -4,9 +4,9 @@
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "tor-vnf"
-version: "0.1"
+version: "0.5"
 author: "Luis Conceicao, UBIWHERE"
-description: "Implementation of OpenVPN function"
+description: "Implementation of TOR function"
 
 ##
 ## The virtual deployment units.
@@ -15,7 +15,7 @@ virtual_deployment_units:
   - id: "vdu01"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/tor_css-vnf/sonata-tor_css.qcow2"
     vm_image_format: "qcow2"
-    vm_image_md5: "799b6db0c724b6552e092232a94a262e"
+    vm_image_md5: "e03764cc8625d844299a6e18b34f2d49"
     resource_requirements:
       cpu:
         vcpus: 2
@@ -41,9 +41,6 @@ virtual_deployment_units:
       - id: "eth1"
         interface: "ipv4"
         type: "internal"
-      - id: "eth2"
-        interface: "ipv4"
-        type: "internal"
 
 ##
 ## The VNF connection points to the
@@ -53,10 +50,7 @@ connection_points:
   - id: "mgmt"
     interface: "ipv4"
     type: "management"
-  - id: "input"
-    interface: "ipv4"
-    type: "internal"
-  - id: "output"
+  - id: "inout"
     interface: "ipv4"
     type: "internal"
 
@@ -71,16 +65,11 @@ virtual_links:
       - "vdu01:eth0"
       - "mgmt"
     dhcp: True
-  - id: "input"
+  - id: "input-output"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth1"
-      - "input"
-  - id: "output"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "vdu01:eth2"
-      - "output"
+      - "inout"
 
 ##
 ## The monitoring rules that react
@@ -115,3 +104,5 @@ function_specific_managers:
     options:
       - key: "type"
         value: "start"
+      - key: "type"
+        value: "configure"
