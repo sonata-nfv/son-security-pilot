@@ -52,7 +52,7 @@ connection_points:
     type: "management"
   - id: "inout"
     interface: "ipv4"
-    type: "internal"
+    type: "external"
 
  
 ##
