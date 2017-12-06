@@ -417,9 +417,23 @@ class CssFSM(sonSMbase):
 
         # next VNF doesn't exist
         else:
+            LOG.info("Modify DHCP configuration of interfaces")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
+            )
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
+            )
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
+
             LOG.info("Add default route for input/output interface (eth1)")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "dhclient eth1")
+                "dhclient")
             LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
