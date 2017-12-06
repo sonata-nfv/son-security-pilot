@@ -98,7 +98,7 @@ monitoring_rules:
 ## Function Specific Managers
 ##
 function_specific_managers:
-  - id: "sonfsmpsaservicevpn-vnftor-config1"
+  - id: "sonfsmpsaservicetor-vnftor-config1"
     description: "FSM for the configuration of the TOR"
     image: "sonatanfv/psa-tor-fsm-css"
     options:
