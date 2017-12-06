@@ -338,22 +338,18 @@ class CssFSM(sonSMbase):
 
         LOG.info("Retrieve FSM IP address")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "FSM_IP=`echo $SSH_CLIENT | awk '{ print $1}'`")
+            "FSM_IP=$(echo $SSH_CLIENT | awk '{ print $1}') && echo $FSM_IP")
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read(), ssh_stderr.read))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "echo $FSM_IP")
-        fsm_ip = ssh_stdout.read()
+        fsm_ip = ssh_stdout.read().strip()
         LOG.info("FSM IP: {0}".format(fsm_ip))
 
         LOG.info("Get current default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "IP=$(/sbin/ip route | awk '/default/ { print $3 }')")
+            "IP=$(/sbin/ip route | awk '/default/ { print $3 }') && echo $IP")
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read(), ssh_stderr.read))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "echo $IP")
-        default_gw = ssh_stdout.read()
+        default_gw = ssh_stdout.read().strip()
         LOG.info("Default GW: {0}".format(default_gw))
 
         LOG.info("Configure route for FSM IP")
