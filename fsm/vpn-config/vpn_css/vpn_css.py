@@ -307,6 +307,7 @@ class CssFSM(sonSMbase):
         cpinput_ip = None
         if len(cps) >= 1 and cps[1]['type'] == 'internal':
             cpinput_ip = cps[1]['interface']['address']
+            LOG.info("cpinput ip: " + str(cpinput_ip))
         if not cpinput_ip:
             LOG.error("Couldn't obtain cpinput IP address from VNFR")
             return False
@@ -335,6 +336,12 @@ class CssFSM(sonSMbase):
 
         ssh.connect(mgmt_ip, username=username, password=password)
         LOG.info("SSH connection established")
+
+        LOG.info("run ifconfig:")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "ifconfig")
+        sout = ssh_stdout.read()
+        LOG.info("{}".format(sout))
 
         LOG.info("Retrieve FSM IP address")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
