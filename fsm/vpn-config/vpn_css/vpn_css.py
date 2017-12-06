@@ -417,6 +417,7 @@ class CssFSM(sonSMbase):
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
+        return response
 
     def createConf(self, pw_ip, interval, name):
 
