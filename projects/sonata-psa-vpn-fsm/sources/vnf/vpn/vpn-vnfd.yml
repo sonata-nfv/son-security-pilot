@@ -40,7 +40,7 @@ virtual_deployment_units:
         type: "management"
       - id: "eth1"
         interface: "ipv4"
-        type: "internal"
+        type: "external"
  
 ##
 ## The VNF connection points to the 
