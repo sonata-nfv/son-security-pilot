@@ -259,9 +259,53 @@ class CssFSM(sonSMbase):
             result = self.vpn_configure(nsr, vnfrs[0])
 
         elif len(vnfrs) > 1:
-            # TODO: the order of vnfrs is random
-            # TODO: ensure if vnfr[1] is the correct one by viewing the NSR SFC
-            result = self.vpn_configure(nsr, vnfrs[0], next_vnfr=vnfrs[1])
+            # map correct VNFRs
+            vpn_vnfr = None
+            next_vnfr = None
+
+            # temp - print nsr and vnfrs
+            print(nsr)
+            print("----")
+            for vnfr in vnfrs:
+                print(vnfr)
+                print("-")
+
+            for vl in nsr['virtual_links']:
+                if len(vl['connection_points_reference']) != 2:
+                    continue
+                cprs = vl['connection_points_reference']
+
+                if 'vnf_vpn:inout' in cprs:
+                    if cprs.index('vnf_vpn:inout') == 0:
+                        adj_cpr = cprs[1]
+                    else:
+                        adj_cpr = cprs[0]
+
+                if adj_cpr == 'vnf_tor:inout':
+                    next_vnf = 'tor'
+                elif adj_cpr == 'vnf_prx:input':
+                    next_vnf = 'prx'
+                else:
+                    continue
+
+                LOG.info("Found next VNF: {}".format(next_vnf))
+                break
+
+            for vnfr in vnfrs:
+                for vdu in vnfr['virtual_deployment_units']:
+                    if 'vpn-vnf' in vdu['vdu_reference']:
+                        vpn_vnfr = vnfr
+                    if next_vnf in vdu['vdu_reference']:
+                        next_vnfr = vnfr
+
+            if not vpn_vnfr or not next_vnfr:
+                LOG.error("Couldn't obtain corresponding VNFRs")
+                return {'status': 'ERROR'}
+
+            LOG.info("Got VPN vnfr: {0}".format(vpn_vnfr))
+            LOG.info("Got next vnfr: {0}".format(next_vnfr))
+
+            result = self.vpn_configure(nsr, vpn_vnfr, next_vnfr=next_vnfr)
 
         # Create a response for the FLM
         response = {}
