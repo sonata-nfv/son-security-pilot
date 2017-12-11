@@ -249,8 +249,6 @@ class CssFSM(sonSMbase):
         """
         LOG.info("Performing life cycle configure event")
         LOG.info("content: " + str(content.keys()))
-        # TODO: Add the configure logic. The content is a dictionary that
-        # contains the required data
 
         if not content['next_ip']:
             result = self.vpn_configure(content['management_ip'],
@@ -262,7 +260,7 @@ class CssFSM(sonSMbase):
                                         next_ip=content['next_ip'])
 
         # Create a response for the FLM
-        response = {}
+        response = dict()
         response['status'] = 'COMPLETED' if result else 'ERROR'
 
         # TODO: complete the response
@@ -288,7 +286,6 @@ class CssFSM(sonSMbase):
 
     def vpn_configure(self, mgmt_ip, own_ip, next_ip=None):
 
-        LOG.info('Start retrieving the IP address ...')
         LOG.info("management ip: " + str(mgmt_ip))
         LOG.info("in/out ip: " + str(own_ip))
 
