@@ -402,6 +402,8 @@ class CssFSM(sonSMbase):
         response = {}
         response['status'] = 'COMPLETED'
 
+        return response
+
     def createConf(self, pw_ip, interval, name):
 
         config = configparser.RawConfigParser()
