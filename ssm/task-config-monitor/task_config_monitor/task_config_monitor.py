@@ -56,8 +56,14 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.id_number = '1'
         self.version = 'v0.1'
         self.counter = 0
+
         self.nsd = None
-        self.vnfs = None
+        self.nsr = None
+        self.functions = None
+        self.vnfrs = []
+        self.ingress = None
+        self.egress = None
+
         self.description = "Task - Config SSM for the PSA."
 
         super(self.__class__, self).__init__(specific_manager_type= self.specific_manager_type,
@@ -154,20 +160,52 @@ class TaskConfigMonitorSSM(sonSMbase):
         The payload for the config_event is the generic one provided by the
         SP.
         """
-        response = {}
-        response['vnf'] = []
+        LOG.info("Configuration instantiation request: " + str(content))
 
-        for vnf in content['functions']:
-            new_entry = {}
-            new_entry['id'] = vnf['id']
-            if vnf['vnfd']['name'] in ['vpn-vnf', 'tor-vnf']:
-                new_entry['configure'] = {'trigger': True,
-                                          'payload': {}}
-            else:
-                new_entry['configure'] = {'trigger': False,
-                                          'payload': {}}
+        service = content['service']
+        functions = content['functions']
 
-            response['vnf'].append(new_entry)
+        self.nsd = service['nsd']
+        self.nsr = service['nsr']
+
+        for function in functions:
+            LOG.info("Adding vnf: " + str(function['vnfd']['name']))
+            self.functions[function['vnfd']['name']] = {}
+            self.functions[function['vnfd']['name']]['vnfd'] = function['id']
+            self.functions[function['vnfd']['name']]['vnfd'] = function['vnfd']
+            self.functions[function['vnfd']['name']]['vnfr'] = function['vnfr']
+            self.vnfrs.append(function['vnfr'])
+
+            vdu = vnfr['virtual_deployment_units'][0]
+            cps = vdu['vnfc_instance'][0]['connection_points']
+
+            for cp in cps:
+                if cp['type'] in ['internal', 'external']:
+                    own_ip = cp['interface']['address']
+
+                if cp['type'] in ['management']:
+                    management_ip = cp['interface']['address']
+
+            self.functions[function['vnfd']['name']]['own_ip'] = own_ip
+            self.functions[function['vnfd']['name']]['next_ip'] = None
+
+        # Hardcode the next IPs for the instantiation
+        LOG.info("keys in function: " + str(self.function.keys()))
+        for key in self.functions.keys():
+            if key == 'vpn-vnf':
+                if 'tor-vnf' in self.functions.keys():
+                    self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
+                else:
+                    self.functions[key]['next_ip'] = None
+            if key == 'tor-vnf':
+                self.functions[key]['next_ip'] = None
+            if key == 'prx-vnf':
+                self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
+
+        self.ingress = content['ingress']
+        self.egress = content['egress']
+
+        response = self.create_configuration_message()
 
         LOG.info("Generated response: " + str(response))
         # Sending a response
@@ -175,6 +213,52 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.manoconn.notify(topic,
                              yaml.dump(response),
                              correlation_id=corr_id)
+
+    def configure_running(self, payload):
+        """
+        This method reconfigures the service. This is the method that the
+        Portal Application should call. The payload contains a list that
+        is ordered. Each VNF is represented by its name (based on the
+        descriptor)
+        """
+
+        chain = payload['chain']
+
+        for index in range(0, len(chain) - 1):
+            current_vnf = chain[index]
+            next_vnf = chain[index + 1]
+            next_ip = self.functions[next_vnf]['own_ip']
+            self.functions[current_vnf]['next_ip'] = next_ip
+
+        last_vnf = chain[-1]
+        self.functions[current_vnf]['next_ip'] = None
+
+        response = self.create_configuration_message()
+
+        # TODO: send this to the SLM
+
+    def create_configuration_message(self):
+        """
+        This method creates the payload for the configuration response to the
+        SLM.
+        """
+
+        response = {}
+        response['vnf'] = []
+
+        for vnf in self['functions']:
+            new_entry = {}
+            new_entry['id'] = vnf['id']
+            payload = {}
+            payload['management_ip'] = vnf['management_ip']
+            payload['own_ip'] = vnf['own_ip']
+            payload['next_ip'] = vnf['next_ip']
+            new_entry['configure'] = {'trigger': True,
+                                      'payload': payload}
+
+            response['vnf'].append(new_entry)
+
+        return response
 
     def monitor_request(self, corr_id, content):
         """
