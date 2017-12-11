@@ -1,31 +1,29 @@
 ##
-## vPRX VNF Descriptor
+## VPN VNF Descriptor
 ##
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
-name: "prx-vnf"
+name: "tor-vnf-single"
 version: "0.1"
-author: "Felipe Vicens, ATOS"
-description: "Implementation of Proxy function"
+author: "Luis Conceicao, UBIWHERE"
+description: "Implementation of OpenVPN function"
  
 ##
 ## The virtual deployment units.
 ##
 virtual_deployment_units:
-
-  - id: "1"
-    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/eu.sonata-nfv_vprx-vnf_0.5_vdu01.qcow2"
+  - id: "vdu01"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/tor_css-vnf/sonata-tor_css.qcow2"
     vm_image_format: "qcow2"
-    vm_image_md5: "ba82d033ac42317a4bd7f9e3f11e9ebd"
-
+    vm_image_md5: "799b6db0c724b6552e092232a94a262e"
     resource_requirements:
       cpu:
-        vcpus: 1
+        vcpus: 2
       memory:
         size: 2
         size_unit: "GB"
       storage:
-        size: 40
+        size: 20
         size_unit: "GB"
     monitoring_parameters:
       - name: "vm_cpu_perc"
@@ -52,13 +50,13 @@ virtual_deployment_units:
 ## outside world.
 ##
 connection_points:
-  - id: "cpmgmt"
+  - id: "mgmt"
     interface: "ipv4"
     type: "management"
-  - id: "cpinput"
+  - id: "input"
     interface: "ipv4"
     type: "internal"
-  - id: "cpoutput"
+  - id: "output"
     interface: "ipv4"
     type: "internal"
  
@@ -67,22 +65,22 @@ connection_points:
 ## the different connections points.
 ##
 virtual_links:
-  - id: "vlmgmt"
+  - id: "mgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
       - "vdu01:eth0"
-      - "cpmgmt"
+      - "mgmt"
     dhcp: True
-  - id: "vlinput"
+  - id: "input"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth1"
-      - "cpinput"
-  - id: "vloutput"
+      - "input"
+  - id: "output"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vdu01:eth2"
-      - "cpoutput"
+      - "output"
  
 ##
 ## The monitoring rules that react
@@ -111,13 +109,9 @@ monitoring_rules:
 ## Function Specific Managers
 ##
 function_specific_managers:
-  - id: "sonfsmpsaserviceprx-vnfprx-config1"
-    description: "FSM for the configuration of the vPRX"
-    image: "sonatanfv/psa-vprx-fsm-css"
+  - id: "sonfsmpsaservicevpn-vnftor-config1"
+    description: "FSM for the configuration of the TOR"
+    image: "sonatanfv/psa-tor-fsm-css"
     options:
       - key: "type"
         value: "start"
-      - key: "type"
-        value: "stop"
-      - key: "type"
-        value: "configure"

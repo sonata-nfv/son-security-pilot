@@ -164,29 +164,27 @@ class FirewallFSM(sonSMbase):
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
                        'pfSense.raw'
-
        
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
-                           [0]['vnfc_instance'][0]['connection_points'][0]
-                           ['type']['address'])
+                        [0]['vnfc_instance'][0]['connection_points'][0]
+                        ['interface']['address'])
 
         if not mgmt_ip:
-            LOG.error("Couldn't obtain IP address from VNFR")
+            LOG.error("Couldn't obtain mgmt IP address from VNFR during start")
             return
 
-        #SSH connection to pfsense
-        port = 22
-        username = 'root'
-        password = 'pfsense'
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(
-        paramiko.AutoAddPolicy())
-        ssh.connect(mgmt_ip, port, username, password)
+        ssh = self._create_ssh_connection(mgmt_ip)
+        if not ssh:
+            LOG.error('Unable to establish an SSH connection during the start event')
+            return;
+
         #activate firewall
         command = "pfctl -e" 
         (stdin, stdout, stderr) = ssh.exec_command(command)
+        LOG.debug('Stdout: ' + str(stdout))
+        LOG.debug('Stderr: ' + str(stderr))
         ssh.close()
 
         # Create a response for the FLM
@@ -216,23 +214,22 @@ class FirewallFSM(sonSMbase):
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
                            [0]['vnfc_instance'][0]['connection_points'][0]
-                           ['type']['address'])
+                           ['interface']['address'])
 
         if not mgmt_ip:
-            LOG.error("Couldn't obtain IP address from VNFR")
+            LOG.error("Couldn't obtain IP address from VNFR during stop")
             return
 
-        #SSH connection to pfsense
-        port = 22
-        username = 'root'
-        password = 'pfsense'
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(
-            paramiko.AutoAddPolicy())
-        ssh.connect(mgmt_ip, port, username, password)
+        ssh = self._create_ssh_connection(mgmt_ip)
+        if not ssh:
+            LOG.error('Unable to establish an SSH connection during the stop event')
+            return;
+
         #desactivate firewall
         command = "pfctl -d" 
         (stdin, stdout, stderr) = ssh.exec_command(command)
+        LOG.debug('Stdout: ' + str(stdout))
+        LOG.debug('Stderr: ' + str(stderr))
         ssh.close()
         # Create a response for the FLM
         response = {}
@@ -268,24 +265,22 @@ class FirewallFSM(sonSMbase):
                         [0]['vm_image']) == vm_image:
                     mgmt_ip = (vnfrs[x]['virtual_deployment_units']
                                [0]['vnfc_instance'][0]['connection_points'][0]
-                               ['type']['address'])
+                               ['interface']['address'])
 
         if not mgmt_ip:
-            LOG.error("Couldn't obtain IP address from VNFR")
+            LOG.error("Couldn't obtain mgmt IP address from VNFR during configuration")
             return
 
-        #SSH connection to pfsense
-        port = 22
-        username = 'root'
-        password = 'pfsense'
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(
-            paramiko.AutoAddPolicy())
-        ssh.connect(mgmt_ip, port, username, password)
+        ssh = self._create_ssh_connection(mgmt_ip)
+        if not ssh:
+            LOG.error('Unable to establish an SSH connection during the configure event')
+            return;
 
         #Activate firewall
         command = "pfctl -e" 
         (stdin, stdout, stderr) = ssh.exec_command(command)
+        LOG.debug('Stdout: ' + str(stdout))
+        LOG.debug('Stderr: ' + str(stderr))
         ssh.close()
 
         # Create a response for the FLM
@@ -360,6 +355,36 @@ class FirewallFSM(sonSMbase):
                                 passwords={})
         results = pbex.run()
         return True
+
+    def _create_ssh_connection(self, mgmt_ip):
+        port = 22
+        username = 'root'
+        password = 'pfsense'
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        num_retries = 30
+        retry = 0
+        while retry < num_retries:
+            try:
+                ssh.connect(mgmt_ip, port, username, password)
+                break
+            except paramiko.BadHostKeyException as e:
+                LOG.info("Bad entry in ~/.ssh/known_hosts: %s", e)
+                time.sleep(1)
+                retry += 1
+            except EOFError:
+                LOG.info('Unexpected Error from SSH Connection, retry in 5 seconds')
+                time.sleep(10)
+                retry += 1
+            except Exception as e:
+                LOG.info('SSH Connection refused from %s, will retry in 5 seconds (%s)', mgmt_ip, e)
+                time.sleep(10)
+                retry += 1
+
+        if retry == num_retries:
+            LOG.error('Could not establish SSH connection within max retries')
+            return None;
+        return ssh
 
 
 def main(working_dir=None):

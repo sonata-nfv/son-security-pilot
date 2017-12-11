@@ -25,8 +25,7 @@ MAINTAINER SONATA
 # configrurations
 ENV mongo_host mongo
 ENV mongo_port 27017
-#ENV broker_host amqp://guest:guest@broker:5672/%2F
-ENV broker_host amqp://wolke:wolke@10.10.243.101:5672/%2F
+ENV broker_host amqp://guest:guest@broker:5672/%2F
 ENV broker_exchange son-kernel
 
 ADD son-sm/son-mano-framework/son-mano-base /son-mano-base
@@ -39,10 +38,10 @@ WORKDIR /son-sm-template
 RUN python setup.py install
 
 WORKDIR /
-ADD . /portal_configure
+ADD ssm/task-config-monitor /task-config-monitor
 
-WORKDIR /portal_configure
+WORKDIR /task-config-monitor
 RUN python setup.py develop
 
-CMD ["portal_configure"]
+CMD ["task_config_monitor"]
 

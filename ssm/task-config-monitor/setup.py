@@ -39,19 +39,22 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='tor-config',
+    name='task_config_monitor',
 
-    version='0.1',
+    # Versions should comply with PEP440.  For a discussion on single-sourcing
+    # the version across setup.py and the project code, see
+    # https://packaging.python.org/en/latest/single_source_version.html
+    version='v0.1',
 
-    description='TOR configuration FSM',
+    description='An empty FSM',
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/sonata-nfv/son-security-pilot/fsm/tor-config',
+    url='https://github.com/sonata-nfv/son-sm/tree/master/son-ssm-examples',
 
     # Author details
-    author='Luis Conceicao, UBIWHERE',
-    author_email='lconceicao@ubiwhere.com',
+    author='Hadi Razzaghi Kouchaksaraei',
+    author_email='hadi.razzaghi@upb.de',
 
     # Choose your license
     license='Apache 2.0',
@@ -59,14 +62,14 @@ setup(
     # What does your project relate to?
     keywords='NFV orchestrator',
 
-    packages=find_packages("tor-config"),
-    install_requires=['pytest', 'ansible>=2.4.0.0'],
+    packages=find_packages("task_config_monitor"),
+    install_requires=['pika', 'pytest'],
     setup_requires=['pytest-runner'],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
-        'console_scripts': ['tor-css=tor_css.tor_css:main'],
+        'console_scripts': ['task_config_monitor=task_config_monitor.__main__:main'],
     },
 )

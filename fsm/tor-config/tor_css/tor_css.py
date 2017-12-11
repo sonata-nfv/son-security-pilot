@@ -75,8 +75,8 @@ class CssFSM(sonSMbase):
         LOG.debug('Initialize CssFSM from %s', __file__)
         self.specific_manager_type = 'fsm'
         self.service_name = 'psaservice'
-        self.function_name = 'vpn-vnf'
-        self.specific_manager_name = 'vpn-config'
+        self.function_name = 'tor-vnf'
+        self.specific_manager_name = 'tor-config'
         self.id_number = '1'
         self.version = 'v0.1'
         self.topic = ''
@@ -121,7 +121,7 @@ class CssFSM(sonSMbase):
 
         # Don't trigger on non-request messages
         if "fsm_type" not in request.keys():
-            LOG.info("Received a non-request message, ignoring...: request=%s", request)
+            LOG.info("Received a non-request message, ignoring...")
             return
         LOG.info('Handling message with fsm_type=%s', request["fsm_type"])
 
@@ -194,7 +194,7 @@ class CssFSM(sonSMbase):
         # Configuring the monitoring probe
         ssh_client = Client(mgmt_ip, 'sonata', 'sonata', LOG)
         LOG.info('Mon Config: Create new conf file')
-        self.createConf(sp_ip, 4, 'vpn-vnf')
+        self.createConf(sp_ip, 4, 'tor-vnf')
         ssh_client.sendFile('node.conf')
         ssh_client.sendCommand('ls /tmp/')
         ssh_client.sendCommand('sudo mv /tmp/node.conf /opt/Monitoring/node.conf')
@@ -256,12 +256,12 @@ class CssFSM(sonSMbase):
         vnfrs = content['vnfrs']
 
         if len(vnfrs) == 1:
-            result = self.vpn_configure(nsr, vnfrs[0])
+            result = self.tor_configure(nsr, vnfrs[0])
 
         elif len(vnfrs) > 1:
             # TODO: the order of vnfrs is random
             # TODO: ensure if vnfr[1] is the correct one by viewing the NSR SFC
-            result = self.vpn_configure(nsr, vnfrs[0], next_vnfr=vnfrs[1])
+            result = self.tor_configure(nsr, vnfrs[0], next_vnfr=vnfrs[1])
 
         # Create a response for the FLM
         response = {}
@@ -288,7 +288,7 @@ class CssFSM(sonSMbase):
 
         return response
 
-    def vpn_configure(self, nsr, vnfr, next_vnfr=None):
+    def tor_configure(self, nsr, vnfr, next_vnfr=None):
 
         LOG.info('Start retrieving the IP address ...')
 
@@ -301,7 +301,7 @@ class CssFSM(sonSMbase):
             if cp['type'] == 'management' and 'netmask' not in cp.keys():
                 mgmt_ip = cp['interface']['address']
                 LOG.info("management ip: " + str(mgmt_ip))
-            if cp['type'] == 'external':
+            if cp['type'] == 'internal':
                 cpinput_ip = cp['interface']['address']
                 LOG.info("cpinput ip: " + str(cpinput_ip))
         if not mgmt_ip:
@@ -311,26 +311,13 @@ class CssFSM(sonSMbase):
             LOG.error("Couldn't obtain cpinput IP address from VNFR")
             return False
 
-        #fw_cps = vnfr_fw['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
-        #fw_cpinput_ip = None
-        #if len(fw_cps) >= 1 and 'type' in fw_cps[1] and 'address' in fw_cps[1]['type']:
-        #    fw_cpinput_ip = fw_cps[1]['type']['address']
-        #if not fw_cpinput_ip:
-        #    LOG.error("Couldn't obtain firewall cpinput IP address from VNFR")
-        #    return False
-
-        #LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; fw_cpinput_ip:'{2}'".format(mgmt_ip, cpinput_ip, fw_cpinput_ip))
-
-
-        # connection to vpn vm
-
         username = "root"
         password = "sonata"
 
         ssh = paramiko.SSHClient()
         LOG.info("SSH client started")
 
-        # allows automatic adding of unknown hosts to 'known_hosts'
+        # allow unknown hosts to connect
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         ssh.connect(mgmt_ip, username=username, password=password)
@@ -365,7 +352,7 @@ class CssFSM(sonSMbase):
         LOG.info("Configure route for FSM IP")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route add -net {0} netmask 255.255.255.255 gw {1}"
-            .format(fsm_ip, default_gw))
+                .format(fsm_ip, default_gw))
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
@@ -378,78 +365,42 @@ class CssFSM(sonSMbase):
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
 
-        # next VNF exists
-        if next_vnfr:
-            # find virtual link of vpn output
-            next_vnf = None
-            for vl in nsr['virtual_links']:
-                for cpr in vl['connection_points_reference']:
-                    if cpr == 'vnf_vpn:cpoutput':
-                        vl_cprs = vl['connection_points_reference'].copy()
-                        vl_cprs.pop(vl_cprs.index(cpr))
-                        next_vnf = vl_cprs[0].split(':')[0]
-
-            if not next_vnf:
-                # next VNF not found, leave default GW as it is
-                LOG.info("Couldn't find the VNF following the VPN. "
-                         "Leaving default GW '{}'".format(default_gw))
-                return True
-
-            # retrieve the IP address of the next vnf
-            next_cps = next_vnfr['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
-            next_cpinput_ip = None
-            if len(next_cps) >= 1 and 'type' in next_cps[1] and 'address' in next_cps[1]['type']:
-                next_cpinput_ip = next_cps[1]['type']['address']
-
-            if not next_cpinput_ip:
-                LOG.error("Couldn't obtain next VNF cpinput IP address from VNFR")
-                return False
-
-            LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; fw_cpinput_ip:'{2}'"
-                     .format(mgmt_ip, cpinput_ip, next_cpinput_ip))
-
-            LOG.info("Configure default GW for next VNF VM in chain")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "route add default gw {0}".format(next_cpinput_ip))
-            LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read().decode('utf-8'),
-                             ssh_stderr.read().decode('utf-8')))
-
-        # next VNF doesn't exist
-        else:
-            LOG.info("Modify DHCP configuration of interfaces")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
-            )
-            LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read().decode('utf-8'),
-                             ssh_stderr.read().decode('utf-8')))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
-            )
-            LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read().decode('utf-8'),
-                             ssh_stderr.read().decode('utf-8')))
-
-            LOG.info("Add default route for input/output interface (eth1)")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "dhclient")
-            LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read().decode('utf-8'),
-                             ssh_stderr.read().decode('utf-8')))
-
-        LOG.info("Run iptables config")
+        LOG.info("Modify DHCP configuration of interfaces")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "/root/iptables.sh")
+            "sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
+        )
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
+        )
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
 
+        LOG.info("Add default route for input/output interface (eth1)")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "dhclient")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        LOG.info("Set iptables rules to forward traffic to TOR network")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "iptables -F && "
+            "iptables -t nat -F && "
+            "iptables -t nat -A PREROUTING -i eth1 -p udp --dport 53 -j REDIRECT --to-ports 53 && "
+            "iptables -t nat -A PREROUTING -i eth1 -p tcp --dport 22 -j REDIRECT --to-ports 22 && "
+            "iptables -t nat -A PREROUTING -i eth1 -p tcp --syn -j REDIRECT --to-ports 9040"
+        )
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
 
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
-        return response
 
     def createConf(self, pw_ip, interval, name):
 
@@ -459,67 +410,13 @@ class CssFSM(sonSMbase):
         config.set('vm_node', 'node_name', name)
         config.set('vm_node', 'post_freq', interval)
         config.set('Prometheus', 'server_url', 'http://'+pw_ip+':9091/metrics')
-    
-    
+
         with open('node.conf', 'w') as configfile:    # save
             config.write(configfile)
-    
+
         f = open('node.conf', 'r')
         LOG.debug('Mon Config-> '+"\n"+f.read())
         f.close()
-        
-
-        # configure vm using ansible playbook
-        # loader = DataLoader()
-        # with tempfile.NamedTemporaryFile() as fp:
-        #     fp.write(b'[vpnserver]\n')
-        #     if self.is_running_in_emulator:
-        #         fp.write(b'mn.vnf_vpn')
-        #     else:
-        #         fp.write(mgmt_ip.encode('utf-8'))
-        #     fp.flush()
-        #     inventory = InventoryManager(loader=loader, sources=[fp.name])
-        # variable_manager = VariableManager(loader=loader, inventory=inventory)
-        #
-        # playbook_path = os.path.abspath('./ansible/site.yml')
-        # LOG.debug('Targeting the ansible playbook: %s', playbook_path)
-        # if not os.path.exists(playbook_path):
-        #     LOG.error('The playbook does not exist')
-        #     return False
-        #
-        # Options = namedtuple('Options',
-        #                      ['listtags', 'listtasks', 'listhosts',
-        #                       'syntax', 'connection', 'module_path',
-        #                       'forks', 'remote_user', 'private_key_file',
-        #                       'ssh_common_args', 'ssh_extra_args',
-        #                       'sftp_extra_args', 'scp_extra_args',
-        #                       'become', 'become_method', 'become_user',
-        #                       'verbosity', 'check', 'diff'])
-        # options = Options(listtags=False, listtasks=False, listhosts=False,
-        #                   syntax=False, connection='ssh', module_path=None,
-        #                   forks=100, remote_user='slotlocker',
-        #                   private_key_file=None, ssh_common_args=None,
-        #                   ssh_extra_args=None, sftp_extra_args=None,
-        #                   scp_extra_args=None, become=True,
-        #                   become_method=None, become_user='root',
-        #                   verbosity=None, check=False, diff=True)
-        # if self.is_running_in_emulator:
-        #     options = options._replace(connection='docker', become=False)
-        #
-        # variable_manager.extra_vars = {'LOCAL_IP_ADDRESS': cpinput_ip,
-        #                                'SON_EMULATOR': self.is_running_in_emulator }
-        #
-        # passwords = {}
-        #
-        # pbex = PlaybookExecutor(playbooks=[playbook_path],
-        #                         inventory=inventory,
-        #                         variable_manager=variable_manager,
-        #                         loader=loader, options=options,
-        #                         passwords=passwords)
-        #
-        # results = pbex.run()
-        # LOG.debug('Results from ansible = %s, %s', results, type(results))
-        # return results == 0
 
 
 def main(working_dir=None):

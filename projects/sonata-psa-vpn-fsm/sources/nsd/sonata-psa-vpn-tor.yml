@@ -24,7 +24,7 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.1"
+    vnf_version: "0.33"
 
 ## The NS connection points to the 
 ## outside world.
@@ -40,6 +40,18 @@ connection_points:
     interface: "ipv4"
     type: "external"
 
+service_specific_managers:
+ - id: "sonssmpsaservicetask-config-monitor1"
+   description: "An SSM functioning as task, config and monitor SSM."
+   image: "sonatanfv/psaservice-ssm-taskconfigmonitor"
+   options:
+     - key: "type"
+       value: "task"
+     - key: "type"
+       value: "configure"
+     - key: "type"
+       value: "monitor"
+
 ##
 ## The virtual links that interconnect
 ## the different connections points.
@@ -54,16 +66,13 @@ virtual_links:
     connectivity_type: "E-Line"
     connection_points_reference:
       - "input"
-      - "vnf_vpn:input"
+      - "vnf_vpn:inout"
   - id: "vpn-2-output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vnf_vpn:output"
+      - "vnf_vpn:inout"
       - "output"
 
-##
-## The forwarding graphs.
-##
 forwarding_graphs:
   - fg_id: "fg01"
     number_of_endpoints: 2
@@ -80,9 +89,9 @@ forwarding_graphs:
         connection_points:
           - connection_point_ref: "input"
             position: 1
-          - connection_point_ref: "vnf_vpn:input"
+          - connection_point_ref: "vnf_vpn:inout"
             position: 2
-          - connection_point_ref: "vnf_vpn:output"
+          - connection_point_ref: "vnf_vpn:inout"
             position: 3
           - connection_point_ref: "output"
             position: 4
