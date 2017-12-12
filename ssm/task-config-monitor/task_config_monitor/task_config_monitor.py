@@ -187,9 +187,11 @@ class TaskConfigMonitorSSM(sonSMbase):
         for function in functions:
             LOG.info("Adding vnf: " + str(function['vnfd']['name']))
             self.functions[function['vnfd']['name']] = {}
-            self.functions[function['vnfd']['name']]['vnfd'] = function['id']
+            self.functions[function['vnfd']['name']]['id'] = function['id']
             self.functions[function['vnfd']['name']]['vnfd'] = function['vnfd']
             self.functions[function['vnfd']['name']]['vnfr'] = function['vnfr']
+            if function['vnfd']['name'] == 'prx-vnf':
+                self.functions[function['vnfd']['name']]['configuration_opt'] = 'transparent'
             self.vnfrs.append(function['vnfr'])
 
             vdu = function['vnfr']['virtual_deployment_units'][0]
@@ -214,7 +216,7 @@ class TaskConfigMonitorSSM(sonSMbase):
             LOG.info("Function: " + str(self.functions[key]))
             if key == 'vpn-vnf':
                 if 'tor-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
+                    self.functions[key]['next_ip'] = self.functions['tor-vnf']['own_ip']
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'tor-vnf':
@@ -273,14 +275,18 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         response = {}
         response['vnf'] = []
-
-        for vnf in self.functions:
+        
+        for key in self.functions.keys():
+            vnf = self.functions[key]
             new_entry = {}
-            new_entry['id'] = vnf['id']
+            id = vnf['id']
+            new_entry['id'] = id 
             payload = {}
             payload['management_ip'] = vnf['management_ip']
             payload['own_ip'] = vnf['own_ip']
             payload['next_ip'] = vnf['next_ip']
+            if key == 'prx-vnf':
+                payload['configuration_opt] = vnf['configuration_opt']
             new_entry['configure'] = {'trigger': True,
                                       'payload': payload}
 
