@@ -64,7 +64,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.vnfrs = []
         self.ingress = None
         self.egress = None
-        self.status = 'ready'
+        self.status = 'instantiating'
         self.chain = ''
 
         self.description = "Task - Config SSM for the PSA."
