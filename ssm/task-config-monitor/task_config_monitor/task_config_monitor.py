@@ -28,6 +28,7 @@ partner consortium (www.sonata-nfv.eu).
 
 import logging
 import yaml
+import time
 from sonsmbase.smbase import sonSMbase
 
 logging.basicConfig(level=logging.INFO)
@@ -168,6 +169,12 @@ class TaskConfigMonitorSSM(sonSMbase):
             LOG.info(msg)
             self.status = content['status']
             LOG.info("status: " + str(self.status))
+
+            time.sleep(10)
+            LOG.info("Done sleeping")
+            payload = {}
+            payload['chain'] = ['vpn-vnf']
+            self.push_update(payload)
 
     def configure_instantiation(self, corr_id, content):
         """
