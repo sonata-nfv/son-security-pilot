@@ -249,8 +249,10 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         response = {}
         response['vnf'] = []
-
-        for vnf in self.functions:
+        
+        LOG.info('### ' + str(self.functions))
+        for key in self.functions.keys():
+            vnf = self.functions[key]
             LOG.info("VNF: " + str(vnf))
             LOG.info("Keys: " + str(vnf.keys()))
             LOG.info("id: " + str(vnf['id']))
