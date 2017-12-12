@@ -193,8 +193,9 @@ class TaskConfigMonitorSSM(sonSMbase):
             LOG.info("own_ip: " + str(own_ip))
 
         # Hardcode the next IPs for the instantiation
-        LOG.info("keys in function: " + str(self.function.keys()))
+        LOG.info("keys in function: " + str(self.functions.keys()))
         for key in self.functions.keys():
+            LOG.info("Function: " + str(self.functions[key]))
             if key == 'vpn-vnf':
                 if 'tor-vnf' in self.functions.keys():
                     self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
