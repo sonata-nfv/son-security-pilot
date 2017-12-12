@@ -314,6 +314,7 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         message = {}
         message['workflow'] = 'reconfigure'
+        message['service_instance_id'] = self.sfuuid
 
         payload = yaml.dump(message)
 
