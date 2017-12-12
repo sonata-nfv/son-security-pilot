@@ -171,7 +171,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         for function in functions:
             LOG.info("Adding vnf: " + str(function['vnfd']['name']))
             self.functions[function['vnfd']['name']] = {}
-            self.functions[function['vnfd']['name']]['vnfd'] = function['id']
+            self.functions[function['vnfd']['name']]['id'] = function['id']
             self.functions[function['vnfd']['name']]['vnfd'] = function['vnfd']
             self.functions[function['vnfd']['name']]['vnfr'] = function['vnfr']
             self.vnfrs.append(function['vnfr'])
@@ -251,6 +251,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         response['vnf'] = []
 
         for vnf in self.functions:
+            LOG.info("VNF: " + str(vnf))
             new_entry = {}
             new_entry['id'] = vnf['id']
             payload = {}
