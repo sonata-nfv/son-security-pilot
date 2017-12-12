@@ -59,7 +59,7 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         self.nsd = None
         self.nsr = None
-        self.functions = None
+        self.functions = {}
         self.vnfrs = []
         self.ingress = None
         self.egress = None
@@ -234,7 +234,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.functions[current_vnf]['next_ip'] = None
 
         response = self.create_configuration_message()
-
+        LOG.info("Generated response: " + str(response))
         # TODO: send this to the SLM
 
     def create_configuration_message(self):
