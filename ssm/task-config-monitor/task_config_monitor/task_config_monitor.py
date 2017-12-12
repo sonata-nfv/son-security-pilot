@@ -174,6 +174,8 @@ class TaskConfigMonitorSSM(sonSMbase):
             self.functions[function['vnfd']['name']]['id'] = function['id']
             self.functions[function['vnfd']['name']]['vnfd'] = function['vnfd']
             self.functions[function['vnfd']['name']]['vnfr'] = function['vnfr']
+            if function['vnfd']['name'] == 'prx-vnf':
+                self.functions[function['vnfd']['name']]['configuration_opt'] = 'transparent'
             self.vnfrs.append(function['vnfr'])
 
             vdu = function['vnfr']['virtual_deployment_units'][0]
@@ -250,12 +252,8 @@ class TaskConfigMonitorSSM(sonSMbase):
         response = {}
         response['vnf'] = []
         
-        LOG.info('### ' + str(self.functions))
         for key in self.functions.keys():
             vnf = self.functions[key]
-            LOG.info("VNF: " + str(vnf))
-            LOG.info("Keys: " + str(vnf.keys()))
-            LOG.info("id: " + str(vnf['id']))
             new_entry = {}
             id = vnf['id']
             new_entry['id'] = id 
@@ -263,6 +261,8 @@ class TaskConfigMonitorSSM(sonSMbase):
             payload['management_ip'] = vnf['management_ip']
             payload['own_ip'] = vnf['own_ip']
             payload['next_ip'] = vnf['next_ip']
+            if key == 'prx-vnf':
+                payload['configuration_opt] = vnf['configuration_opt']
             new_entry['configure'] = {'trigger': True,
                                       'payload': payload}
 
