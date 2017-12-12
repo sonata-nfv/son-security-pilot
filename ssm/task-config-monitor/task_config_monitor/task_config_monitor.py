@@ -250,7 +250,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         response = {}
         response['vnf'] = []
 
-        for vnf in self.['functions']:
+        for vnf in self.functions:
             new_entry = {}
             new_entry['id'] = vnf['id']
             payload = {}
