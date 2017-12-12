@@ -176,7 +176,7 @@ class TaskConfigMonitorSSM(sonSMbase):
             self.functions[function['vnfd']['name']]['vnfr'] = function['vnfr']
             self.vnfrs.append(function['vnfr'])
 
-            vdu = vnfr['virtual_deployment_units'][0]
+            vdu = function['vnfr']['virtual_deployment_units'][0]
             cps = vdu['vnfc_instance'][0]['connection_points']
 
             for cp in cps:
@@ -187,7 +187,10 @@ class TaskConfigMonitorSSM(sonSMbase):
                     management_ip = cp['interface']['address']
 
             self.functions[function['vnfd']['name']]['own_ip'] = own_ip
+            self.functions[function['vnfd']['name']]['management_ip'] = management_ip
             self.functions[function['vnfd']['name']]['next_ip'] = None
+
+            LOG.info("own_ip: " + str(own_ip))
 
         # Hardcode the next IPs for the instantiation
         LOG.info("keys in function: " + str(self.function.keys()))
