@@ -204,25 +204,12 @@ class faceFSM(sonSMbase):
         return response
     
     def configure_ev(self, content):
-        LOG.info("Configuration event with content = %s", str(content.keys()))
-        config_opt = 'transparent'
-        
-        vnfr = content["vnfr"]
-        LOG.info("VNFR: " + yaml.dump(vnfr))
+        LOG.info("Configuration event with content = %s", str(content))
 
-        vdu = vnfr['virtual_deployment_units'][0]
-        cpts = vdu['vnfc_instance'][0]['connection_points']
-        if 'config_identifier' in vdu:
-            if vdu['config_identifier'] == 'direct':
-                config_opt = 'direct'
-            elif vdu['config_identifier'] == 'squidguard':
-                config_opt = 'squidguard'
-        
-        squid_ip = None
-        for cp in cpts:
-            if cp['type'] == 'management':
-                squid_ip = cp['interface']['address']
-                LOG.info("management ip: " + str(squid_ip))
+        config_opt = content['configuration_opt']
+        squid_ip = content['management_ip]
+        next_hop_ip = content['next_ip']
+        prx_in_out_ip = content['own_ip]
                 
         if squid_ip is not None:
             plbk = '../ansible/site.yml'
