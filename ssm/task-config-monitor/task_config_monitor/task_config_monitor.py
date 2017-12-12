@@ -63,6 +63,8 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.vnfrs = []
         self.ingress = None
         self.egress = None
+        self.status = 'ready'
+        self.chain = ''
 
         self.description = "Task - Config SSM for the PSA."
 
@@ -129,6 +131,7 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         schedule.insert(7, 'vnfs_config')
         schedule.insert(7, 'configure_ssm')
+        schedule.append('inform_config_ssm')
 
         response = {'schedule': schedule, 'status': 'COMPLETED'}
 
@@ -151,7 +154,20 @@ class TaskConfigMonitorSSM(sonSMbase):
         if content["workflow"] == 'instantiation':
             msg = "Received a configure request for the instantiation workflow"
             LOG.info(msg)
+            self.status = 'configuring'
             self.configure_instantiation(corr_id, content)
+
+        if content["workflow"] == 'reconfigure':
+            msg = "Received a configure request for the reconfigure workflow"
+            LOG.info(msg)
+            self.status = 'configuring'
+            self.configure_reconfigure(corr_id)
+
+        if content["workflow"] == 'status':
+            msg = "Received a configure status update"
+            LOG.info(msg)
+            self.status = content['status']
+            LOG.info("status: " + str(self.status))
 
     def configure_instantiation(self, corr_id, content):
         """
@@ -220,7 +236,9 @@ class TaskConfigMonitorSSM(sonSMbase):
                              yaml.dump(response),
                              correlation_id=corr_id)
 
-    def configure_running(self, payload):
+        LOG.info("status: " + str(self.status))
+
+    def configure_reconfigure(self, corr_id):
         """
         This method reconfigures the service. This is the method that the
         Portal Application should call. The payload contains a list that
@@ -228,20 +246,25 @@ class TaskConfigMonitorSSM(sonSMbase):
         descriptor)
         """
 
-        chain = payload['chain']
-
-        for index in range(0, len(chain) - 1):
-            current_vnf = chain[index]
-            next_vnf = chain[index + 1]
+        for index in range(0, len(self.chain) - 1):
+            current_vnf = self.chain[index]
+            next_vnf = self.chain[index + 1]
             next_ip = self.functions[next_vnf]['own_ip']
             self.functions[current_vnf]['next_ip'] = next_ip
 
-        last_vnf = chain[-1]
+        last_vnf = self.chain[-1]
         self.functions[current_vnf]['next_ip'] = None
 
         response = self.create_configuration_message()
         LOG.info("Generated response: " + str(response))
-        # TODO: send this to the SLM
+
+        # Sending a response
+        topic = 'generic.ssm.' + self.sfuuid
+        self.manoconn.notify(topic,
+                             yaml.dump(response),
+                             correlation_id=corr_id)
+
+        LOG.info("status: " + str(self.status))
 
     def create_configuration_message(self):
         """
@@ -251,24 +274,44 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         response = {}
         response['vnf'] = []
-        
+
         for key in self.functions.keys():
             vnf = self.functions[key]
             new_entry = {}
-            id = vnf['id']
-            new_entry['id'] = id 
+            new_entry['id'] = vnf['id']
             payload = {}
             payload['management_ip'] = vnf['management_ip']
             payload['own_ip'] = vnf['own_ip']
             payload['next_ip'] = vnf['next_ip']
             if key == 'prx-vnf':
-                payload['configuration_opt] = vnf['configuration_opt']
+                payload['configuration_opt'] = vnf['configuration_opt']
             new_entry['configure'] = {'trigger': True,
                                       'payload': payload}
 
             response['vnf'].append(new_entry)
 
         return response
+
+    def get_status(self):
+
+        return self.status
+
+    def push_update(self, content):
+
+        self.chain = content['chain']
+        if 'prx_config' in content.keys():
+            new_config = content['prx_config']
+            self.functions['prx-vnf']['configuration_opt'] = new_config
+
+        self.status = 'configuring'
+
+        message = {}
+        message['workflow'] = 'reconfigure'
+
+        payload = yaml.dump(message)
+
+        topic = 'monitor.ssm.' + self.sfuuid
+        self.manoconn.notify(topic, payload)
 
     def monitor_request(self, corr_id, content):
         """
