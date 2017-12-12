@@ -266,7 +266,6 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         LOG.info("status: " + str(self.status))
 
-
     def create_configuration_message(self):
         """
         This method creates the payload for the configuration response to the
@@ -275,18 +274,17 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         response = {}
         response['vnf'] = []
-        
+
         for key in self.functions.keys():
             vnf = self.functions[key]
             new_entry = {}
-            id = vnf['id']
-            new_entry['id'] = id 
+            new_entry['id'] = vnf['id']
             payload = {}
             payload['management_ip'] = vnf['management_ip']
             payload['own_ip'] = vnf['own_ip']
             payload['next_ip'] = vnf['next_ip']
             if key == 'prx-vnf':
-                payload['configuration_opt] = vnf['configuration_opt']
+                payload['configuration_opt'] = vnf['configuration_opt']
             new_entry['configure'] = {'trigger': True,
                                       'payload': payload}
 
@@ -302,7 +300,9 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         self.chain = content['chain']
         if 'prx_config' in content.keys():
-            
+            new_config = content['prx_config']
+            self.functions['prx-vnf']['configuration_opt'] = new_config
+
         self.status = 'configuring'
 
         message = {}
