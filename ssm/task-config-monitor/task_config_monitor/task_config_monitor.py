@@ -206,8 +206,8 @@ class TaskConfigMonitorSSM(sonSMbase):
             if key == 'prx-vnf':
                 self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
 
-        self.ingress = content['ingress']
-        self.egress = content['egress']
+        # self.ingress = content['ingress']
+        # self.egress = content['egress']
 
         response = self.create_configuration_message()
 
