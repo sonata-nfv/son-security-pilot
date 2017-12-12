@@ -260,7 +260,7 @@ class TaskConfigMonitorSSM(sonSMbase):
             self.functions[current_vnf]['next_ip'] = next_ip
 
         last_vnf = self.chain[-1]
-        self.functions[current_vnf]['next_ip'] = None
+        self.functions[last_vnf]['next_ip'] = None
 
         response = self.create_configuration_message()
         LOG.info("Generated response: " + str(response))
