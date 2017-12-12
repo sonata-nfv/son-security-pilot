@@ -252,8 +252,11 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         for vnf in self.functions:
             LOG.info("VNF: " + str(vnf))
+            LOG.info("Keys: " + str(vnf.keys()))
+            LOG.info("id: " + str(vnf['id']))
             new_entry = {}
-            new_entry['id'] = vnf['id']
+            id = vnf['id']
+            new_entry['id'] = id 
             payload = {}
             payload['management_ip'] = vnf['management_ip']
             payload['own_ip'] = vnf['own_ip']
