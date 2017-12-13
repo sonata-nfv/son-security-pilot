@@ -39,10 +39,10 @@ virtual_deployment_units:
       - id: "mgmt"
         interface: "ipv4"
         type: "management"
-      - id: "input"
+      - id: "in"
         interface: "ipv4"
         type: "external"
-      - id: "output"
+      - id: "out"
         interface: "ipv4"
         type: "external"
  
@@ -75,12 +75,12 @@ virtual_links:
   - id: "input"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:input"
+      - "vdu01:in"
       - "input"
   - id: "output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:output"
+      - "vdu01:out"
       - "output"
  
 ##
