@@ -1,0 +1,99 @@
+##
+## vPRX VNF Descriptor
+##
+descriptor_version: "vnfd-schema-02"
+vendor: "eu.sonata-nfv"
+name: "prx-vnf"
+version: "0.99"
+author: "Felipe Vicens, ATOS"
+description: "Implementation of Proxy function"
+ 
+##
+## The virtual deployment units.
+##
+virtual_deployment_units:
+  - id: "vdu01"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/u16squid-micro-x86-64-v04.qcow2"
+    vm_image_format: "qcow2"
+#    vm_image_md5: "838821b21771674dd29acf1663253278"
+    vm_image_md5: "19c50a1f33d72af01268a90a72a888cc"
+    resource_requirements:
+      cpu:
+        vcpus: 1
+      memory:
+        size: 2
+        size_unit: "GB"
+      storage:
+        size: 40
+        size_unit: "GB"
+    monitoring_parameters:
+      - name: "vm_cpu_perc"
+        unit: "Percentage"
+      - name: "vm_mem_perc"
+        unit: "Percentage"
+      - name: "vm_net_rx_bps"
+        unit: "bps"
+      - name: "vm_net_tx_bps"
+        unit: "bps"
+    connection_points:
+      - id: "mgmt"
+        interface: "ipv4"
+        type: "management"
+      - id: "input"
+        interface: "ipv4"
+        type: "external"
+      - id: "output"
+        interface: "ipv4"
+        type: "external"
+ 
+##
+## The VNF connection points to the 
+## outside world.
+##
+connection_points:
+  - id: "mgmt"
+    interface: "ipv4"
+    type: "management"
+  - id: "input"
+    interface: "ipv4"
+    type: "external"
+  - id: "output"
+    interface: "ipv4"
+    type: "external"
+ 
+##
+## The virtual links that interconnect
+## the different connections points.
+##
+virtual_links:
+  - id: "mgmt"
+    connectivity_type: "E-LAN"
+    connection_points_reference:
+      - "vdu01:mgmt"
+      - "mgmt"
+    dhcp: True
+  - id: "input"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vdu01:input"
+      - "input"
+  - id: "output"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vdu01:output"
+      - "output"
+ 
+##
+## Function Specific Managers
+##
+function_specific_managers:
+  - id: "sonfsmpsaserviceprx-vnfprx-config1"
+    description: "FSM for the configuration of the vPRX"
+    image: "sonatanfv/psa-vprx-fsm-css"
+    options:
+      - key: "type"
+        value: "start"
+      - key: "type"
+        value: "stop"
+      - key: "type"
+        value: "configure"

@@ -206,7 +206,8 @@ class TaskConfigMonitorSSM(sonSMbase):
 
             for cp in cps:
                 if cp['type'] in ['internal', 'external']:
-                    own_ip = cp['interface']['address']
+                    if cp['id'] in ['input', 'inout']:
+                        own_ip = cp['interface']['address']
 
                 if cp['type'] in ['management']:
                     management_ip = cp['interface']['address']

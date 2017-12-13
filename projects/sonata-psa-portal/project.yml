@@ -1,0 +1,8 @@
+descriptor_extension: yml
+package:
+  description: SONATA PSA PORTAL
+  maintainer: Luis Conceicao, UBIWHERE, lconceicao@ubiwhere.com
+  name: "sonata-psa-portal"
+  vendor: "eu.sonata-nfv"
+  version: "0.99"
+version: '0.99'
