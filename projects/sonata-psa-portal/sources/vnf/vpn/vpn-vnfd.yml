@@ -38,7 +38,7 @@ virtual_deployment_units:
       - id: "eth0"
         interface: "ipv4"
         type: "management"
-      - id: "eth1"
+      - id: "inout"
         interface: "ipv4"
         type: "external"
 
@@ -69,7 +69,7 @@ virtual_links:
   - id: "input-output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth1"
+      - "vdu01:inout"
       - "inout"
 
 ##
