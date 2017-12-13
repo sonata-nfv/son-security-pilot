@@ -207,9 +207,9 @@ class faceFSM(sonSMbase):
         LOG.info("Configuration event with content = %s", str(content))
 
         config_opt = content['configuration_opt']
-        squid_ip = content['management_ip]
+        squid_ip = content['management_ip']
         next_hop_ip = content['next_ip']
-        prx_in_out_ip = content['own_ip]
+        prx_in_out_ip = content['own_ip']
                 
         if squid_ip is not None:
             plbk = '../ansible/site.yml'
