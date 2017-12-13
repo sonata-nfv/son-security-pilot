@@ -206,8 +206,11 @@ class TaskConfigMonitorSSM(sonSMbase):
 
             for cp in cps:
                 if cp['type'] in ['internal', 'external']:
-                    if cp['id'] in ['input', 'inout']:
+                    if cp['id'] in ['in', 'inout']:
                         own_ip = cp['interface']['address']
+                    if cp['id'] in ['out']:
+                        output_ip = cp['interface']['address']
+                        self.functions[function['vnfd']['name']]['output_ip'] = output_ip
 
                 if cp['type'] in ['management']:
                     management_ip = cp['interface']['address']
@@ -223,14 +226,20 @@ class TaskConfigMonitorSSM(sonSMbase):
         for key in self.functions.keys():
             LOG.info("Function: " + str(self.functions[key]))
             if key == 'vpn-vnf':
+                if 'prx-vnf' in self.functions.keys():
+                    self.functions[key]['next_ip'] = self.functions['prx-vnf']['own_ip']
+                elif 'tor-vnf' in self.functions.keys():
+                    self.functions[key]['next_ip'] = self.functions['tor-vnf']['own_ip']
+                else:
+                    self.functions[key]['next_ip'] = None
+            if key == 'prx-vnf':
+                self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
                 if 'tor-vnf' in self.functions.keys():
                     self.functions[key]['next_ip'] = self.functions['tor-vnf']['own_ip']
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'tor-vnf':
                 self.functions[key]['next_ip'] = None
-            if key == 'prx-vnf':
-                self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
 
         # self.ingress = content['ingress']
         # self.egress = content['egress']
@@ -291,6 +300,8 @@ class TaskConfigMonitorSSM(sonSMbase):
             payload['management_ip'] = vnf['management_ip']
             payload['own_ip'] = vnf['own_ip']
             payload['next_ip'] = vnf['next_ip']
+            if 'output_ip' in vnf.keys():
+                payload['output_ip'] = vnf['output_ip']
             if key == 'prx-vnf':
                 payload['configuration_opt'] = vnf['configuration_opt']
             new_entry['configure'] = {'trigger': True,
