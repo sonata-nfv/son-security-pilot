@@ -174,7 +174,7 @@ class TaskConfigMonitorSSM(sonSMbase):
             LOG.info("Done sleeping")
             payload = {}
             payload['chain'] = ['vpn-vnf']
-#             self.push_update(payload)
+            self.push_update(payload)
 
     def configure_instantiation(self, corr_id, content):
         """
