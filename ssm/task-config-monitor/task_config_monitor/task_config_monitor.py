@@ -221,6 +221,9 @@ class TaskConfigMonitorSSM(sonSMbase):
 
             LOG.info("own_ip: " + str(own_ip))
 
+        self.ingress = content['ingress']
+        self.egress = content['egress']
+
         # Hardcode the next IPs for the instantiation
         LOG.info("keys in function: " + str(self.functions.keys()))
         for key in self.functions.keys():
@@ -240,9 +243,6 @@ class TaskConfigMonitorSSM(sonSMbase):
                     self.functions[key]['next_ip'] = None
             if key == 'tor-vnf':
                 self.functions[key]['next_ip'] = None
-
-        # self.ingress = content['ingress']
-        # self.egress = content['egress']
 
         response = self.create_configuration_message()
 
