@@ -58,7 +58,6 @@ class Server():
     def client_left(self, client, server):
         logging.warning("*********************"+"Client("+str(client['id'])+") disconnected")
 
-    # Called when a client sends a message
     def message_received(self, client, server, message):
         LOG.info('message received...')
         if len(message) > 200:
@@ -71,28 +70,42 @@ class Server():
         message = {}
 
         LOG.info("Creating messages for the SSM plugin")
+        # Translating the portal application message into the right format for
+        # the SSM.
         if actionName == "basic":
             message['chain'] = ['vpn-vnf', 'tor-vnf']
 
         if actionName == "anon":
             message['chain'] = ['vpn-vnf', 'prx-vnf', 'tor-vnf']
 
+        # Only when the status of the service is ready is it allowed to make
+        # a reconfiguration request. Possible status: 'configuring', 'instantiating'
+        # or 'ready'
         LOG.info("Checking if service is ready to be reconfigured")
         status = self.ssm.get_status()
 
+        # Requesting the reconfiguration. This method has no response. get_status
+        # should be fetched (see above) to determine when the reconfiguration is
+        # finished.
         if status == 'ready':
             LOG.info("Triggering plugin SSM to reconfigure")
             self.ssm.push_update(message)
+            # TODO: fetch get_status until 'ready', before sending response to portal
+            # application
         else:
             LOG.info("Service not ready to be reconfigured, status: " + str(status))
             # TODO: respond to portal that service is not ready to reconfigure
 
     def add_ssm(self, ssm_object):
-
+        """
+        By adding the Config SSM, the server/client can trigger SSM methods
+        directly.
+        """
         self.ssm = ssm_object
 
     def connect_to_socket(self, port, host):
-        # logging.warning("*********************","Listening to Requests...!")
+        # TODO: How to connect to the portal application? Should we make the SSM
+        # the client and the application the server?
         LOG.info("connecting to socket...")
         logging.warning("*********************Listening to Requests...!")
         port = port
