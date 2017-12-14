@@ -30,8 +30,6 @@ all: package
 #          docker build -t sonata-psa/cache .
 
 package:
-	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa
-	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa
 	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-portal
 	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-portal
 	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-vpn-fsm
