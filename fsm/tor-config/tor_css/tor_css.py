@@ -249,22 +249,17 @@ class CssFSM(sonSMbase):
         """
         LOG.info("Performing life cycle configure event")
         LOG.info("content: " + str(content.keys()))
-        # TODO: Add the configure logic. The content is a dictionary that
-        # contains the required data
 
-        nsr = content['nsr']
-        vnfrs = content['vnfrs']
-
-        if len(vnfrs) == 1:
-            result = self.tor_configure(nsr, vnfrs[0])
-
-        elif len(vnfrs) > 1:
-            # TODO: the order of vnfrs is random
-            # TODO: ensure if vnfr[1] is the correct one by viewing the NSR SFC
-            result = self.tor_configure(nsr, vnfrs[0], next_vnfr=vnfrs[1])
+        if not content['next_ip']:
+            result = self.tor_configure(content['management_ip'],
+                                        content['own_ip'])
+        else:
+            result = self.tor_configure(content['management_ip'],
+                                        content['own_ip'],
+                                        next_ip=content['next_ip'])
 
         # Create a response for the FLM
-        response = {}
+        response = dict()
         response['status'] = 'COMPLETED' if result else 'ERROR'
 
         # TODO: complete the response
@@ -288,28 +283,10 @@ class CssFSM(sonSMbase):
 
         return response
 
-    def tor_configure(self, nsr, vnfr, next_vnfr=None):
+    def tor_configure(self, mgmt_ip, own_ip, next_ip=None):
 
-        LOG.info('Start retrieving the IP address ...')
-
-        vdu = vnfr['virtual_deployment_units'][0]
-        cps = vdu['vnfc_instance'][0]['connection_points']
-
-        mgmt_ip = None
-        cpinput_ip = None
-        for cp in cps:
-            if cp['type'] == 'management' and 'netmask' not in cp.keys():
-                mgmt_ip = cp['interface']['address']
-                LOG.info("management ip: " + str(mgmt_ip))
-            if cp['type'] == 'internal':
-                cpinput_ip = cp['interface']['address']
-                LOG.info("cpinput ip: " + str(cpinput_ip))
-        if not mgmt_ip:
-            LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
-            return False
-        if not cpinput_ip:
-            LOG.error("Couldn't obtain cpinput IP address from VNFR")
-            return False
+        LOG.info("management ip: " + str(mgmt_ip))
+        LOG.info("in/out ip: " + str(own_ip))
 
         username = "root"
         password = "sonata"
@@ -401,6 +378,8 @@ class CssFSM(sonSMbase):
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
+
+        return response
 
     def createConf(self, pw_ip, interval, name):
 
