@@ -28,6 +28,7 @@ import tempfile
 import yaml
 import paramiko
 import configparser
+from IPy import IP
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
@@ -141,34 +142,32 @@ class faceFSM(sonSMbase):
     def start_ev(self, content):
         LOG.info("Performing life cycle start event with content = %s", str(content.keys()))
         
-        vnfrs = content["vnfrs"]
-        nsr = content['nsr']
-        LOG.info("VNFRS: " + yaml.dump(vnfrs))
+        vdu = vnfr['virtual_deployment_units'][0]
+        cpts = vdu['vnfc_instance'][0]['connection_points']
 
-        result = None
-        if len(vnfrs) == 1:
-            result = self.squid_configure(nsr, vnfrs[0])
+        vnfr = content["vnfr"]
+        LOG.info("VNFR: " + yaml.dump(vnfr))
 
-        elif len(vnfrs) > 1:
-            # TODO: the order of vnfrs is random
-            # TODO: ensure if vnfr[1] is the correct one by viewing the NSR SFC
-            result = self.squid_configure(nsr, vnfrs[0], next_vnfr = vnfrs[1])
-
-        #vdu = vnfr['virtual_deployment_units'][0]
-        #cpts = vdu['vnfc_instance'][0]['connection_points']
-        
-        if (result is not None) and (len(result) > 1):
-            plbk = ''
+        squid_ip = None
+        for cp in cpts:
+            if cp['type'] == 'management':
+                squid_ip = cp['interface']['address']
+                LOG.info("management ip: " + str(squid_ip))
+                
+        if squid_ip is not None:
+            plbk = '../ansible/site.yml'
             if self.option == 0:
-                self.playbook_execution(plbk, result[0])
+                self.playbook_execution(plbk, squid_ip)
             else:
-                opt = 0
-                self.ssh_execution(opt, result[0])
+                opt = 2
+                self.ssh_execution(opt, squid_ip)
+
         else:
             LOG.info("No management connection point in vnfr")
             
         response = {}
         response['status'] = 'COMPLETED'
+        response['IP'] = squid_ip
         
         return response
     
@@ -204,23 +203,44 @@ class faceFSM(sonSMbase):
         return response
     
     def configure_ev(self, content):
-        LOG.info("Configuration event with content = %s", str(content))
-
+        LOG.info("Configuration event with content = %s", str(content.keys()))
+        config_opt = 'transparent'
+        
         config_opt = content['configuration_opt']
         squid_ip = content['management_ip']
         next_hop_ip = content['next_ip']
         prx_in_out_ip = content['own_ip']
-                
-        if squid_ip is not None:
-            plbk = '../ansible/site.yml'
-            if self.option == 0:
-                self.playbook_execution(plbk, squid_ip)
-            else:
-                opt = 2
-                self.ssh_execution(opt, squid_ip, config_opt)
 
+#        vnfrs = content["vnfrs"]
+#        nsr = content['nsr']
+
+#        LOG.info("VNFRS: " + yaml.dump(vnfrs))
+        
+#        result = None
+#        if len(vnfrs) == 1:
+         try:
+             IP(squid_ip)
+             IP(prx_in_out_ip)
+         except ValueError:
+             LOG.info("Invalid value of management IP or own_IP")
+             response = {}
+             response['status'] = 'ERROR'
+             return
+
+        if next_hop_ip is None:
+            self.squid_configure(squid_ip, prx_in_out_ip)
         else:
-            LOG.info("No management connection point in vnfr")
+            self.squid_configure(squid_ip, prx_in_out_ip, next_hop_ip)
+
+        #vdu = vnfr['virtual_deployment_units'][0]
+        #cpts = vdu['vnfc_instance'][0]['connection_points']
+        
+        plbk = ''
+        if self.option == 0:
+            self.playbook_execution(plbk, squid_ip)
+        else:
+            opt = 0
+            self.ssh_execution(opt, squid_ip)
             
         response = {}
         response['status'] = 'COMPLETED'
@@ -483,28 +503,10 @@ class faceFSM(sonSMbase):
         LOG.debug('Mon Config-> ' + "\n" + f.read())
         f.close()
 
-    def squid_configure(self, nsr, vnfr, next_vnfr = None):
+    def squid_configure(self, host_ip, data_ip, next_ip = None):
  
         vdu = vnfr['virtual_deployment_units'][0]
         cps = vdu['vnfc_instance'][0]['connection_points']
-
-        ips = []
-        for cp in cps:
-            if cp['type'] == 'management' and 'netmask' not in cp.keys():
-                ips.append(cp['interface']['address'])
-                LOG.info("management ip: " + str(ips[0]))
-            if cp['type'] == 'external':
-                ips.append(cp['interface']['address'])
-                LOG.info("cpinput ip: " + str(ips[1])
-        if len(ips) == 0:
-            LOG.error("Couldn't obtain cpmgmt IP address from VNFR")
-            return None
-        if len(ips) < 2:
-            LOG.error("Couldn't obtain cpinput IP address from VNFR")
-            return None
-    
-        username = "sonata"
-        password = "sonata"
 
         ssh = paramiko.SSHClient()
         LOG.info("SSH client started")
@@ -571,40 +573,16 @@ class faceFSM(sonSMbase):
                          ssh_stderr.read().decode('utf-8')))
 
         # next VNF exists
-        if next_vnfr:
+        if next_ip is not None:
             # find virtual link of vpn output
-            next_vnf = None
-            for vl in nsr['virtual_links']:
-                for cpr in vl['connection_points_reference']:
-                    if cpr == 'vnf_prx:cpoutput':
-                        vl_cprs = vl['connection_points_reference'].copy()
-                        vl_cprs.pop(vl_cprs.index(cpr))
-                        next_vnf = vl_cprs[0].split(':')[0]
 
-            if not next_vnf:
-                # next VNF not found, leave default GW as it is
-                LOG.info("Couldn't find the VNF following the PRX. "
-                         "Leaving default GW '{}'".format(default_gw))
-                ssh.close()
-                return ips
-
-            # retrieve the IP address of the next vnf
-            next_cps = next_vnfr['virtual_deployment_units'][0]['vnfc_instance'][0]['connection_points']
-            next_cpinput_ip = None
-            if len(next_cps) >= 1 and 'type' in next_cps[1] and 'address' in next_cps[1]['type']:
-                ips[2] = next_cps[1]['type']['address']
-
-            if len(ips) < 3:
-                LOG.error("Couldn't obtain next VNF cpinput IP address from VNFR")
-                ssh.close()
-                return None
 
             LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; forward_cpinput_ip:'{2}'"
-                     .format(ips[0], ips[1], ips[2]))
+                .format(host_ip, data_ip, next_ip)
 
             LOG.info("Configure default GW for next VNF VM in chain")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "route add default gw {0}".format(ips[2]))
+                "route add default gw {0}".format(next_ip))
             LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
