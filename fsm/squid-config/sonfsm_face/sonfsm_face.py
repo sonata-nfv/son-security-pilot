@@ -365,7 +365,7 @@ class faceFSM(sonSMbase):
 
             LOG.info('iptables configuration to redirect port 80 to 3128')
             LOG.info('get own ip')
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(IP = $(r'/sbin/ifconfig ens3 | grep "inet" | awk '{ if ($1 == "inet") {print $2} }' | cut -b 6-') && echo $IP)
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(r"IP = $('/sbin/ifconfig ens3 | grep "inet" | awk '{ if ($1 == "inet") {print $2} }' | cut -b 6-') && echo $IP")
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
@@ -613,7 +613,7 @@ class faceFSM(sonSMbase):
 
             else:
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    LI = $(r"ifconfig ens3 | grep "inet" | awk '{if($1=="inet") { print $2; }}' | cut -b 6-") && echo $LI)
+                    r"LI = $(r"ifconfig ens3 | grep "inet" | awk '{if($1=="inet") { print $2; }}' | cut -b 6-") && echo $LI")
                 last_if = ssh_stdout.read().decode('utf-8').split('.')
                 last_if[3] = '1'
                 str_out = "supersede routers %s;".format('.'.join(last_if))
