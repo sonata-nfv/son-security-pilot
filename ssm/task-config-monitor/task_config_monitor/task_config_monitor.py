@@ -29,7 +29,14 @@ partner consortium (www.sonata-nfv.eu).
 import logging
 import yaml
 import time
+import sys
+import _thread
+import websocket
+
 from sonsmbase.smbase import sonSMbase
+from threading import Thread
+from websocket_server import WebsocketServer
+from json import loads, dumps
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("ssm-task_config-1")
@@ -37,9 +44,68 @@ LOG.setLevel(logging.DEBUG)
 logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
-class TaskConfigMonitorSSM(sonSMbase):
+class Server():
 
     def __init__(self):
+
+        self.ssm = None
+
+    # Called for every client connecting (after handshake)
+    def new_client(self, client, server):
+        logging.warning("*********************"+"New client connected and was given id"+ str(client['id']))
+
+    # Called for every client disconnecting
+    def client_left(self, client, server):
+        logging.warning("*********************"+"Client("+str(client['id'])+") disconnected")
+
+    # Called when a client sends a message
+    def message_received(self, client, server, message):
+        if len(message) > 200:
+            message = message[:200]+'..'
+        logging.warning("*********************"+"Client("+str(client['id'])+") said:"+message)
+
+        # Format message
+        messageDict = loads(message)
+        actionName = messageDict['name']
+        message = {}
+
+        LOG.info("Creating messages for the SSM plugin")
+        if actionName == "basic":
+            message['chain'] = ['vpn-vnf', 'tor-vnf']
+
+        if actionName == "anon":
+            message['chain'] = ['vpn-vnf', 'prx-vnf', 'tor-vnf']
+
+        LOG.info("Checking if service is ready to be reconfigured")
+        status = self.ssm.get_status()
+
+        if status == 'ready':
+            LOG.info("Triggering plugin SSM to reconfigure")
+            self.ssm.push_update(message)
+        else:
+            LOG.info("Service not ready to be reconfigured, status: " + str(status))
+            # TODO: respond to portal that service is not ready to reconfigure
+
+    def add_ssm(self, ssm_object):
+
+        self.ssm = ssm_object
+
+    def connect_to_socket(self, port, host):
+        # logging.warning("*********************","Listening to Requests...!")
+        logging.warning("*********************Listening to Requests...!")
+        port = port
+        host = host
+        # host="selfservice-ssm"
+        server = WebsocketServer(port, host=host)
+        server.set_fn_new_client(self.new_client)
+        server.set_fn_client_left(self.client_left)
+        server.set_fn_message_received(self.message_received)
+        server.run_forever()
+
+
+class TaskConfigMonitorSSM(sonSMbase):
+
+    def __init__(self, server=None):
 
         """
         :param specific_manager_type: specifies the type of specific manager that could be either fsm or ssm.
@@ -58,6 +124,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.version = 'v0.1'
         self.counter = 0
 
+        # init SSM
         self.nsd = None
         self.nsr = None
         self.functions = {}
@@ -75,6 +142,13 @@ class TaskConfigMonitorSSM(sonSMbase):
                                              id_number = self.id_number,
                                              version = self.version,
                                              description = self.description)
+
+        # Connect with server
+        self.server = server
+        self.server.add_ssm(self)
+        port = 9191
+        host = "0.0.0.0"
+        Thread(target=self.server.connect_to_socket(port, host)).start()
 
     def on_registration_ok(self):
         LOG.info("Received registration ok event.")
@@ -369,7 +443,9 @@ class TaskConfigMonitorSSM(sonSMbase):
 
 
 def main():
-    TaskConfigMonitorSSM()
+
+    portal_server = Server()
+    TaskConfigMonitorSSM(server=portal_server)
 
 if __name__ == '__main__':
     main()
