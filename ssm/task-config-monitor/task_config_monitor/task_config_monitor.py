@@ -60,6 +60,7 @@ class Server():
 
     # Called when a client sends a message
     def message_received(self, client, server, message):
+        LOG.info('message received...')
         if len(message) > 200:
             message = message[:200]+'..'
         logging.warning("*********************"+"Client("+str(client['id'])+") said:"+message)
@@ -92,6 +93,7 @@ class Server():
 
     def connect_to_socket(self, port, host):
         # logging.warning("*********************","Listening to Requests...!")
+        LOG.info("connecting to socket...")
         logging.warning("*********************Listening to Requests...!")
         port = port
         host = host
@@ -136,19 +138,20 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         self.description = "Task - Config SSM for the PSA."
 
+        # Connect with server
+        LOG.info("Connecting to server")
+        self.server = server
+        self.server.add_ssm(self)
+        port = 4000
+        host = "10.30.0.116"
+        Thread(target=self.server.connect_to_socket(port, host)).start()
+
         super(self.__class__, self).__init__(specific_manager_type= self.specific_manager_type,
                                              service_name= self.service_name,
                                              specific_manager_name = self.specific_manager_name,
                                              id_number = self.id_number,
                                              version = self.version,
                                              description = self.description)
-
-        # Connect with server
-        self.server = server
-        self.server.add_ssm(self)
-        port = 9191
-        host = "0.0.0.0"
-        Thread(target=self.server.connect_to_socket(port, host)).start()
 
     def on_registration_ok(self):
         LOG.info("Received registration ok event.")
