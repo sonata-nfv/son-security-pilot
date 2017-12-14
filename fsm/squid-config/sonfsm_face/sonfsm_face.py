@@ -218,14 +218,14 @@ class faceFSM(sonSMbase):
         
 #        result = None
 #        if len(vnfrs) == 1:
-         try:
-             IP(squid_ip)
-             IP(prx_in_out_ip)
-         except ValueError:
-             LOG.info("Invalid value of management IP or own_IP")
-             response = {}
-             response['status'] = 'ERROR'
-             return
+        try:
+            IP(squid_ip)
+            IP(prx_in_out_ip)
+        except ValueError:
+            LOG.info("Invalid value of management IP or own_IP")
+            response = {}
+            response['status'] = 'ERROR'
+            return
 
         if next_hop_ip is None:
             self.squid_configure(squid_ip, prx_in_out_ip)
@@ -365,7 +365,7 @@ class faceFSM(sonSMbase):
 
             LOG.info('iptables configuration to redirect port 80 to 3128')
             LOG.info('get own ip')
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(r"IP = $('/sbin/ifconfig ens3 | grep "inet" | awk '{ if ($1 == "inet") {print $2} }' | cut -b 6-') && echo $IP")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("IP = $('/sbin/ifconfig ens3 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }' | cut -b 6-') && echo $IP")
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
@@ -575,10 +575,8 @@ class faceFSM(sonSMbase):
         # next VNF exists
         if next_ip is not None:
             # find virtual link of vpn output
-
-
             LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; forward_cpinput_ip:'{2}'"
-                .format(host_ip, data_ip, next_ip)
+                .format(host_ip, data_ip, next_ip))
 
             LOG.info("Configure default GW for next VNF VM in chain")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
@@ -590,7 +588,7 @@ class faceFSM(sonSMbase):
         # next VNF doesn't exist
         else:
             LOG.info("Which OS am i modifying")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("OS = $(uname -r | cut -b -1") && echo $OS);
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("OS = $(uname -r | cut -b -1) && echo $OS");
             os = ssh_stdout.read().decode('utf-8')
             if os == '3': 
                 LOG.info("Modify DHCP configuration of interfaces")
@@ -613,7 +611,7 @@ class faceFSM(sonSMbase):
 
             else:
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    r"LI = $(r"ifconfig ens3 | grep "inet" | awk '{if($1=="inet") { print $2; }}' | cut -b 6-") && echo $LI")
+                    "LI = $(\"ifconfig ens3 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
                 last_if = ssh_stdout.read().decode('utf-8').split('.')
                 last_if[3] = '1'
                 str_out = "supersede routers %s;".format('.'.join(last_if))
