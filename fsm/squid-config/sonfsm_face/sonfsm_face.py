@@ -142,11 +142,11 @@ class faceFSM(sonSMbase):
     def start_ev(self, content):
         LOG.info("Performing life cycle start event with content = %s", str(content.keys()))
         
+        vnfr = content["vnfr"]
+        LOG.info("VNFR: " + yaml.dump(vnfr))
         vdu = vnfr['virtual_deployment_units'][0]
         cpts = vdu['vnfc_instance'][0]['connection_points']
 
-        vnfr = content["vnfr"]
-        LOG.info("VNFR: " + yaml.dump(vnfr))
 
         squid_ip = None
         for cp in cpts:
