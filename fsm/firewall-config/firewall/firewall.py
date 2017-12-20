@@ -163,7 +163,7 @@ class FirewallFSM(sonSMbase):
         vnfr = content["vnfr"]
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
-                       'pfSense.raw'
+                       'pfSense.qcow2'
        
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
@@ -207,7 +207,7 @@ class FirewallFSM(sonSMbase):
         vnfr = content["vnfr"]
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
-                       'pfSense.raw'
+                       'pfSense.qcow2'
 
        
         if (vnfr['virtual_deployment_units']
@@ -258,7 +258,7 @@ class FirewallFSM(sonSMbase):
 
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
-                       'pfsense.raw'
+                       'pfsense.qcow2'
 
         for x in range(len(vnfrs)):
                 if (vnfrs[x]['virtual_deployment_units']
