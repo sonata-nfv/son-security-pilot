@@ -236,7 +236,6 @@ class TaskConfigMonitorSSM(sonSMbase):
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'prx-vnf':
-                self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
                 if 'tor-vnf' in self.functions.keys():
                     self.functions[key]['next_ip'] = self.functions['tor-vnf']['own_ip']
                 else:
