@@ -372,12 +372,12 @@ class faceFSM(sonSMbase):
             my_ip = ssh_stdout.read().decode('utf-8')
 
             LOG.info('Port 80 to 3128')
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo iptables -t nat -A PREROUTING -i ens3 -p tcp -m tcp --dport 80 -j DNAT --to-destination {0}:3128i".format(my_ip))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo iptables -t nat -A PREROUTING -i ens3 -p tcp -m tcp --dport 80 -j DNAT --to-destination {0}:3128".format(my_ip))
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
 
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A PREROUTING -i ens3 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128i')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A PREROUTING -i ens3 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
