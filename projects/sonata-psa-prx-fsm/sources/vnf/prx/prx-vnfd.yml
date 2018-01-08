@@ -115,8 +115,8 @@ function_specific_managers:
     image: "sonatanfv/psa-vprx-fsm-css"
     options:
       - key: "type"
+        value: "configure"
+      - key: "type"
         value: "start"
       - key: "type"
         value: "stop"
-      - key: "type"
-        value: "configure"
