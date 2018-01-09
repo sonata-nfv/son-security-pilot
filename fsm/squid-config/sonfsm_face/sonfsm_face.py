@@ -505,9 +505,6 @@ class faceFSM(sonSMbase):
 
     def squid_configure(self, host_ip, data_ip, next_ip = None):
  
-        vdu = vnfr['virtual_deployment_units'][0]
-        cps = vdu['vnfc_instance'][0]['connection_points']
-
         ssh = paramiko.SSHClient()
         LOG.info("SSH client started")
 
