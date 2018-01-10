@@ -28,6 +28,10 @@ ENV mongo_port 27017
 ENV broker_host amqp://guest:guest@broker:5672/%2F
 ENV broker_exchange son-kernel
 
+RUN apt-get clean \
+    && apt-get update \
+    && apt-get install -y build-essential
+
 ADD son-sm/son-mano-framework/son-mano-base /son-mano-base
 ADD son-sm/son-sm-template /son-sm-template
 

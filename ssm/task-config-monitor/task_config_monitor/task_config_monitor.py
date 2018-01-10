@@ -29,7 +29,14 @@ partner consortium (www.sonata-nfv.eu).
 import logging
 import yaml
 import time
+import sys
+import _thread
+import websocket
+
 from sonsmbase.smbase import sonSMbase
+from threading import Thread
+from websocket_server import WebsocketServer
+from json import loads, dumps
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("ssm-task_config-1")
@@ -37,9 +44,83 @@ LOG.setLevel(logging.DEBUG)
 logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
-class TaskConfigMonitorSSM(sonSMbase):
+class Server():
 
     def __init__(self):
+
+        self.ssm = None
+
+    # Called for every client connecting (after handshake)
+    def new_client(self, client, server):
+        logging.warning("*********************"+"New client connected and was given id"+ str(client['id']))
+
+    # Called for every client disconnecting
+    def client_left(self, client, server):
+        logging.warning("*********************"+"Client("+str(client['id'])+") disconnected")
+
+    def message_received(self, client, server, message):
+        LOG.info('message received...')
+        if len(message) > 200:
+            message = message[:200]+'..'
+        logging.warning("*********************"+"Client("+str(client['id'])+") said:"+message)
+
+        # Format message
+        messageDict = loads(message)
+        actionName = messageDict['name']
+        message = {}
+
+        LOG.info("Creating messages for the SSM plugin")
+        # Translating the portal application message into the right format for
+        # the SSM.
+        if actionName == "basic":
+            message['chain'] = ['vpn-vnf', 'tor-vnf']
+
+        if actionName == "anon":
+            message['chain'] = ['vpn-vnf', 'prx-vnf', 'tor-vnf']
+
+        # Only when the status of the service is ready is it allowed to make
+        # a reconfiguration request. Possible status: 'configuring', 'instantiating'
+        # or 'ready'
+        LOG.info("Checking if service is ready to be reconfigured")
+        status = self.ssm.get_status()
+
+        # Requesting the reconfiguration. This method has no response. get_status
+        # should be fetched (see above) to determine when the reconfiguration is
+        # finished.
+        if status == 'ready':
+            LOG.info("Triggering plugin SSM to reconfigure")
+            self.ssm.push_update(message)
+            # TODO: fetch get_status until 'ready', before sending response to portal
+            # application
+        else:
+            LOG.info("Service not ready to be reconfigured, status: " + str(status))
+            # TODO: respond to portal that service is not ready to reconfigure
+
+    def add_ssm(self, ssm_object):
+        """
+        By adding the Config SSM, the server/client can trigger SSM methods
+        directly.
+        """
+        self.ssm = ssm_object
+
+    def connect_to_socket(self, port, host):
+        # TODO: How to connect to the portal application? Should we make the SSM
+        # the client and the application the server?
+        LOG.info("connecting to socket...")
+        logging.warning("*********************Listening to Requests...!")
+        port = port
+        host = host
+        # host="selfservice-ssm"
+        server = WebsocketServer(port, host=host)
+        server.set_fn_new_client(self.new_client)
+        server.set_fn_client_left(self.client_left)
+        server.set_fn_message_received(self.message_received)
+        server.run_forever()
+
+
+class TaskConfigMonitorSSM(sonSMbase):
+
+    def __init__(self, server=None):
 
         """
         :param specific_manager_type: specifies the type of specific manager that could be either fsm or ssm.
@@ -58,16 +139,26 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.version = 'v0.1'
         self.counter = 0
 
+        # init SSM
         self.nsd = None
         self.nsr = None
         self.functions = {}
         self.vnfrs = []
         self.ingress = None
         self.egress = None
+        self.ip_mapping = None
         self.status = 'instantiating'
         self.chain = ''
 
         self.description = "Task - Config SSM for the PSA."
+
+        # Connect with server
+        LOG.info("Connecting to server")
+        self.server = server
+        self.server.add_ssm(self)
+        port = 4000
+        host = "10.30.0.116"
+        Thread(target=self.server.connect_to_socket(port, host)).start()
 
         super(self.__class__, self).__init__(specific_manager_type= self.specific_manager_type,
                                              service_name= self.service_name,
@@ -152,6 +243,10 @@ class TaskConfigMonitorSSM(sonSMbase):
         what the required payload is.
         """
 
+        if 'ip_mapping' in msg.keys():
+            LOG.info("Ip mapping found, saving...")
+            self.ip_mapping = msg['ip_mapping']
+
         if content["workflow"] == 'instantiation':
             msg = "Received a configure request for the instantiation workflow"
             LOG.info(msg)
@@ -230,14 +325,14 @@ class TaskConfigMonitorSSM(sonSMbase):
             LOG.info("Function %s: %s", key, str(self.functions[key]))
             if key == 'vpn-vnf':
                 if 'prx-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.functions['prx-vnf']['own_ip']
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['prx-vnf']['own_ip'])
                 elif 'tor-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.functions['tor-vnf']['own_ip']
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'prx-vnf':
                 if 'tor-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.functions['tor-vnf']['own_ip']
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'tor-vnf':
@@ -266,7 +361,8 @@ class TaskConfigMonitorSSM(sonSMbase):
             current_vnf = self.chain[index]
             next_vnf = self.chain[index + 1]
             next_ip = self.functions[next_vnf]['own_ip']
-            self.functions[current_vnf]['next_ip'] = next_ip
+            converted_ip = self.floating_to_internal(next_ip)
+            self.functions[current_vnf]['next_ip'] = converted_ip
 
         last_vnf = self.chain[-1]
         self.functions[last_vnf]['next_ip'] = None
@@ -309,6 +405,20 @@ class TaskConfigMonitorSSM(sonSMbase):
             response['vnf'].append(new_entry)
 
         return response
+
+    def floating_to_internal(floating_ip):
+        """
+        This method tries to convert a floating ip into an internal ip.
+        """
+        LOG.info("Mapping floating IP to internal IP")
+        resulting_ip = floating_ip
+        for ip_duo in self.ip_mapping:
+            if ip_duo['floating_ip'] == floating_ip:
+                LOG.info('Internal IP found')
+                resulting_ip = ip_duo['internal_ip']
+                break
+
+        return resulting_ip
 
     def get_status(self):
 
@@ -368,7 +478,9 @@ class TaskConfigMonitorSSM(sonSMbase):
 
 
 def main():
-    TaskConfigMonitorSSM()
+
+    portal_server = Server()
+    TaskConfigMonitorSSM(server=portal_server)
 
 if __name__ == '__main__':
     main()
