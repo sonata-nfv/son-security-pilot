@@ -153,12 +153,12 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.description = "Task - Config SSM for the PSA."
 
         # Connect with server
-        LOG.info("Connecting to server")
-        self.server = server
-        self.server.add_ssm(self)
-        port = 4000
-        host = "10.30.0.116"
-        Thread(target=self.server.connect_to_socket(port, host)).start()
+        # LOG.info("Connecting to server")
+        # self.server = server
+        # self.server.add_ssm(self)
+        # port = 4000
+        # host = "10.30.0.116"
+        # Thread(target=self.server.connect_to_socket(port, host)).start()
 
         super(self.__class__, self).__init__(specific_manager_type= self.specific_manager_type,
                                              service_name= self.service_name,
@@ -480,7 +480,8 @@ class TaskConfigMonitorSSM(sonSMbase):
 def main():
 
     portal_server = Server()
-    TaskConfigMonitorSSM(server=portal_server)
+#    TaskConfigMonitorSSM(server=portal_server)
+    TaskConfigMonitorSSM()
 
 if __name__ == '__main__':
     main()
