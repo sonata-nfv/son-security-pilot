@@ -146,6 +146,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.vnfrs = []
         self.ingress = None
         self.egress = None
+        self.ip_mapping = None
         self.status = 'instantiating'
         self.chain = ''
 
@@ -242,6 +243,10 @@ class TaskConfigMonitorSSM(sonSMbase):
         what the required payload is.
         """
 
+        if 'ip_mapping' in msg.keys():
+            LOG.info("Ip mapping found, saving...")
+            self.ip_mapping = msg['ip_mapping']
+
         if content["workflow"] == 'instantiation':
             msg = "Received a configure request for the instantiation workflow"
             LOG.info(msg)
@@ -320,15 +325,14 @@ class TaskConfigMonitorSSM(sonSMbase):
             LOG.info("Function: " + str(self.functions[key]))
             if key == 'vpn-vnf':
                 if 'prx-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.functions['prx-vnf']['own_ip']
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['prx-vnf']['own_ip'])
                 elif 'tor-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.functions['tor-vnf']['own_ip']
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'prx-vnf':
-                self.functions[key]['next_ip'] = self.functions['tor-vpn']['own_ip']
                 if 'tor-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.functions['tor-vnf']['own_ip']
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'tor-vnf':
@@ -357,7 +361,8 @@ class TaskConfigMonitorSSM(sonSMbase):
             current_vnf = self.chain[index]
             next_vnf = self.chain[index + 1]
             next_ip = self.functions[next_vnf]['own_ip']
-            self.functions[current_vnf]['next_ip'] = next_ip
+            converted_ip = self.floating_to_internal(next_ip)
+            self.functions[current_vnf]['next_ip'] = converted_ip
 
         last_vnf = self.chain[-1]
         self.functions[last_vnf]['next_ip'] = None
@@ -400,6 +405,20 @@ class TaskConfigMonitorSSM(sonSMbase):
             response['vnf'].append(new_entry)
 
         return response
+
+    def floating_to_internal(floating_ip):
+        """
+        This method tries to convert a floating ip into an internal ip.
+        """
+        LOG.info("Mapping floating IP to internal IP")
+        resulting_ip = floating_ip
+        for ip_duo in self.ip_mapping:
+            if ip_duo['floating_ip'] == floating_ip:
+                LOG.info('Internal IP found')
+                resulting_ip = ip_duo['internal_ip']
+                break
+
+        return resulting_ip
 
     def get_status(self):
 
