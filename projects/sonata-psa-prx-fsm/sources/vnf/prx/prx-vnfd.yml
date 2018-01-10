@@ -13,10 +13,11 @@ description: "Implementation of Proxy function"
 ##
 virtual_deployment_units:
   - id: "vdu01"
-    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/u16squid-micro-x86-64-v04.qcow2"
+#    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/u16squid-micro-x86-64-v04.qcow2"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/eu.sonata-nfv_vprx-vnf_0.1_vdu01.qcow2"
     vm_image_format: "qcow2"
-#    vm_image_md5: "838821b21771674dd29acf1663253278"
-    vm_image_md5: "19c50a1f33d72af01268a90a72a888cc"
+#    vm_image_md5: "19c50a1f33d72af01268a90a72a888cc"
+    vm_image_md5: "ba82d033ac42317a4bd7f9e3f11e9ebd"
     resource_requirements:
       cpu:
         vcpus: 1
@@ -54,10 +55,10 @@ connection_points:
   - id: "mgmt"
     interface: "ipv4"
     type: "management"
-  - id: "in"
+  - id: "input"
     interface: "ipv4"
     type: "external"
-  - id: "out"
+  - id: "output"
     interface: "ipv4"
     type: "external"
  
@@ -115,8 +116,8 @@ function_specific_managers:
     image: "sonatanfv/psa-vprx-fsm-css"
     options:
       - key: "type"
+        value: "configure"
+      - key: "type"
         value: "start"
       - key: "type"
         value: "stop"
-      - key: "type"
-        value: "configure"
