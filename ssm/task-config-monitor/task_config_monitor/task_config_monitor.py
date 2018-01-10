@@ -243,9 +243,9 @@ class TaskConfigMonitorSSM(sonSMbase):
         what the required payload is.
         """
 
-        if 'ip_mapping' in msg.keys():
+        if 'ip_mapping' in content.keys():
             LOG.info("Ip mapping found, saving...")
-            self.ip_mapping = msg['ip_mapping']
+            self.ip_mapping = content['ip_mapping']
 
         if content["workflow"] == 'instantiation':
             msg = "Received a configure request for the instantiation workflow"
