@@ -406,7 +406,7 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         return response
 
-    def floating_to_internal(floating_ip):
+    def floating_to_internal(self, floating_ip):
         """
         This method tries to convert a floating ip into an internal ip.
         """
