@@ -480,7 +480,7 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         pass
 
-    def received_request(self, ch, method, prop, payload):
+    def emulate_portal(self, ch, method, prop, payload):
         """
         This topic processes an emulated portal press
         """
