@@ -176,6 +176,10 @@ class TaskConfigMonitorSSM(sonSMbase):
         topic = 'generic.ssm.' + self.sfuuid
         self.manoconn.subscribe(self.received_request, topic)
 
+        # Subscribe to a topic to emulate portal behavior
+        topic = 'emulate.portal'
+        self.manoconn.subscribe(self.emulate_portal, topic)
+
     def received_request(self, ch, method, prop, payload):
         """
         This method is called when the SLM is reaching out
@@ -265,10 +269,10 @@ class TaskConfigMonitorSSM(sonSMbase):
             self.status = content['status']
             LOG.info("status: " + str(self.status))
 
-            time.sleep(10)
-            LOG.info("Done sleeping")
-            payload = {}
-            payload['chain'] = ['vpn-vnf']
+#            time.sleep(10)
+#            LOG.info("Done sleeping")
+#            payload = {}
+#            payload['chain'] = ['vpn-vnf']
 #             self.push_update(payload)
 
     def configure_instantiation(self, corr_id, content):
@@ -475,6 +479,18 @@ class TaskConfigMonitorSSM(sonSMbase):
         #         LOG.info("Responded to monitoring request")
 
         pass
+
+    def received_request(self, ch, method, prop, payload):
+        """
+        This topic processes an emulated portal press
+        """
+
+        message = yaml.load(payload)
+        LOG.info("Received emulated portal request:" + str(message))
+
+        request = {}
+        request['chain'] = message['chain']
+        self.push_update(request)
 
 
 def main():
