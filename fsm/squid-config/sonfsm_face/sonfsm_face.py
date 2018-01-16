@@ -44,6 +44,7 @@ class faceFSM(sonSMbase):
     config_options = { 'direct': './ansible/roles/squid/files/squid_direct.conf', 
         'transparent': './ansible/roles/squid/files/squid.conf', 
         'squidguard': './ansible/roles/squid/files/squid_guard.conf' }
+    config_dir = './ansible/roles/squid/files'
     username = 'sonata'
     password = 'sonata'
     monitoring_file = './node.conf'
@@ -363,9 +364,42 @@ class faceFSM(sonSMbase):
 
             LOG.info("SSH connection established")
 
+            LOG.info("Copy net interfaces cfg files")
+            ftp = ssh.open_sftp()
+            LOG.info("SFTP connection established")
+
+            localpath = self.config_dir + '/ifcfg-eth1'
+            LOG.info("SFTP connection entering on %s", localpath)
+            remotepath = '/tmp/ifcfg-eth1'
+            sftpa = ftp.put(localpath, remotepath)
+            localpath = self.config_dir + '/ifcfg-eth2'
+            LOG.info("SFTP connection entering on %s", localpath)
+            sftpa = ftp.put(localpath, remotepath)
+            ftp.close()
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts && sudo cp /tmp/ifcfg-eth2 /etc/sysconfig/network-scripts")
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(ifconfig eth2 | awk '/ether/ { print $2 } ') | cat >> /etc/sysconfig/network-scripts/ifcfg-eth2")
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(ifconfig eth1 | awk '/ether/ { print $2 } ') | cat >> /etc/sysconfig/network-scripts/ifcfg-eth1")
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo ifup eth1 && sudo ifup eth2")
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+
             LOG.info('iptables configuration to redirect port 80 to 3128')
             LOG.info('get own ip')
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("IP = $('/sbin/ifconfig ens3 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }' | cut -b 6-') && echo $IP")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("IP = $('/sbin/ifconfig eth0 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }' | cut -b 6-') && echo $IP")
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
