@@ -160,7 +160,7 @@ class faceFSM(sonSMbase):
             if self.option == 0:
                 self.playbook_execution(plbk, squid_ip)
             else:
-                opt = 2
+                opt = 0
                 self.ssh_execution(opt, squid_ip)
 
         else:
@@ -240,7 +240,7 @@ class faceFSM(sonSMbase):
         if self.option == 0:
             self.playbook_execution(plbk, squid_ip)
         else:
-            opt = 0
+            opt = 2
             self.ssh_execution(opt, squid_ip)
             
         response = {}
@@ -406,12 +406,22 @@ class faceFSM(sonSMbase):
             my_ip = ssh_stdout.read().decode('utf-8')
 
             LOG.info('Port 80 to 3128')
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo iptables -t nat -A PREROUTING -i ens3 -p tcp -m tcp --dport 80 -j DNAT --to-destination {0}:3128".format(my_ip))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination {0}:3128".format(my_ip))
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
 
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A PREROUTING -i ens3 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A POSTROUTING -s /24 -o eth0 -j MASQUERAD')
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t filter -A INPUT -p tcp --dport 3128 -j ACCEPT')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
