@@ -373,6 +373,7 @@ class faceFSM(sonSMbase):
             remotepath = '/tmp/ifcfg-eth1'
             sftpa = ftp.put(localpath, remotepath)
             localpath = self.config_dir + '/ifcfg-eth2'
+            remotepath = '/tmp/ifcfg-eth2'
             LOG.info("SFTP connection entering on %s", localpath)
             sftpa = ftp.put(localpath, remotepath)
             ftp.close()
