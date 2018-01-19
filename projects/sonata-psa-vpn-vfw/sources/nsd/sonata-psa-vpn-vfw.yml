@@ -10,7 +10,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "psa-vpn-vfw"
-version: "0.0.1"
+version: "0.0.2"
 author: "SONATA"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
@@ -28,7 +28,7 @@ network_functions:
   - vnf_id: "vnf_vfw"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vfw-vnf"
-    vnf_version: "0.1"
+    vnf_version: "0.2"
 ##
 ## The NS connection points to the
 ## outside world.
