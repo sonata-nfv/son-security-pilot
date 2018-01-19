@@ -164,7 +164,7 @@ class FirewallFSM(sonSMbase):
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
                        'pfSense.qcow2'
-       
+
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
@@ -209,7 +209,7 @@ class FirewallFSM(sonSMbase):
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
                        'pfSense.qcow2'
 
-       
+
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
@@ -259,19 +259,19 @@ class FirewallFSM(sonSMbase):
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
                        'pfsense.qcow2'
-                       
+
         #sp address (retrieve it from NSR)
-		sp_ip = 'sp.int3.sonata-nfv.eu'
-		
+        sp_ip = 'sp.int3.sonata-nfv.eu'
+
         for x in range(len(vnfrs)):
                 if (vnfrs[x]['virtual_deployment_units']
                         [0]['vm_image']) == vm_image:
                     mgmt_ip = (vnfrs[x]['virtual_deployment_units']
                                [0]['vnfc_instance'][0]['connection_points'][0]
                                ['interface']['address'])
-                               
-		if content['next_ip']:
-			next_ip=content['next_ip']
+
+        if content['next_ip']:
+            next_ip=content['next_ip']
 
         if not mgmt_ip:
             LOG.error("Couldn't obtain mgmt IP address from VNFR during configuration")
@@ -310,8 +310,8 @@ class FirewallFSM(sonSMbase):
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
-                         
-                         
+
+
         LOG.info("Configure route for monitoring ")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route add {0} {1}"
@@ -330,15 +330,15 @@ class FirewallFSM(sonSMbase):
 
         # if next VNF do not exists use vtnet2 (wan) gateway stored by pfSense
         if not next_ip:
-       		ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            	"cat /tmp/vtnet2_router")
-        	sout = ssh_stdout.read().decode('utf-8')
-        	serr = ssh_stderr.read().decode('utf-8')
-        	LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(sout, serr))
-        	next_ip = sout.strip()
-        	LOG.info("New default GW: {0}".format(str(next_ip)))
-        
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "cat /tmp/vtnet2_router")
+            sout = ssh_stdout.read().decode('utf-8')
+            serr = ssh_stderr.read().decode('utf-8')
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(sout, serr))
+            next_ip = sout.strip()
+            LOG.info("New default GW: {0}".format(str(next_ip)))
+
         LOG.info("Configure default GW for next VNF or gateway"
                      .format(next_ip))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
@@ -353,23 +353,23 @@ class FirewallFSM(sonSMbase):
         #(stdin, stdout, stderr) = ssh.exec_command(command)
         #LOG.debug('Stdout: ' + str(stdout))
         #LOG.debug('Stderr: ' + str(stderr))
-        
-        ssh.close()
-        
-        
-		#Configure and activate monitoring probe
 
-		self.createConf(sp_ip, 4, 'vfw-vnf')
-		ssh = paramiko.SSHClient()
-		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-		ssh.connect(mgmt_ip, port, 'sonata', 'sonata',look_for_keys=False, timeout=5)
-		sftp = ssh.client.open_sftp()
-		sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
-		sftp.close()
-		command = "/etc/rc.d/sonmonprobe start" 
-		(stdin, stdout, stderr) = ssh.exec_command(command)
-		ssh.close()
-        
+        ssh.close()
+
+
+        #Configure and activate monitoring probe
+
+        self.createConf(sp_ip, 4, 'vfw-vnf')
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, 'sonata', 'sonata',look_for_keys=False, timeout=5)
+        sftp = ssh.client.open_sftp()
+        sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
+        sftp.close()
+        command = "/etc/rc.d/sonmonprobe start" 
+        (stdin, stdout, stderr) = ssh.exec_command(command)
+        ssh.close()
+
 
         # Create a response for the FLM
         response = {}
@@ -477,18 +477,18 @@ class FirewallFSM(sonSMbase):
 
 #create conf for monitoring
 def createConf(self, pw_ip, interval, name):
-	config = configparser.RawConfigParser()
-	config.add_section('vm_node')
-	config.add_section('Prometheus')
-	config.set('vm_node', 'node_name', name)
-	config.set('vm_node', 'post_freq', interval)
-	config.set('Prometheus', 'server_url', 'http://'+pw_ip+':9091/metrics')
-	
-	with open('node.conf', 'w') as configfile:    # save
-		config.write(configfile)
-	f = open('node.conf', 'r')
-	LOG.debug('Mon Config-> '+"\n"+f.read())
-	f.close()
+    config = configparser.RawConfigParser()
+    config.add_section('vm_node')
+    config.add_section('Prometheus')
+    config.set('vm_node', 'node_name', name)
+    config.set('vm_node', 'post_freq', interval)
+    config.set('Prometheus', 'server_url', 'http://'+pw_ip+':9091/metrics')
+
+    with open('node.conf', 'w') as configfile:    # save
+        config.write(configfile)
+    f = open('node.conf', 'r')
+    LOG.debug('Mon Config-> '+"\n"+f.read())
+    f.close()
 
 
 
