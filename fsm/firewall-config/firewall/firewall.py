@@ -312,7 +312,7 @@ class FirewallFSM(sonSMbase):
 
         LOG.info("Always use ethO (mgmt) for connection from 10.230.x.x for debug")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route add -net 10.230.0.0\16 {0}".format(default_gw))
+            "route add -net 10.230.0.0/16 {0}".format(default_gw))
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
