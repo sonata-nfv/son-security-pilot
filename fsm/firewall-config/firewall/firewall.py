@@ -248,28 +248,17 @@ class FirewallFSM(sonSMbase):
         # TODO: Add the configure logic. The content is a dictionary that
         # contains the required data
 
-        nsr = content['nsr']
-        vnfrs = content['vnfrs']
-
-        if self.is_running_in_emulator:
-            result = self.fw_configure(vnfrs[1])  # TODO: the order can be random
-            response = {'status': 'COMPLETED' if result else 'ERROR' }
-            return response
-
         mgmt_ip = None
+        next_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
                        'pfsense.qcow2'
 
         #sp address (retrieve it from NSR)
         #sp_ip = 'sp.int3.sonata-nfv.eu'
         sp_ip = '10.30.0.112'
-        
-        for x in range(len(vnfrs)):
-                if (vnfrs[x]['virtual_deployment_units']
-                        [0]['vm_image']) == vm_image:
-                    mgmt_ip = (vnfrs[x]['virtual_deployment_units']
-                               [0]['vnfc_instance'][0]['connection_points'][0]
-                               ['interface']['address'])
+
+        if content['management_ip']:
+            mgmt_ip = content['management_ip']
 
         if content['next_ip']:
             next_ip=content['next_ip']
