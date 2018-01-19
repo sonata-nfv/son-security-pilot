@@ -36,10 +36,10 @@ virtual_deployment_units:
         type: "management"
       - id: "cpinput"
         interface: "ipv4"
-        type: "internal"
+        type: "external"
       - id: "cpoutput"
         interface: "ipv4"
-        type: "internal"
+        type: "external"
 
 ##
 ## The virtual links that interconnect
