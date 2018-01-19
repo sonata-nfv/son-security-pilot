@@ -305,9 +305,9 @@ class TaskConfigMonitorSSM(sonSMbase):
 
             for cp in cps:
                 if cp['type'] in ['internal', 'external']:
-                    if cp['id'] in ['in', 'inout']:
+                    if cp['id'] in ['in', 'inout', 'cpinput']:
                         own_ip = cp['interface']['address']
-                    if cp['id'] in ['out']:
+                    if cp['id'] in ['out', 'cpoutput']:
                         output_ip = cp['interface']['address']
                         self.functions[function['vnfd']['name']]['output_ip'] = output_ip
 
@@ -332,14 +332,23 @@ class TaskConfigMonitorSSM(sonSMbase):
                     self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['prx-vnf']['own_ip'])
                 elif 'tor-vnf' in self.functions.keys():
                     self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
+                elif 'vfw-vnf' in self.functions.keys():
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'prx-vnf':
                 if 'tor-vnf' in self.functions.keys():
                     self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
+                elif 'vfw-vnf' in self.functions.keys():
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
                 else:
                     self.functions[key]['next_ip'] = None
             if key == 'tor-vnf':
+                if 'vfw-vnf' in self.functions.keys():
+                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
+                else:
+                    self.functions[key]['next_ip'] = None
+            if key == 'vfw-vnf':
                 self.functions[key]['next_ip'] = None
 
         response = self.create_configuration_message()
