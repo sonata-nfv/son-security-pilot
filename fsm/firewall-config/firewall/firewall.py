@@ -181,11 +181,11 @@ class FirewallFSM(sonSMbase):
             return;
 
         #activate firewall
-        command = "pfctl -e" 
-        (stdin, stdout, stderr) = ssh.exec_command(command)
-        LOG.debug('Stdout: ' + str(stdout))
-        LOG.debug('Stderr: ' + str(stderr))
-        ssh.close()
+        #command = "pfctl -e"
+        #(stdin, stdout, stderr) = ssh.exec_command(command)
+        #LOG.debug('Stdout: ' + str(stdout))
+        #LOG.debug('Stderr: ' + str(stderr))
+        #ssh.close()
 
         # Create a response for the FLM
         response = {}
@@ -226,11 +226,11 @@ class FirewallFSM(sonSMbase):
             return;
 
         #desactivate firewall
-        command = "pfctl -d" 
-        (stdin, stdout, stderr) = ssh.exec_command(command)
-        LOG.debug('Stdout: ' + str(stdout))
-        LOG.debug('Stderr: ' + str(stderr))
-        ssh.close()
+        #command = "pfctl -d"
+        #(stdin, stdout, stderr) = ssh.exec_command(command)
+        #LOG.debug('Stdout: ' + str(stdout))
+        #LOG.debug('Stderr: ' + str(stderr))
+        #ssh.close()
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
@@ -261,8 +261,9 @@ class FirewallFSM(sonSMbase):
                        'pfsense.qcow2'
 
         #sp address (retrieve it from NSR)
-        sp_ip = 'sp.int3.sonata-nfv.eu'
-
+		#sp_ip = 'sp.int3.sonata-nfv.eu'
+		sp_ip = '10.30.0.112'
+		
         for x in range(len(vnfrs)):
                 if (vnfrs[x]['virtual_deployment_units']
                         [0]['vm_image']) == vm_image:
@@ -306,7 +307,7 @@ class FirewallFSM(sonSMbase):
         LOG.info("Configure route for FSM IP")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route add {0} {1}"
-            .format(sp_ip, default_gw))
+            .format(fsm_ip, default_gw))
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
@@ -315,7 +316,14 @@ class FirewallFSM(sonSMbase):
         LOG.info("Configure route for monitoring ")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "route add {0} {1}"
-            .format(fsm_ip, default_gw))
+            .format(sp_ip, default_gw))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        LOG.info("Always use ethO (mgmt) for connection from 10.230.x.x for debug")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route add -net 10.230.0.0\16 {0}".format(default_gw))
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
