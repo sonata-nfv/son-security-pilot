@@ -472,20 +472,20 @@ class FirewallFSM(sonSMbase):
         return ssh
 
 
-#create conf for monitoring
-def createConf(self, pw_ip, interval, name):
-    config = configparser.RawConfigParser()
-    config.add_section('vm_node')
-    config.add_section('Prometheus')
-    config.set('vm_node', 'node_name', name)
-    config.set('vm_node', 'post_freq', interval)
-    config.set('Prometheus', 'server_url', 'http://'+pw_ip+':9091/metrics')
+    #create conf for monitoring
+    def createConf(self, pw_ip, interval, name):
+        config = configparser.RawConfigParser()
+        config.add_section('vm_node')
+        config.add_section('Prometheus')
+        config.set('vm_node', 'node_name', name)
+        config.set('vm_node', 'post_freq', interval)
+        config.set('Prometheus', 'server_url', 'http://'+pw_ip+':9091/metrics')
 
-    with open('node.conf', 'w') as configfile:    # save
-        config.write(configfile)
-    f = open('node.conf', 'r')
-    LOG.debug('Mon Config-> '+"\n"+f.read())
-    f.close()
+        with open('node.conf', 'w') as configfile:    # save
+            config.write(configfile)
+        f = open('node.conf', 'r')
+        LOG.debug('Mon Config-> '+"\n"+f.read())
+        f.close()
 
 
 
