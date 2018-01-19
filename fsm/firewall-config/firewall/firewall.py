@@ -261,9 +261,9 @@ class FirewallFSM(sonSMbase):
                        'pfsense.qcow2'
 
         #sp address (retrieve it from NSR)
-		#sp_ip = 'sp.int3.sonata-nfv.eu'
-		sp_ip = '10.30.0.112'
-		
+        #sp_ip = 'sp.int3.sonata-nfv.eu'
+        sp_ip = '10.30.0.112'
+        
         for x in range(len(vnfrs)):
                 if (vnfrs[x]['virtual_deployment_units']
                         [0]['vm_image']) == vm_image:
