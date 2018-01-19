@@ -94,11 +94,11 @@ forwarding_graphs:
     constituent_virtual_links:
       - "mgmt"
       - "input-2-vpn"
-      - "vpn-2-tor"
-      - "tor-2-output"
+      - "vpn-2-vfw"
+      - "vfw-2-output"
     constituent_vnfs:
       - "vnf_vpn"
-      - "vnf_tor"
+      - "vnf_vfw"
     network_forwarding_paths:
       - fp_id: "fg01:fp01"
         policy: "none"
