@@ -339,7 +339,7 @@ class FirewallFSM(sonSMbase):
         LOG.info("Configure default GW for next VNF or gateway"
                      .format(next_ip))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "route add default {0}".format(next_ip))
+                "route add default -ifp vtnet2 {0}".format(next_ip))
         LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
