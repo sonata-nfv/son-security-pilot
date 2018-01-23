@@ -376,9 +376,18 @@ class faceFSM(sonSMbase):
             remotepath = '/tmp/ifcfg-eth2'
             LOG.info("SFTP connection entering on %s", localpath)
             sftpa = ftp.put(localpath, remotepath)
+            localpath = self.config_dir + '/gethwaddress.pl'
+            remotepath = '/tmp/gethwaddress.pl'
+            LOG.info("SFTP connection entering on %s", localpath)
+            sftpa = ftp.put(localpath, remotepath)
             ftp.close()
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts && sudo cp /tmp/ifcfg-eth2 /etc/sysconfig/network-scripts")
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo perl /tmp/gethwaddress.pl")
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
