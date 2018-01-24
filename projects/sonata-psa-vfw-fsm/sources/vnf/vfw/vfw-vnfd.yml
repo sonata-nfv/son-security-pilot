@@ -15,12 +15,12 @@ virtual_deployment_units:
   - id: "1"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/pfSense.qcow2"
     vm_image_format: "qcow2"
-    vm_image_md5: "5e211884d4e279072397ef4f2764d6a0"
+    vm_image_md5: "cb20ff09d2b4a4faa55c788573443ac2"
     resource_requirements:
       cpu:
-        vcpus: 1
+        vcpus: 3
       memory:
-        size: 1
+        size: 4
         size_unit: "GB"
       storage:
         size: 1
