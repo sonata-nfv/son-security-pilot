@@ -387,6 +387,14 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
 
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("ifconfig eth1")
+            LOG.info('output from remote: ' + str(ssh_stdout))
+            LOG.info('output from remote: ' + str(ssh_stdin))
+            LOG.info('output from remote: ' + str(ssh_stderr))
+            sout = ssh_stdout.read().decode('utf-8')
+            serr = ssh_stderr.read().decode('utf-8')
+            LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo perl /tmp/gethwaddress.pl")
             channel = ssh_stdout.channel
             status = channel.recv_exit_status()
