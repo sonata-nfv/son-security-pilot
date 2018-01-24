@@ -388,7 +388,7 @@ class faceFSM(sonSMbase):
             LOG.info('output from remote: ' + str(ssh_stderr))
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo perl /tmp/gethwaddress.pl")
-            channel = stdout.channel
+            channel = ssh_stdout.channel
             status = channel.recv_exit_status()
             if status == 0:
                 LOG.info("Perl script completed")
