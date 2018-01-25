@@ -640,9 +640,9 @@ class faceFSM(sonSMbase):
             LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; forward_cpinput_ip:'{2}'"
                 .format(host_ip, data_ip, next_ip))
 
-            LOG.info("Configure default GW for next VNF VM in chain")
+            LOG.info("Configure default GW for next VNF VM in chain using the eth2 (output) interface")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "sudo /sbin/route add default gw {0}".format(next_ip))
+                "sudo /sbin/route add default gw {0} dev eth2".format(next_ip))
             LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
