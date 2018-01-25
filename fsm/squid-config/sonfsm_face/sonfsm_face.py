@@ -670,6 +670,11 @@ class faceFSM(sonSMbase):
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
 
+                LOG.info("Add default route for input/output interface (eth2)")
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient")
+                LOG.info("stdout: {0}\nstderr:  {1}"
+                         .format(ssh_stdout.read().decode('utf-8'),
+                                 ssh_stderr.read().decode('utf-8')))
 
             else:
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
@@ -679,11 +684,6 @@ class faceFSM(sonSMbase):
                 str_out = "supersede routers %s;".format('.'.join(last_if))
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
 
-        LOG.info("Add default route for input/output interface (eth2)")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient")
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables")
         LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'),
              ssh_stderr.read().decode('utf-8')))
