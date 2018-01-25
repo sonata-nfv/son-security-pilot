@@ -515,11 +515,11 @@ class faceFSM(sonSMbase):
                 sftpa = ftp.put(localpath, remotepath)
             ftp.close()
 
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid3/squid.conf /etc/squid3/squid.conf.old')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid/squid.conf /etc/squid/squid.conf.old')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid3')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid')
             LOG.info('output from remote: ' + str(ssh_stdout))
             LOG.info('output from remote: ' + str(ssh_stdin))
             LOG.info('output from remote: ' + str(ssh_stderr))
