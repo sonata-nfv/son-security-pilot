@@ -701,7 +701,8 @@ class faceFSM(sonSMbase):
                 str_out = "supersede routers %s;".format('.'.join(last_if))
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
 
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables")
+        LOG.info("Veryfing iptables version")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables --version")
         LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'),
              ssh_stderr.read().decode('utf-8')))
 
