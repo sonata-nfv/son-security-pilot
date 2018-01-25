@@ -621,7 +621,7 @@ class faceFSM(sonSMbase):
 
         LOG.info("Configure route for FSM IP")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route add -net {0} netmask 255.255.255.255 gw {1}"
+            "sudo /sbin/route add -net {0} netmask 255.255.255.255 gw {1}"
             .format(fsm_ip, default_gw))
         LOG.info("stdout: {0}\nstderr:  {1}"
             .format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
@@ -629,7 +629,7 @@ class faceFSM(sonSMbase):
         # remove default GW
         LOG.info("Delete default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route del default gw {0}".format(default_gw))
+            "sudo /sbin/route del default gw {0}".format(default_gw))
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
@@ -642,7 +642,7 @@ class faceFSM(sonSMbase):
 
             LOG.info("Configure default GW for next VNF VM in chain")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "route add default gw {0}".format(next_ip))
+                "sudo /sbin/route add default gw {0}".format(next_ip))
             LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
@@ -655,16 +655,16 @@ class faceFSM(sonSMbase):
             if os == '3': 
                 LOG.info("Modify DHCP configuration of interfaces")
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    "sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
+                    "sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
                 )
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    "sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
+                    "sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
                 )
                 LOG.info("stdout: {0}\nstderr:  {1}"
                          .format(ssh_stdout.read().decode('utf-8'),
                                  ssh_stderr.read().decode('utf-8')))
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    "sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth2"
+                    "sudo sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth2"
                 )
                 LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
@@ -673,18 +673,18 @@ class faceFSM(sonSMbase):
 
             else:
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    "LI = $(\"ifconfig ens3 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
+                    "LI = $(\"sudo ifconfig ens3 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
                 last_if = ssh_stdout.read().decode('utf-8').split('.')
                 last_if[3] = '1'
                 str_out = "supersede routers %s;".format('.'.join(last_if))
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
 
         LOG.info("Add default route for input/output interface (eth2)")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("dhclient")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient")
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/root/iptables.sh")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /root/iptables.sh")
         LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'),
              ssh_stderr.read().decode('utf-8')))
 
