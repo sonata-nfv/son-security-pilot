@@ -459,10 +459,6 @@ class faceFSM(sonSMbase):
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid start')
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-            LOG.info("Moving file")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /opt/monitoring /opt/Monitoring')
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             retry = 0
             if self.with_monitoring == True:
