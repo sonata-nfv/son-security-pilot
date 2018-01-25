@@ -671,7 +671,7 @@ class faceFSM(sonSMbase):
                              ssh_stderr.read().decode('utf-8')))
 
                 LOG.info("Add default route for input/output interface (eth2)")
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient")
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient -r eth2 && dhclient eth2")
                 LOG.info("stdout: {0}\nstderr:  {1}"
                          .format(ssh_stdout.read().decode('utf-8'),
                                  ssh_stderr.read().decode('utf-8')))
