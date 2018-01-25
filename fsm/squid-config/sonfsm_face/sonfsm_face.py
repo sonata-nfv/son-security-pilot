@@ -50,6 +50,7 @@ class faceFSM(sonSMbase):
     monitoring_file = './node.conf'
     with_monitoring = True
     option = 1
+    os_version = none
 
     def __init__(self):
         LOG.debug('Initialization of faceFSM in %s', __file__)
@@ -364,6 +365,13 @@ class faceFSM(sonSMbase):
 
             LOG.info("SSH connection established")
 
+            LOG.info("Get OS system version")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/os-release | awk '/^ID=/ { print }' | cut -b 4-")
+            sout = ssh_stdout.read().decode('utf-8')
+            serr = ssh_stderr.read().decode('utf-8')
+            LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+            self.os_version = ssh_stdout.read().decode('utf-8')
+
             LOG.info("Copy net interfaces cfg files")
             ftp = ssh.open_sftp()
             LOG.info("SFTP connection established")
@@ -374,10 +382,6 @@ class faceFSM(sonSMbase):
             sftpa = ftp.put(localpath, remotepath)
             localpath = self.config_dir + '/ifcfg-eth2'
             remotepath = '/tmp/ifcfg-eth2'
-            LOG.info("SFTP connection entering on %s", localpath)
-            sftpa = ftp.put(localpath, remotepath)
-            localpath = self.config_dir + '/gethwaddress.pl'
-            remotepath = '/tmp/gethwaddress.pl'
             LOG.info("SFTP connection entering on %s", localpath)
             sftpa = ftp.put(localpath, remotepath)
             ftp.close()
@@ -393,16 +397,6 @@ class faceFSM(sonSMbase):
             serr = ssh_stderr.read().decode('utf-8')
             LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
-            LOG.info("Executing perl script")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo perl /tmp/gethwaddress.pl")
-            channel = ssh_stdout.channel
-            status = channel.recv_exit_status()
-            if status == 0:
-                LOG.info("Perl script completed")
-            else:
-                LOG.info("Error")
-
-            LOG.info("Updating ifcfg-eth2")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth2 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth2'")
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
@@ -625,7 +619,7 @@ class faceFSM(sonSMbase):
 
         LOG.info("Get current default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "IP=$(/sbin/ip route | awk '/default/ { print $3 }') && echo $IP")
+            "IP=$(/usr/sbin/ip route | awk '/default/ { print $3 }') && echo $IP")
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
@@ -663,9 +657,7 @@ class faceFSM(sonSMbase):
         # next VNF doesn't exist
         else:
             LOG.info("Which OS am i modifying")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("OS = $(uname -r | cut -b -1) && echo $OS");
-            os = ssh_stdout.read().decode('utf-8')
-            if os == '3': 
+            if self.os_version == "\"centos\"": 
                 LOG.info("Modify DHCP configuration of interfaces")
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
                     "sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
