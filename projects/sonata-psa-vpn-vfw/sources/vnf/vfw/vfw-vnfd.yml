@@ -5,9 +5,9 @@
 descriptor_version: "vnfd-schema-01"
 vendor: "eu.sonata-nfv"
 name: "vfw-vnf"
-version: "0.1"
+version: "0.2"
 author: "Steven Van Rossem, Ghent University, steven.vanrossem@intec.ugent.be"
-description: "Firewall VNF based on an Openflow controller Ryu + OpenVswitch"
+description: "Firewall VNF based on psSense"
 ##
 ## The virtual deployment unit.
 ##
@@ -36,10 +36,10 @@ virtual_deployment_units:
         type: "management"
       - id: "cpinput"
         interface: "ipv4"
-        type: "internal"
+        type: "external"
       - id: "cpoutput"
         interface: "ipv4"
-        type: "internal"
+        type: "external"
 
 ##
 ## The virtual links that interconnect
@@ -100,6 +100,7 @@ monitoring_rules:
       - name: "notification02"
         type: "rabbitmq_message"
 
+
 function_specific_managers:
   - id: "sonfsmpsa-servicefirewall-vnffirewall-config1"
     description: "FSM to do a first FSM test"
@@ -107,5 +108,6 @@ function_specific_managers:
     options:
       - key: "type"
         value: "start"
-
+      - key: "type"
+        value: "configure"
 

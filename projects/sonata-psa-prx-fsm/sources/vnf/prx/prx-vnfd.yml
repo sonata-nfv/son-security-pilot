@@ -55,10 +55,10 @@ connection_points:
   - id: "mgmt"
     interface: "ipv4"
     type: "management"
-  - id: "in"
+  - id: "input"
     interface: "ipv4"
     type: "external"
-  - id: "out"
+  - id: "output"
     interface: "ipv4"
     type: "external"
  

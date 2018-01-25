@@ -1,0 +1,117 @@
+##
+## This is a network service descriptor
+## for the SONATA PSA pilot containing the
+## VPN and TOR functions.
+##
+## @author Luis Conceicao, UBIWHERE, lconceicao@ubiwhere.com
+##
+---
+descriptor_version: "1.0"
+
+vendor: "eu.sonata-nfv.service-descriptor"
+name: "psa-vpn-vfw"
+version: "0.0.2"
+author: "SONATA"
+description: >
+  "The network service descriptor for the SONATA PSA pilot,
+   comprising VPN and vFW functions"
+
+##
+## The various network functions this service
+## is composed of.
+##
+network_functions:
+  - vnf_id: "vnf_vpn"
+    vnf_vendor: "eu.sonata-nfv"
+    vnf_name: "vpn-vnf"
+    vnf_version: "0.5"
+  - vnf_id: "vnf_vfw"
+    vnf_vendor: "eu.sonata-nfv"
+    vnf_name: "vfw-vnf"
+    vnf_version: "0.2"
+##
+## The NS connection points to the
+## outside world.
+##
+connection_points:
+  - id: "mgmt"
+    interface: "ipv4"
+    type: "management"
+  - id: "input"
+    interface: "ipv4"
+    type: "external"
+  - id: "output"
+    interface: "ipv4"
+    type: "external"
+
+
+service_specific_managers:
+ - id: "sonssmpsaservicetask-config-monitor1"
+   description: "An SSM functioning as task, config and monitor SSM."
+   image: "sonatanfv/psaservice-ssm-taskconfigmonitor"
+   options:
+     - key: "type"
+       value: "task"
+     - key: "type"
+       value: "configure"
+     - key: "type"
+       value: "monitor"
+
+##
+## The virtual links that interconnect
+## the different connections points.
+##
+virtual_links:
+  - id: "mgmt"
+    connectivity_type: "E-LAN"
+    connection_points_reference:
+      - "vnf_vpn:mgmt"
+      - "vnf_vfw:cpmgmt"
+      - "mgmt"
+  - id: "input-2-vpn"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "input"
+      - "vnf_vpn:inout"
+  - id: "vpn-2-vfw"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vnf_vpn:inout"
+      - "vnf_vfw:cpinput"
+  - id: "vfw-2-output"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vnf_vfw:cpoutput"
+      - "output"
+
+##
+## The forwarding graphs.
+##
+forwarding_graphs:
+  - fg_id: "fg01"
+    number_of_endpoints: 2
+    number_of_virtual_links: 4
+    constituent_virtual_links:
+      - "mgmt"
+      - "input-2-vpn"
+      - "vpn-2-vfw"
+      - "vfw-2-output"
+    constituent_vnfs:
+      - "vnf_vpn"
+      - "vnf_vfw"
+    network_forwarding_paths:
+      - fp_id: "fg01:fp01"
+        policy: "none"
+        connection_points:
+          - connection_point_ref: "input"
+            position: 1
+          - connection_point_ref: "vnf_vpn:inout"
+            position: 2
+          - connection_point_ref: "vnf_vpn:inout"
+            position: 3
+          - connection_point_ref: "vnf_vfw:cpinput"
+            position: 4
+          - connection_point_ref: "vnf_vfw:cpoutput"
+            position: 5
+          - connection_point_ref: "output"
+            position: 6
