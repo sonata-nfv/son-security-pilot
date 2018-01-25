@@ -382,15 +382,18 @@ class faceFSM(sonSMbase):
             sftpa = ftp.put(localpath, remotepath)
             ftp.close()
 
+            LOG.info("Copying scripts")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts && sudo cp /tmp/ifcfg-eth2 /etc/sysconfig/network-scripts")
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Displaying eth1 data")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth1")
             sout = ssh_stdout.read().decode('utf-8')
             serr = ssh_stderr.read().decode('utf-8')
             LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
+            LOG.info("Executing perl script")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo perl /tmp/gethwaddress.pl")
             channel = ssh_stdout.channel
             status = channel.recv_exit_status()
@@ -399,14 +402,17 @@ class faceFSM(sonSMbase):
             else:
                 LOG.info("Error")
 
+            LOG.info("Updating ifcfg-eth2")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth2 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth2'")
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Updating ifcfg-eth1")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth1 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth1'")
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Rebooting eth1 and eth2")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo ifup eth1 && sudo ifup eth2")
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
@@ -440,14 +446,17 @@ class faceFSM(sonSMbase):
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Redirecting port")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Setting masquerade")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A POSTROUTING -s /24 -o eth0 -j MASQUERAD')
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Accept in the filter table")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t filter -A INPUT -p tcp --dport 3128 -j ACCEPT')
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
@@ -456,6 +465,7 @@ class faceFSM(sonSMbase):
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid start')
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
+            LOG.info("Moving file")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /opt/monitoring /opt/Monitoring')
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
