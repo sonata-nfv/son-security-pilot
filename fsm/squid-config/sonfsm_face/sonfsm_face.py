@@ -424,7 +424,11 @@ class faceFSM(sonSMbase):
 
             LOG.info('iptables configuration to redirect port 80 to 3128')
             LOG.info('get own ip')
+<<<<<<< HEAD
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth0 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }'")
+=======
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("IP = $(/sbin/ifconfig eth0 | grep 'inet' | awk '{ if ($1 == \"inet\") {print $2} }') && echo $IP")
+>>>>>>> cf3b97172fd6adbb75bdf30e2382191ed3c652cb
             my_ip = ssh_stdout.read().decode('utf-8')
             LOG.info('stdout from remote: ' + my_ip)
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
@@ -440,7 +444,7 @@ class faceFSM(sonSMbase):
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             LOG.info("Setting masquerade")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A POSTROUTING -s /24 -o eth0 -j MASQUERADE')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE')
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
