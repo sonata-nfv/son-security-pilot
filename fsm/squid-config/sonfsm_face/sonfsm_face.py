@@ -452,7 +452,7 @@ class faceFSM(sonSMbase):
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             LOG.info("Setting masquerade")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A POSTROUTING -s /24 -o eth0 -j MASQUERAD')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE')
             LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
             LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
