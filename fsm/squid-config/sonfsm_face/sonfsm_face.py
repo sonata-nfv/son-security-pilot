@@ -684,7 +684,7 @@ class faceFSM(sonSMbase):
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /root/iptables.sh")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables")
         LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'),
              ssh_stderr.read().decode('utf-8')))
 
