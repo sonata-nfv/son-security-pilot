@@ -180,6 +180,14 @@ class FirewallFSM(sonSMbase):
             LOG.error('Unable to establish an SSH connection during the start event')
             return;
 
+        LOG.info("Remove the static route to 8.8.8.8")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route del -host 8.8.8.8 || true")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+
         #activate firewall
         #command = "pfctl -e"
         #(stdin, stdout, stderr) = ssh.exec_command(command)

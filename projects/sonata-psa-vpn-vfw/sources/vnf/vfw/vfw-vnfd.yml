@@ -5,7 +5,7 @@
 descriptor_version: "vnfd-schema-01"
 vendor: "eu.sonata-nfv"
 name: "vfw-vnf"
-version: "0.2"
+version: "0.3"
 author: "Steven Van Rossem, Ghent University, steven.vanrossem@intec.ugent.be"
 description: "Firewall VNF based on psSense"
 ##
@@ -102,7 +102,7 @@ monitoring_rules:
 
 
 function_specific_managers:
-  - id: "sonfsmpsa-servicefirewall-vnffirewall-config1"
+  - id: "sonfsmpsaservice-vpnvfw-vfw-config1"
     description: "FSM to do a first FSM test"
     image: "sonatanfv/psa-vfw-fsm-css"
     options:

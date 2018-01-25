@@ -4,7 +4,7 @@
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "vpn-vnf"
-version: "0.5"
+version: "0.6"
 author: "Luis Conceicao, UBIWHERE"
 description: "Implementation of OpenVPN function"
 
@@ -99,7 +99,7 @@ monitoring_rules:
 ## Function Specific Managers
 ##
 function_specific_managers:
-  - id: "sonfsmpsaservicevpn-vnfvpn-config1"
+  - id: "sonfsmpsaservice-vpnvfw-vpn-config1"
     description: "FSM for the configuration of the VPN"
     image: "sonatanfv/psa-vpn-fsm-css"
     options:

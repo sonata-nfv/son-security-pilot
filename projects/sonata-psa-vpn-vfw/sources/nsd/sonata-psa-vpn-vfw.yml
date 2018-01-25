@@ -10,7 +10,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "psa-vpn-vfw"
-version: "0.0.2"
+version: "0.0.3"
 author: "SONATA"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
@@ -24,11 +24,11 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.5"
+    vnf_version: "0.6"
   - vnf_id: "vnf_vfw"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vfw-vnf"
-    vnf_version: "0.2"
+    vnf_version: "0.3"
 ##
 ## The NS connection points to the
 ## outside world.
@@ -46,7 +46,7 @@ connection_points:
 
 
 service_specific_managers:
- - id: "sonssmpsaservicetask-config-monitor1"
+ - id: "sonssmpsaservicetask-config-monitor1-vpnvfw"
    description: "An SSM functioning as task, config and monitor SSM."
    image: "sonatanfv/psaservice-ssm-taskconfigmonitor"
    options:

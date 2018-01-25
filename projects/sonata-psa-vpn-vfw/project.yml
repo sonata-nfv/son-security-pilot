@@ -4,5 +4,5 @@ package:
   maintainer: SONATA
   name: sonata-psa-vpn-vfw
   vendor: eu.sonata-nfv
-  version: '0.2'
+  version: '0.3'
 version: '0.5'
