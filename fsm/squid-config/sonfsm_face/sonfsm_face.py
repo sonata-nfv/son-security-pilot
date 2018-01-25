@@ -50,7 +50,7 @@ class faceFSM(sonSMbase):
     monitoring_file = './node.conf'
     with_monitoring = True
     option = 1
-    os_version = none
+    os_version = None
 
     def __init__(self):
         LOG.debug('Initialization of faceFSM in %s', __file__)
