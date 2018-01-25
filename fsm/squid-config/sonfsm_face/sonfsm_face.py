@@ -429,7 +429,7 @@ class faceFSM(sonSMbase):
 
             LOG.info("Always use eth0 (mgmt) for connection to 10.230.x.x for protecting admin ssh connections")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "/usr/sbin/ip route add 10.230.0.0/16 dev eth0 via {0}".format(default_gw))
+                "sudo /usr/sbin/ip route add 10.230.0.0/16 dev eth0 via {0}".format(default_gw))
             # FIX: how to known that eth0 is always mgmt ?
             LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
