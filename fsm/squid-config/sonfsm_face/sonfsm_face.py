@@ -386,72 +386,83 @@ class faceFSM(sonSMbase):
             sftpa = ftp.put(localpath, remotepath)
             ftp.close()
 
+            LOG.info("Copying scripts")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts && sudo cp /tmp/ifcfg-eth2 /etc/sysconfig/network-scripts")
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Displaying eth1 data")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth1")
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
             sout = ssh_stdout.read().decode('utf-8')
             serr = ssh_stderr.read().decode('utf-8')
             LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth2 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth2'")
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Updating ifcfg-eth1")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth1 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth1'")
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Rebooting eth1 and eth2")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo ifup eth1 && sudo ifup eth2")
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
+
+            LOG.info("Get current default GW")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "IP=$(/usr/sbin/ip route | awk '/default/ { print $3 }') && echo $IP")
+            sout = ssh_stdout.read().decode('utf-8')
+            serr = ssh_stderr.read().decode('utf-8')
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(sout, serr))
+            default_gw = sout.strip()
+
+            LOG.info("Always use eth0 (mgmt) for connection to 10.230.x.x for protecting admin ssh connections")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "sudo /usr/sbin/ip route add 10.230.0.0/16 dev eth0 via {0}".format(default_gw))
+            # FIX: how to known that eth0 is always mgmt ?
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
 
             LOG.info('iptables configuration to redirect port 80 to 3128')
             LOG.info('get own ip')
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("IP = $('/sbin/ifconfig eth0 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }' | cut -b 6-') && echo $IP")
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
             my_ip = ssh_stdout.read().decode('utf-8')
+            LOG.info('stdout from remote: ' + my_ip)
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
-            LOG.info('Port 80 to 3128')
+            LOG.info('Port 80 to 3128 for {0}'.format(my_ip))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination {0}:3128".format(my_ip))
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Redirecting port")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Setting masquerade")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A POSTROUTING -s /24 -o eth0 -j MASQUERAD')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+            LOG.info("Accept in the filter table")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t filter -A INPUT -p tcp --dport 3128 -j ACCEPT')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             LOG.info("Configuration of squid service")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid start')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
+            LOG.info("Moving file")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /opt/monitoring /opt/Monitoring')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             retry = 0
             if self.with_monitoring == True:
@@ -636,9 +647,9 @@ class faceFSM(sonSMbase):
             LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; forward_cpinput_ip:'{2}'"
                 .format(host_ip, data_ip, next_ip))
 
-            LOG.info("Configure default GW for next VNF VM in chain")
+            LOG.info("Configure default GW for next VNF VM in chain using the eth2 (output) interface")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "sudo /sbin/route add default gw {0}".format(next_ip))
+                "sudo /sbin/route add default gw {0} dev eth2".format(next_ip))
             LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
@@ -664,6 +675,11 @@ class faceFSM(sonSMbase):
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
 
+                LOG.info("Add default route for input/output interface (eth2)")
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient -r eth2 && dhclient eth2")
+                LOG.info("stdout: {0}\nstderr:  {1}"
+                         .format(ssh_stdout.read().decode('utf-8'),
+                                 ssh_stderr.read().decode('utf-8')))
 
             else:
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
@@ -673,12 +689,8 @@ class faceFSM(sonSMbase):
                 str_out = "supersede routers %s;".format('.'.join(last_if))
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
 
-        LOG.info("Add default route for input/output interface (eth2)")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient")
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables")
+        LOG.info("Veryfing iptables version")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables --version")
         LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'),
              ssh_stderr.read().decode('utf-8')))
 
