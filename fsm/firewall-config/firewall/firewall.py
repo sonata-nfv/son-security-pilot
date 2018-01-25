@@ -163,8 +163,8 @@ class FirewallFSM(sonSMbase):
         vnfr = content["vnfr"]
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
-                       'pfSense.raw'
-       
+                       'pfSense.qcow2'
+
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
@@ -181,11 +181,11 @@ class FirewallFSM(sonSMbase):
             return;
 
         #activate firewall
-        command = "pfctl -e" 
-        (stdin, stdout, stderr) = ssh.exec_command(command)
-        LOG.debug('Stdout: ' + str(stdout))
-        LOG.debug('Stderr: ' + str(stderr))
-        ssh.close()
+        #command = "pfctl -e"
+        #(stdin, stdout, stderr) = ssh.exec_command(command)
+        #LOG.debug('Stdout: ' + str(stdout))
+        #LOG.debug('Stderr: ' + str(stderr))
+        #ssh.close()
 
         # Create a response for the FLM
         response = {}
@@ -207,9 +207,9 @@ class FirewallFSM(sonSMbase):
         vnfr = content["vnfr"]
         mgmt_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
-                       'pfSense.raw'
+                       'pfSense.qcow2'
 
-       
+
         if (vnfr['virtual_deployment_units']
                     [0]['vm_image']) == vm_image:
              mgmt_ip = (vnfr['virtual_deployment_units']
@@ -226,11 +226,11 @@ class FirewallFSM(sonSMbase):
             return;
 
         #desactivate firewall
-        command = "pfctl -d" 
-        (stdin, stdout, stderr) = ssh.exec_command(command)
-        LOG.debug('Stdout: ' + str(stdout))
-        LOG.debug('Stderr: ' + str(stderr))
-        ssh.close()
+        #command = "pfctl -d"
+        #(stdin, stdout, stderr) = ssh.exec_command(command)
+        #LOG.debug('Stdout: ' + str(stdout))
+        #LOG.debug('Stderr: ' + str(stderr))
+        #ssh.close()
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
@@ -248,24 +248,20 @@ class FirewallFSM(sonSMbase):
         # TODO: Add the configure logic. The content is a dictionary that
         # contains the required data
 
-        nsr = content['nsr']
-        vnfrs = content['vnfrs']
-
-        if self.is_running_in_emulator:
-            result = self.fw_configure(vnfrs[1])  # TODO: the order can be random
-            response = {'status': 'COMPLETED' if result else 'ERROR' }
-            return response
-
         mgmt_ip = None
+        next_ip = None
         vm_image = 'http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/' \
-                       'pfsense.raw'
+                       'pfsense.qcow2'
 
-        for x in range(len(vnfrs)):
-                if (vnfrs[x]['virtual_deployment_units']
-                        [0]['vm_image']) == vm_image:
-                    mgmt_ip = (vnfrs[x]['virtual_deployment_units']
-                               [0]['vnfc_instance'][0]['connection_points'][0]
-                               ['interface']['address'])
+        #sp address (retrieve it from NSR)
+        #sp_ip = 'sp.int3.sonata-nfv.eu'
+        sp_ip = '10.30.0.112'
+
+        if content['management_ip']:
+            mgmt_ip = content['management_ip']
+
+        if content['next_ip']:
+            next_ip=content['next_ip']
 
         if not mgmt_ip:
             LOG.error("Couldn't obtain mgmt IP address from VNFR during configuration")
@@ -276,12 +272,101 @@ class FirewallFSM(sonSMbase):
             LOG.error('Unable to establish an SSH connection during the configure event')
             return;
 
+
+        LOG.info("Retrieve FSM IP address")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "echo $SSH_CLIENT | awk '{ print $1}'")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+        fsm_ip = sout.strip()
+        LOG.info("FSM IP: {0}".format(fsm_ip))
+
+        LOG.info("Get current default GW")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "/usr/bin/netstat -nr| awk '/default/ { print $2 }'")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+        default_gw = sout.strip()
+        LOG.info("Default GW: {0}".format(str(default_gw)))
+
+        LOG.info("Configure route for FSM IP")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route add {0} {1}"
+            .format(fsm_ip, default_gw))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+
+        LOG.info("Configure route for monitoring ")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route add {0} {1}"
+            .format(sp_ip, default_gw))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        LOG.info("Always use ethO (mgmt) for connection from 10.230.x.x for debug")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route add -net 10.230.0.0/16 {0}".format(default_gw))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        # remove default GW
+        LOG.info("Delete default GW")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route del default")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        # if next VNF do not exists use vtnet2 (wan) gateway stored by pfSense
+        if not next_ip:
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "cat /tmp/vtnet2_router")
+            sout = ssh_stdout.read().decode('utf-8')
+            serr = ssh_stderr.read().decode('utf-8')
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(sout, serr))
+            next_ip = sout.strip()
+            LOG.info("New default GW: {0}".format(str(next_ip)))
+
+        LOG.info("Configure default GW for next VNF or gateway"
+                     .format(next_ip))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "route add default -ifp vtnet2 {0}".format(next_ip))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
+
+
         #Activate firewall
-        command = "pfctl -e" 
-        (stdin, stdout, stderr) = ssh.exec_command(command)
-        LOG.debug('Stdout: ' + str(stdout))
-        LOG.debug('Stderr: ' + str(stderr))
+        #command = "pfctl -e" 
+        #(stdin, stdout, stderr) = ssh.exec_command(command)
+        #LOG.debug('Stdout: ' + str(stdout))
+        #LOG.debug('Stderr: ' + str(stderr))
+
         ssh.close()
+
+
+        #Configure and activate monitoring probe
+
+        self.createConf(sp_ip, 4, 'vfw-vnf')
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(mgmt_ip, port, 'sonata', 'sonata',look_for_keys=False, timeout=5)
+        sftp = ssh.client.open_sftp()
+        sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
+        sftp.close()
+        command = "/etc/rc.d/sonmonprobe start" 
+        (stdin, stdout, stderr) = ssh.exec_command(command)
+        ssh.close()
+
 
         # Create a response for the FLM
         response = {}
@@ -385,6 +470,23 @@ class FirewallFSM(sonSMbase):
             LOG.error('Could not establish SSH connection within max retries')
             return None;
         return ssh
+
+
+    #create conf for monitoring
+    def createConf(self, pw_ip, interval, name):
+        config = configparser.RawConfigParser()
+        config.add_section('vm_node')
+        config.add_section('Prometheus')
+        config.set('vm_node', 'node_name', name)
+        config.set('vm_node', 'post_freq', interval)
+        config.set('Prometheus', 'server_url', 'http://'+pw_ip+':9091/metrics')
+
+        with open('node.conf', 'w') as configfile:    # save
+            config.write(configfile)
+        f = open('node.conf', 'r')
+        LOG.debug('Mon Config-> '+"\n"+f.read())
+        f.close()
+
 
 
 def main(working_dir=None):
