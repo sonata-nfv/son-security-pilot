@@ -87,7 +87,7 @@ virtual_links:
 ## Function Specific Managers
 ##
 function_specific_managers:
-  - id: "sonfsmpsaserviceprx-vpnprxvfw-config1-prx"
+  - id: "sonfsmpsaserviceprx-vnfprx-config1"
     description: "FSM for the configuration of the vPRX"
     image: "sonatanfv/psa-vprx-fsm-css"
     options:
