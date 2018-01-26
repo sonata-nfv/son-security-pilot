@@ -188,25 +188,17 @@ class FirewallFSM(sonSMbase):
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(sout, serr))
 
-        LOG.info("Get vtnet1 (input) ip")
+        LOG.info("Get the subnet of vtnet1 (input)")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "ifconfig vtnet1 | grep 'inet ' | awk '{ if ($1 == \"inet\") {print $2} }'")
-        vtnet1_ip = ssh_stdout.read().decode('utf-8').strip()
+            "netstat -rn4 | grep -E 'link[#].+vtnet2' | awk '{print $1}'")
+        vtnet1_subnet = ssh_stdout.read().decode('utf-8').strip()
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(vtnet1_ip, serr))
+                 .format(vtnet1_subnet, serr))
 
-        LOG.info("Get vtnet1 (input) netmask")
+        LOG.info("Fix the routing and force {0} to use vtnet1".format(vtnet1_subnet))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "ifconfig vtnet1 | grep 'inet ' | awk '{ if ($3 == \"netmask\") {print $4} }'")
-        vtnet1_netmask = ssh_stdout.read().decode('utf-8').strip()
-        serr = ssh_stderr.read().decode('utf-8')
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(vtnet1_netmask, serr))
-
-        LOG.info("Fix the routing and force {0}/{1} to use vtnet1".format(vtnet1_ip, vtnet1_netmask))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route change -net {0} -netmask {1} -interface vtnet1".format(vtnet1_ip, vtnet1_netmask))
+            "route change -net {0} -interface vtnet1".format(vtnet1_subnet))
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}"
