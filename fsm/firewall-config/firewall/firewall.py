@@ -188,6 +188,30 @@ class FirewallFSM(sonSMbase):
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(sout, serr))
 
+        LOG.info("Get vtnet1 (input) ip")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "ifconfig vtnet1 | grep 'inet ' | awk '{ if ($1 == \"inet\") {print $2} }'")
+        vtnet1_ip = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(vtnet1_ip, serr))
+
+        LOG.info("Get vtnet1 (input) netmask")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "ifconfig vtnet1 | grep 'inet ' | awk '{ if ($3 == \"netmask\") {print $4} }'")
+        vtnet1_netmask = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(vtnet1_netmask, serr))
+
+        LOG.info("Fix the routing and force {0}/{1} to use vtnet1".format(vtnet1_ip, vtnet1_netmask))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route change -net {0} -netmask {1} -interface vtnet1".format(vtnet1_ip, vtnet1_netmask))
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+
         #activate firewall
         #command = "pfctl -e"
         #(stdin, stdout, stderr) = ssh.exec_command(command)
