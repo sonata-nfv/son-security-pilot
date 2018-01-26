@@ -10,7 +10,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "psa-vpn-prx-vfw"
-version: "0.0.1"
+version: "0.0.2"
 author: "SONATA"
 description: "The network service descriptor for the SONATA PSA pilot, comprising VPN, PRX and vFW functions"
 
@@ -22,15 +22,15 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.6"
+    vnf_version: "0.7"
   - vnf_id: "vnf_prx"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "prx-vnf"
-    vnf_version: "0.99"
+    vnf_version: "0.100"
   - vnf_id: "vnf_vfw"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vfw-vnf"
-    vnf_version: "0.3"
+    vnf_version: "0.4"
 ##
 ## The NS connection points to the
 ## outside world.
