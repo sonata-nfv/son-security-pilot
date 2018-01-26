@@ -191,7 +191,7 @@ class FirewallFSM(sonSMbase):
         LOG.info("Get vtnet1 (input) ip")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "ifconfig vtnet1 | grep 'inet ' | awk '{ if ($1 == \"inet\") {print $2} }'")
-        vtnet1_ip = ssh_stdout.read().decode('utf-8')
+        vtnet1_ip = ssh_stdout.read().decode('utf-8').strip()
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(vtnet1_ip, serr))
@@ -199,7 +199,7 @@ class FirewallFSM(sonSMbase):
         LOG.info("Get vtnet1 (input) netmask")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "ifconfig vtnet1 | grep 'inet ' | awk '{ if ($3 == \"netmask\") {print $4} }'")
-        vtnet1_netmask = ssh_stdout.read().decode('utf-8')
+        vtnet1_netmask = ssh_stdout.read().decode('utf-8').strip()
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(vtnet1_netmask, serr))
