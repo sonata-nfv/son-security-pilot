@@ -35,6 +35,7 @@ from ansible.vars.manager import VariableManager
 from ansible.inventory.manager import InventoryManager
 from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
+from OS_Factory import Factory, OS_implementation
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -50,7 +51,6 @@ class faceFSM(sonSMbase):
     monitoring_file = './node.conf'
     with_monitoring = True
     option = 1
-    os_version = None
 
     def __init__(self):
         LOG.debug('Initialization of faceFSM in %s', __file__)
@@ -81,6 +81,7 @@ class faceFSM(sonSMbase):
         self.version = 'v0.1'
         self.description = 'FSM that implements the subscription of the start, stop, configuration topics'
         self.topic = ''
+        self.os_factory = Factory()
 
                 
         super(self.__class__, self).__init__(specific_manager_type = self.specific_manager_type,
@@ -234,9 +235,6 @@ class faceFSM(sonSMbase):
         else:
             self.squid_configure(squid_ip, prx_in_out_ip, next_hop_ip)
 
-        #vdu = vnfr['virtual_deployment_units'][0]
-        #cpts = vdu['vnfc_instance'][0]['connection_points']
-        
         plbk = ''
         if self.option == 0:
             self.playbook_execution(plbk, squid_ip)
@@ -361,209 +359,45 @@ class faceFSM(sonSMbase):
             LOG.info('Could not establish SSH connection within max retries')
             return;
 
-        if function == 0:
-
             LOG.info("SSH connection established")
+            
+        LOG.info("Get OS system version")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/os-release | awk '/^ID=/ { print }' | cut -b 4-")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+        os_version = ssh_stdout.read().decode('utf-8')
 
-            LOG.info("Get OS system version")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/os-release | awk '/^ID=/ { print }' | cut -b 4-")
-            sout = ssh_stdout.read().decode('utf-8')
-            serr = ssh_stderr.read().decode('utf-8')
-            LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
-            self.os_version = ssh_stdout.read().decode('utf-8')
+        os_impl = factory.get_os_implementation(os_version, LOG)
 
-            LOG.info("Copy net interfaces cfg files")
-            ftp = ssh.open_sftp()
-            LOG.info("SFTP connection established")
+        if function == 0:
+            gw = os_impl.configure_interfaces(ssh)
+            os_impl.configure_squid_forwarding_rules(ssh, gw)
+            os_impl.configure_monitoring(ssh, host_ip)
 
-            localpath = self.config_dir + '/ifcfg-eth1'
-            LOG.info("SFTP connection entering on %s", localpath)
-            remotepath = '/tmp/ifcfg-eth1'
-            sftpa = ftp.put(localpath, remotepath)
-            localpath = self.config_dir + '/ifcfg-eth2'
-            remotepath = '/tmp/ifcfg-eth2'
-            LOG.info("SFTP connection entering on %s", localpath)
-            sftpa = ftp.put(localpath, remotepath)
-            ftp.close()
-
-            LOG.info("Copying scripts")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts && sudo cp /tmp/ifcfg-eth2 /etc/sysconfig/network-scripts")
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            LOG.info("Displaying eth1 data")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth1")
-            sout = ssh_stdout.read().decode('utf-8')
-            serr = ssh_stderr.read().decode('utf-8')
-            LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth2 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth2'")
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            LOG.info("Updating ifcfg-eth1")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth1 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth1'")
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            LOG.info("Get current default GW")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/usr/sbin/ip route | awk '/default/ { print $3 }'")
-            sout = ssh_stdout.read().decode('utf-8')
-            serr = ssh_stderr.read().decode('utf-8')
-            LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(sout, serr))
-            default_gw = sout.strip()
-
-            LOG.info("Always use eth0 (mgmt) for connection to 10.230.x.x for protecting admin ssh connections")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "sudo /usr/sbin/ip route add 10.230.0.0/16 dev eth0 via {0}".format(default_gw))
-            # FIX: how to known that eth0 is always mgmt ?
-            LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read().decode('utf-8'),
-                             ssh_stderr.read().decode('utf-8')))
-
-            LOG.info('iptables configuration to redirect port 80 to 3128')
-            LOG.info('get own ip')
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth0 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }'")
-            my_ip = ssh_stdout.read().decode('utf-8')
-            LOG.info('stdout from remote: ' + my_ip)
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            LOG.info('Port 80 to 3128 for {0}'.format(my_ip))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination {0}:3128".format(my_ip))
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            LOG.info("Redirecting port")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            LOG.info("Setting masquerade")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE')
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            LOG.info("Accept in the filter table")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo iptables -t filter -A INPUT -p tcp --dport 3128 -j ACCEPT')
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            LOG.info("Configuration of squid service")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid start')
-            LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-            LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
-
-            retry = 0
             if self.with_monitoring == True:
+                os_impl.configure_monitoring(ssh)
 
-                ftp = ssh.open_sftp()
-                LOG.info("SFTP connection established")
-
-                self.createConf(host_ip, 4, 'cache-vnf')
-                localpath = self.monitoring_file
-                LOG.info("SFTP connection entering on %s", localpath)
-                remotepath = '/tmp/node.conf'
-                sftpa = ftp.put(localpath, remotepath)
-                ftp.close()
-
-                LOG.info("SSH connection reestablished")
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/node.conf /opt/Monitoring')
-                LOG.info('output from remote: ' + str(ssh_stdout))
-                LOG.info('output from remote: ' + str(ssh_stdin))
-                LOG.info('output from remote: ' + str(ssh_stderr))
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart mon-probe.service')
-                LOG.info('output from remote: ' + str(ssh_stdout))
-                LOG.info('output from remote: ' + str(ssh_stdin))
-                LOG.info('output from remote: ' + str(ssh_stderr))
-                ssh.close()
-
-
+            ssh.close();
 
         elif function == 1:
             LOG.info("SSH client stop")
-
-            LOG.info("SSH connection established")
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid stop')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            os_impl.stop_service(ssh)
             ssh.close()
 
         elif function == 2:
             LOG.info("SSH client configure")
-            LOG.info("SSH connection established")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid stop')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
-            
-            ftp = ssh.open_sftp()
-            LOG.info("SFTP connection established")
-
-            localpath = self.config_options[config]
-            LOG.info("SFTP connection entering on %s", localpath)
-            remotepath = '/tmp/squid.conf'
-            sftpa = ftp.put(localpath, remotepath)
-            if config == 'squidguard':
-                localpath = '' #TODO
-                remotepath = '' #TODO
-                sftpa = ftp.put(localpath, remotepath)
-            ftp.close()
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid/squid.conf /etc/squid/squid.conf.old')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
-
-            if config == 'squidguard':
-                #TODO ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/ /etc/squid3')
-                LOG.info('output from remote: ' + str(ssh_stdout))
-                LOG.info('output from remote: ' + str(ssh_stdin))
-                LOG.info('output from remote: ' + str(ssh_stderr))
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid restart')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            os_impl.reconfigure_service(ssh)
             ssh.close()
 
         elif function == 3:
             LOG.info("SSH client scale")
-
-            LOG.info("SSH connection established")
-
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo service squid start')
-            LOG.info('output from remote: ' + str(ssh_stdout))
-            LOG.info('output from remote: ' + str(ssh_stdin))
-            LOG.info('output from remote: ' + str(ssh_stderr))
+            os_impl.scale_service(ssh)
             ssh.close()
         else:
             LOG.info("Invalid operation on FSM %s", function)
-            return
         
-    def createConf(self, pw_ip, interval, name):
-
-        #config = configparser.RawConfigParser()
-        config = configparser.ConfigParser(interpolation = None)
-        config.add_section('vm_node')
-        config.add_section('Prometheus')
-        config.set('vm_node', 'node_name', name)
-        config.set('vm_node', 'post_freq', str(interval))
-        config.set('Prometheus', 'server_url', 'http://' + pw_ip + ':9091/metrics')
-    
-    
-        with open('node.conf', 'w') as configfile:    # save
-            config.write(configfile)
-    
-        f = open('node.conf', 'r')
-        LOG.debug('Mon Config-> ' + "\n" + f.read())
-        f.close()
+        return
 
     def squid_configure(self, host_ip, data_ip, next_ip = None):
  
@@ -595,96 +429,18 @@ class faceFSM(sonSMbase):
         if retry == num_retries:
             LOG.info('Could not establish SSH connection within max retries')
             return;
+        
+        LOG.info("Get OS system version")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/os-release | awk '/^ID=/ { print }' | cut -b 4-")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+        os_version = ssh_stdout.read().decode('utf-8')
+
+        os_impl = factory.get_os_implementation(os_version, LOG)
 
         LOG.info("SSH connection established")
-
-        LOG.info("Retrieve FSM IP address")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "FSM_IP=$(echo $SSH_CLIENT | awk '{ print $1}') && echo $FSM_IP")
-        sout = ssh_stdout.read().decode('utf-8')
-        serr = ssh_stderr.read().decode('utf-8')
-        LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
-        fsm_ip = sout.strip()
-        LOG.info("FSM IP: {0}".format(fsm_ip))
-
-        LOG.info("Get current default GW")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "IP=$(/usr/sbin/ip route | awk '/default/ { print $3 }') && echo $IP")
-        sout = ssh_stdout.read().decode('utf-8')
-        serr = ssh_stderr.read().decode('utf-8')
-        LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
-        default_gw = sout.strip()
-        LOG.info("Default GW: {0}".format(str(default_gw)))
-
-        LOG.info("Configure route for FSM IP")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "sudo /sbin/route add -net {0} netmask 255.255.255.255 gw {1}"
-            .format(fsm_ip, default_gw))
-        LOG.info("stdout: {0}\nstderr:  {1}"
-            .format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
-
-        # remove default GW
-        LOG.info("Delete default GW")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "sudo /sbin/route del default gw {0}".format(default_gw))
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
-
-        # next VNF exists
-        if next_ip is not None:
-            # find virtual link of vpn output
-            LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; forward_cpinput_ip:'{2}'"
-                .format(host_ip, data_ip, next_ip))
-
-            LOG.info("Configure default GW for next VNF VM in chain using the eth2 (output) interface")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "sudo /sbin/route add default gw {0} dev eth2".format(next_ip))
-            LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read().decode('utf-8'),
-                             ssh_stderr.read().decode('utf-8')))
-
-        # next VNF doesn't exist
-        else:
-            LOG.info("Which OS am i modifying")
-            if self.os_version == "\"centos\"": 
-                LOG.info("Modify DHCP configuration of interfaces")
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    "sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
-                )
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    "sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
-                )
-                LOG.info("stdout: {0}\nstderr:  {1}"
-                         .format(ssh_stdout.read().decode('utf-8'),
-                                 ssh_stderr.read().decode('utf-8')))
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    "sudo sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth2"
-                )
-                LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read().decode('utf-8'),
-                             ssh_stderr.read().decode('utf-8')))
-
-                LOG.info("Add default route for input/output interface (eth2)")
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient -r eth2 && dhclient eth2")
-                LOG.info("stdout: {0}\nstderr:  {1}"
-                         .format(ssh_stdout.read().decode('utf-8'),
-                                 ssh_stderr.read().decode('utf-8')))
-
-            else:
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                    "LI = $(\"sudo ifconfig ens3 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
-                last_if = ssh_stdout.read().decode('utf-8').split('.')
-                last_if[3] = '1'
-                str_out = "supersede routers %s;".format('.'.join(last_if))
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
-
-        LOG.info("Veryfing iptables version")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables --version")
-        LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'),
-             ssh_stderr.read().decode('utf-8')))
-
-
+        os_impl.configure_forward_routing(ssh)
         ssh.close()
         # Create a response for the FLM
         response = {}
