@@ -365,8 +365,7 @@ class faceFSM(sonSMbase):
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
-        LOG.info("version = " + sout + " " + str(len(sout)))
-        os_impl = self.os_factory.get_os_implementation(sout, LOG)
+        os_impl = self.os_factory.get_os_implementation(sout.strip(), LOG)
 
         if function == 0:
             gw = os_impl.configure_interfaces(ssh)
@@ -432,9 +431,8 @@ class faceFSM(sonSMbase):
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
-        os_version = ssh_stdout.read().decode('utf-8')
 
-        os_impl = self.os_factory.get_os_implementation(os_version, LOG)
+        os_impl = self.os_factory.get_os_implementation(sout.strip(), LOG)
 
         LOG.info("SSH connection established")
         os_impl.configure_forward_routing(ssh)
