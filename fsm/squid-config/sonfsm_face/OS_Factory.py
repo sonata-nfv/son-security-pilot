@@ -174,7 +174,7 @@ class Centos_implementation(OS_implementation):
         LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         LOG.info("Setting masquerade")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /usr/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /usr/sbin/iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE')
         LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -341,7 +341,7 @@ class Ubuntu_implementation(OS_implementation):
         LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         LOG.info("Setting masquerade")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /sbin/iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE')
         LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
