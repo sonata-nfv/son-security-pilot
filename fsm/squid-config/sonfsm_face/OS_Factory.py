@@ -12,7 +12,8 @@ class Factory:
         elif os == "ubuntu":
             return Ubuntu_implementation(logger)
         else:
-            raise NotImplementedError("Unknown OS type.")
+            return Centos_implementation(logger)
+            #raise NotImplementedError("Unknown OS type.")
 
 class OS_implementation(metaclass = ABCMeta):
     config_options = { 'direct': './ansible/roles/squid/files/squid_direct.conf', 
