@@ -101,7 +101,7 @@ class Centos_implementation(OS_implementation):
     def __init__(self, logger):
         self.LOG = logger
     
-    def configure_interfaces(self, ssh, config_dir):
+    def configure_interfaces(self, ssh):
         LOG.info("configure_interfaces centos")
         
         if ssh == None:
@@ -111,11 +111,11 @@ class Centos_implementation(OS_implementation):
         ftp = ssh.open_sftp()
         LOG.info("SFTP connection established")
 
-        localpath = config_dir + '/ifcfg-eth1'
+        localpath = self.config_dir + '/ifcfg-eth1'
         LOG.info("SFTP connection entering on %s", localpath)
         remotepath = '/tmp/ifcfg-eth1'
         sftpa = ftp.put(localpath, remotepath)
-        localpath = config_dir + '/ifcfg-eth2'
+        localpath = self.config_dir + '/ifcfg-eth2'
         remotepath = '/tmp/ifcfg-eth2'
         LOG.info("SFTP connection entering on %s", localpath)
         sftpa = ftp.put(localpath, remotepath)
@@ -291,7 +291,7 @@ class Ubuntu_implementation(OS_implementation):
         ftp = ssh.open_sftp()
         LOG.info("SFTP connection established")
 
-        localpath = config_dir + '/50-cloud-init.cfg'
+        localpath = self.config_dir + '/50-cloud-init.cfg'
         LOG.info("SFTP connection entering on %s", localpath)
         remotepath = '/tmp/50-cloud-init.cfg'
         sftpa = ftp.put(localpath, remotepath)
