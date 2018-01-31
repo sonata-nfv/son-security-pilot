@@ -198,7 +198,7 @@ class FirewallFSM(sonSMbase):
 
         LOG.info("Fix the routing and force {0} to use vtnet1".format(vtnet1_subnet))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route change -net {0} -interface vtnet1".format(vtnet1_subnet))
+            "route change -net {0} -interface vtnet1 -ifp vtnet1".format(vtnet1_subnet))
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}"
