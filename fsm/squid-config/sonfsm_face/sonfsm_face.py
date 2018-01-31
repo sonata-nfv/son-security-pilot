@@ -371,10 +371,9 @@ class faceFSM(sonSMbase):
         if function == 0:
             gw = os_impl.configure_interfaces(ssh)
             os_impl.configure_squid_forwarding_rules(ssh, gw)
-            os_impl.configure_monitoring(ssh, host_ip)
 
             if self.with_monitoring == True:
-                os_impl.configure_monitoring(ssh)
+                os_impl.configure_monitoring(ssh, host_ip)
 
             ssh.close();
 
