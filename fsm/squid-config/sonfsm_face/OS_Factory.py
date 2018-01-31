@@ -99,7 +99,7 @@ class OS_implementation(metaclass = ABCMeta):
 class Centos_implementation(OS_implementation):
     
     def __init__(self, logger):
-        OS_implementation(logger)
+        self.LOG = logger
     
     def configure_interfaces(self, ssh, config_dir):
         LOG.info("configure_interfaces centos")
@@ -279,7 +279,7 @@ class Centos_implementation(OS_implementation):
 class Ubuntu_implementation(OS_implementation):
     
     def __init__(self, logger):
-        OS_implementation(logger)
+        self.LOG = logger
   
     def configure_interfaces(self, ssh):
         LOG.info("configure_interfaces Ubuntu")
