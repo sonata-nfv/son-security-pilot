@@ -27,7 +27,6 @@ import logging
 import tempfile
 import yaml
 import paramiko
-import configparser
 from IPy import IP
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
