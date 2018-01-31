@@ -21,6 +21,7 @@ class OS_implementation(metaclass = ABCMeta):
         'transparent': './ansible/roles/squid/files/squid.conf', 
         'squidguard': './ansible/roles/squid/files/squid_guard.conf' }
     config_dir = './ansible/roles/squid/files'
+    monitoring_file = './node.conf'
     LOG = None
 
     def __init__(self, logger):
