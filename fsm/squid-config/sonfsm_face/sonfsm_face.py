@@ -35,7 +35,7 @@ from ansible.vars.manager import VariableManager
 from ansible.inventory.manager import InventoryManager
 from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
-from OS_Factory import Factory, OS_implementation
+from .OS_Factory import Factory, OS_implementation
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
