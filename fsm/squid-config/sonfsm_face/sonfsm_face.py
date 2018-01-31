@@ -47,7 +47,6 @@ class faceFSM(sonSMbase):
     config_dir = './ansible/roles/squid/files'
     username = 'sonata'
     password = 'sonata'
-    monitoring_file = './node.conf'
     with_monitoring = True
     option = 1
 
