@@ -141,6 +141,24 @@ class Centos_implementation(OS_implementation):
         LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+        LOG.info("Force ip forwarding")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo '1' | sudo tee /proc/sys/net/ipv4/ip_forward")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+
+        LOG.info("Get eth1 (input) subnetwork")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/usr/sbin/ip route list | grep -m 1 '/27 dev eth1' | awk '{printf \"%s\",$1}'")
+        input_subnetwork = ssh_stdout.read().decode('utf-8').strip()
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}".format(input_subnetwork, serr))
+
+        LOG.info("Delete extraneous rule on eth2 (output)")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route del {0} dev eth2".format(input_subnetwork))
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+
         LOG.info("Get current default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/usr/sbin/ip route | awk '/default/ { print $3 }'")
         sout = ssh_stdout.read().decode('utf-8')
@@ -253,6 +271,12 @@ class Centos_implementation(OS_implementation):
             # find virtual link of vpn output
             LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; forward_cpinput_ip:'{2}'"
                 .format(host_ip, data_ip, next_ip))
+
+            LOG.info("Delete extraneous rule on eth2 (output)")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route add {0}/32 dev eth2".format(next_ip))
+            sout = ssh_stdout.read().decode('utf-8')
+            serr = ssh_stderr.read().decode('utf-8')
+            LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
             LOG.info("Configure default GW for next VNF VM in chain using the eth2 (output) interface")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/route add default gw {0} dev eth2".format(next_ip))
