@@ -365,7 +365,7 @@ class faceFSM(sonSMbase):
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
-        LOG.info("version = " + sout + " " + length(sout))
+        LOG.info("version = " + sout + " " + len(sout))
         os_impl = self.os_factory.get_os_implementation(sout, LOG)
 
         if function == 0:
