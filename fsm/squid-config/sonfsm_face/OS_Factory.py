@@ -8,10 +8,11 @@ from abc import ABCMeta, abstractmethod
 
 class Factory:
     def get_os_implementation(self, os, logger):
-        if os == "\"centos\"":
-            return Centos_implementation(logger)
-        elif os == "ubuntu":
+
+        if os == "ubuntu":
             return Ubuntu_implementation(logger)
+        elif os == "\"centos\"":
+            return Centos_implementation(logger)
         else:
             return Centos_implementation(logger)
             #raise NotImplementedError("Unknown OS type.")
