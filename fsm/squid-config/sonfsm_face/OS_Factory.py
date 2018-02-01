@@ -78,7 +78,7 @@ class OS_implementation(metaclass = ABCMeta):
         raise NotImplementedError("Not implemented")
         
     @abstractmethod
-    def configure_forward_routing(self, ssh, next_ip):
+    def configure_forward_routing(self, ssh, host_ip, data_ip, next_ip):
         raise NotImplementedError("Not implemented")
     
     def createConf(self, pw_ip, interval, name):
@@ -212,7 +212,8 @@ class Centos_implementation(OS_implementation):
         self.LOG.info("SSH connection established")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl stop squid')
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
-        self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+        self.LOG.info('output from remote: ' + ssh_stdin.read().decode('utf-8'))
+        self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
         
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
@@ -237,7 +238,7 @@ class Centos_implementation(OS_implementation):
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
-    def configure_forward_routing(self, ssh, next_ip):
+    def configure_forward_routing(self, ssh, host_ip, data_ip, next_ip):
         self.LOG.info("Retrieve FSM IP address")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "FSM_IP=$(echo $SSH_CLIENT | awk '{ print $1}') && echo $FSM_IP")
@@ -426,7 +427,7 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
 
-    def configure_forward_routing(self, ssh, next_ip):
+    def configure_forward_routing(self, ssh, host_ip, data_ip, next_ip):
         self.LOG.info("Retrieve FSM IP address")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "FSM_IP=$(echo $SSH_CLIENT | awk '{ print $1}') && echo $FSM_IP")
