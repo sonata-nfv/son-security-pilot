@@ -5,4 +5,4 @@ package:
   name: "sonata-psa-portal"
   vendor: "eu.sonata-nfv"
   version: "0.9.9"
-version: '0.9'
+version: '0.5'
