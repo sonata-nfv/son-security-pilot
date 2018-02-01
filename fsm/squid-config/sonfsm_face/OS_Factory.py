@@ -177,7 +177,6 @@ class Centos_implementation(OS_implementation):
         # FIX: how to known that eth0 is always mgmt ?
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
 
-        self.LOG.info('iptables configuration to redirect port 80 to 3128')
         self.LOG.info('get own ip')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth0 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }'")
         my_ip = ssh_stdout.read().decode('utf-8')
@@ -185,7 +184,7 @@ class Centos_implementation(OS_implementation):
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info('Port 80 to 3128 for {0}'.format(my_ip))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination {0}:3128".format(my_ip))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination '{0}:3128'".format(my_ip))
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -205,16 +204,15 @@ class Centos_implementation(OS_implementation):
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
         
         self.LOG.info("Configuration of squid service")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl start squid start')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl start squid')
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
     def reconfigure_service(self, ssh, cfg):
         self.LOG.info("SSH connection established")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl stop squid')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
         
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
@@ -225,19 +223,19 @@ class Centos_implementation(OS_implementation):
         sftpa = ftp.put(localpath, remotepath)
         ftp.close()
 
+        self.LOG.info("Moving the Squid configuration file")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid/squid.conf /etc/squid/squid.conf.old')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+        self.LOG.info("Copying the Squid configuration file")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+        self.LOG.info("Restarting Squid")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart squid')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr)) 
+        self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
     def configure_forward_routing(self, ssh, next_ip):
         self.LOG.info("Retrieve FSM IP address")
@@ -368,7 +366,6 @@ class Ubuntu_implementation(OS_implementation):
         # FIX: how to known that eth0 is always mgmt ?
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
 
-        self.LOG.info('iptables configuration to redirect port 80 to 3128')
         self.LOG.info('get own ip')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig ens3 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }' | cut -b 6-")
         my_ip = ssh_stdout.read().decode('utf-8')
@@ -376,7 +373,7 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info('Port 80 to 3128 for {0}'.format(my_ip))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination {0}:3128".format(my_ip))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination '{0}:3128'".format(my_ip))
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -403,9 +400,8 @@ class Ubuntu_implementation(OS_implementation):
     def reconfigure_service(self, ssh):
         self.LOG.info("SSH connection established")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl stop squid')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
         
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
@@ -416,19 +412,19 @@ class Ubuntu_implementation(OS_implementation):
         sftpa = ftp.put(localpath, remotepath)
         ftp.close()
 
+        self.LOG.info("Moving the Squid configuration file")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid3/squid.conf /etc/squid3/squid.conf.old')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
+        self.LOG.info("Copying the Squid configuration file")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid3')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
 
+        self.LOG.info("Restarting Squid")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart squid')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr)) 
+        self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
 
     def configure_forward_routing(self, ssh, next_ip):
         self.LOG.info("Retrieve FSM IP address")
