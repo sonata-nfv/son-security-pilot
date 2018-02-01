@@ -27,7 +27,6 @@ import logging
 import tempfile
 import yaml
 import paramiko
-import configparser
 from IPy import IP
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
@@ -48,7 +47,6 @@ class faceFSM(sonSMbase):
     config_dir = './ansible/roles/squid/files'
     username = 'sonata'
     password = 'sonata'
-    monitoring_file = './node.conf'
     with_monitoring = True
     option = 1
 
@@ -366,17 +364,15 @@ class faceFSM(sonSMbase):
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
-        os_version = ssh_stdout.read().decode('utf-8')
 
-        os_impl = factory.get_os_implementation(os_version, LOG)
+        os_impl = self.os_factory.get_os_implementation(sout.strip(), LOG)
 
         if function == 0:
             gw = os_impl.configure_interfaces(ssh)
             os_impl.configure_squid_forwarding_rules(ssh, gw)
-            os_impl.configure_monitoring(ssh, host_ip)
 
             if self.with_monitoring == True:
-                os_impl.configure_monitoring(ssh)
+                os_impl.configure_monitoring(ssh, host_ip)
 
             ssh.close();
 
@@ -435,12 +431,11 @@ class faceFSM(sonSMbase):
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
-        os_version = ssh_stdout.read().decode('utf-8')
 
-        os_impl = factory.get_os_implementation(os_version, LOG)
+        os_impl = self.os_factory.get_os_implementation(sout.strip(), LOG)
 
         LOG.info("SSH connection established")
-        os_impl.configure_forward_routing(ssh)
+        os_impl.configure_forward_routing(ssh, next_ip)
         ssh.close()
         # Create a response for the FLM
         response = {}
