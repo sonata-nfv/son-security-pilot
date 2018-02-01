@@ -10,7 +10,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "psa-portal"
-version: "0.1.1"
+version: "0.99"
 author: "Luis Conceicao, UBIWHERE"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
@@ -24,7 +24,7 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.1"
+    vnf_version: "0.1.1"
   - vnf_id: "vnf_tor"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "tor-vnf"
