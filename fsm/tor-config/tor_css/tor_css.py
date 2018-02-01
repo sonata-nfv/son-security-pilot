@@ -359,26 +359,35 @@ class CssFSM(sonSMbase):
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
 
-        LOG.info("Modify DHCP configuration of interfaces")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
-        )
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
-        )
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
+        if next_ip:
+            LOG.info("Configure default GW for next VNF VM (IP={0})in chain"
+                     .format(next_ip))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "route add default gw {0}".format(next_ip))
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
+        else:
+            LOG.info("Modify DHCP configuration of interfaces")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0"
+            )
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth1"
+            )
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
 
-        LOG.info("Add default route for input/output interface (eth1)")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "dhclient -r eth1 && dhclient eth1")
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
+            LOG.info("Add default route for input/output interface (eth1)")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "dhclient -r eth1 && dhclient eth1")
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
 
         LOG.info("Set iptables rules to forward traffic to TOR network")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
