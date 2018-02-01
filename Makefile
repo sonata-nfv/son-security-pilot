@@ -44,6 +44,10 @@ package:
 	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-vpn-vfw
 	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-vpn-prx-vfw
 	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-vpn-prx-vfw
+	son-validate $(EXTRA_SONVALIDATE_ARGS) --debug -s -i -t --project projects/sonata-psa-vpn-tor-vfw
+	son-package $(EXTRA_SONPACKAGE_ARGS) --project projects/sonata-psa-vpn-tor-vfw
+
+
 
 #package-emu: docker-images gen_emu
 #package-emu:
