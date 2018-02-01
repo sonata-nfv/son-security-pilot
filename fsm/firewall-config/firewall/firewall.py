@@ -180,6 +180,30 @@ class FirewallFSM(sonSMbase):
             LOG.error('Unable to establish an SSH connection during the start event')
             return;
 
+        LOG.info("Remove the static route to 8.8.8.8")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route del -host 8.8.8.8 || true")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+
+        LOG.info("Get the subnet of vtnet1 (input)")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "netstat -rn4 | grep -E 'link[#].+vtnet2' | awk '{print $1}'")
+        vtnet1_subnet = ssh_stdout.read().decode('utf-8').strip()
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(vtnet1_subnet, serr))
+
+        LOG.info("Fix the routing and force {0} to use vtnet1".format(vtnet1_subnet))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route change -net {0} -interface vtnet1 -ifp vtnet1".format(vtnet1_subnet))
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+
         #activate firewall
         #command = "pfctl -e"
         #(stdin, stdout, stderr) = ssh.exec_command(command)
