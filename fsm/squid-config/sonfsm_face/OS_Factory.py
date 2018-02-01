@@ -131,7 +131,8 @@ class Centos_implementation(OS_implementation):
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
         self.LOG.info("Copying scripts")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts && sudo cp /tmp/ifcfg-eth2 /etc/sysconfig/network-scripts")
+#        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts && sudo cp /tmp/ifcfg-eth2 /etc/sysconfig/network-scripts")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts")
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -141,9 +142,9 @@ class Centos_implementation(OS_implementation):
         serr = ssh_stderr.read().decode('utf-8')
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth2 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth2'")
-        self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
-        self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
+#        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth2 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth2'")
+#        self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+#        self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info("Updating ifcfg-eth1")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("echo \"HWADDRESS=\"$(/sbin/ifconfig eth1 | awk '/ether/ { print $2 } ') | sudo su -c 'cat >> /etc/sysconfig/network-scripts/ifcfg-eth1'")
@@ -163,7 +164,8 @@ class Centos_implementation(OS_implementation):
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(input_subnetwork, serr))
 
         self.LOG.info("Delete extraneous rule on eth2 (output)")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route del {0} dev eth2".format(input_subnetwork))
+        #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route del {0} dev eth2".format(input_subnetwork))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route del {0} dev eth1".format(input_subnetwork))
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
@@ -200,7 +202,8 @@ class Centos_implementation(OS_implementation):
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info("Setting masquerade")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /usr/sbin/iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE')
+        #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /usr/sbin/iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /usr/sbin/iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE')
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -281,24 +284,28 @@ class Centos_implementation(OS_implementation):
                 .format(host_ip, data_ip, next_ip))
 
             self.LOG.info("Set the path to the next hop by eth2 (output)")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route add {0}/32 dev eth2".format(next_ip))
+            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route add {0}/32 dev eth2".format(next_ip))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route add {0}/32 dev eth1".format(next_ip))
             sout = ssh_stdout.read().decode('utf-8')
             serr = ssh_stderr.read().decode('utf-8')
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
             self.LOG.info("Configure default GW for next VNF VM in chain using the eth2 (output) interface")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/route add default gw {0} dev eth2".format(next_ip))
+            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/route add default gw {0} dev eth2".format(next_ip))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/route add default gw {0} dev eth1".format(next_ip))
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
         else:
             self.LOG.info("Modify DHCP configuration of interfaces")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth1")
-            self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth2")
+            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth1")
+            #self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
+            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth2")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth1")
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
 
             self.LOG.info("Add default route for input/output interface (eth2)")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient -r eth2 && dhclient eth2")
+            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient -r eth2 && dhclient eth2")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient -r eth1 && dhclient eth1")
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \'s/#net.ipv4.ip_forward/net.ipv4.ip_forward/g\' /etc/sysctl.conf")
@@ -359,7 +366,8 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(input_subnetwork, serr))
 
         self.LOG.info("Delete extraneous rule on eth2 (output)")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route del {0} dev eth2".format(input_subnetwork))
+        #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route del {0} dev eth2".format(input_subnetwork))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route del {0} dev eth1".format(input_subnetwork))
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
@@ -396,7 +404,8 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info("Setting masquerade")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /sbin/iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE')
+        #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /sbin/iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /sbin/iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE')
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -480,14 +489,15 @@ class Ubuntu_implementation(OS_implementation):
                 .format(host_ip, data_ip, next_ip))
 
             self.LOG.info("Force the path to the next hope to go through eth2 (outpu)")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route add {0}/32 dev eth2".format(next_ip))
+            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route add {0}/32 dev eth2".format(next_ip))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route add {0}/32 dev eth1".format(next_ip))
             sout = ssh_stdout.read().decode('utf-8')
             serr = ssh_stderr.read().decode('utf-8')
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
             self.LOG.info("Configure default GW for next VNF VM in chain using the eth2 (output) interface")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "sudo /sbin/route add default gw {0} dev eth2".format(next_ip))
+            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/route add default gw {0} dev eth2".format(next_ip))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/route add default gw {0} dev eth1".format(next_ip))
             self.LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
