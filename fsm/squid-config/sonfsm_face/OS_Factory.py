@@ -74,7 +74,7 @@ class OS_implementation(metaclass = ABCMeta):
         self.LOG.info('output from remote: ' + str(ssh_stderr))
 
     @abstractmethod
-    def reconfigure_service(self, ssh):
+    def reconfigure_service(self, ssh, cfg):
         raise NotImplementedError("Not implemented")
         
     @abstractmethod
@@ -224,7 +224,7 @@ class Centos_implementation(OS_implementation):
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
 
-        localpath = self.config_options[config]
+        localpath = self.config_options[cfg]
         self.LOG.info("SFTP connection entering on %s", localpath)
         remotepath = '/tmp/squid.conf'
         sftpa = ftp.put(localpath, remotepath)
@@ -410,7 +410,7 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
-    def reconfigure_service(self, ssh):
+    def reconfigure_service(self, ssh, cfg):
         self.LOG.info("SSH connection established")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl stop squid')
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
@@ -419,7 +419,7 @@ class Ubuntu_implementation(OS_implementation):
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
 
-        localpath = self.config_options[config]
+        localpath = self.config_options[cfg]
         self.LOG.info("SFTP connection entering on %s", localpath)
         remotepath = '/tmp/squid.conf'
         sftpa = ftp.put(localpath, remotepath)
