@@ -4,7 +4,7 @@
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "prx-vnf"
-version: "0.99"
+version: "0.1"
 author: "Felipe Vicens, ATOS"
 description: "Implementation of Proxy function"
  
@@ -15,7 +15,7 @@ virtual_deployment_units:
   - id: "vdu01"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/eu.sonata-nfv_vprx-vnf_0.1_vdu01"
     vm_image_format: "qcow2"
-#    vm_image_md5: "838821b21771674dd29acf1663253278"
+# Ce7  vm_image_md5: "838821b21771674dd29acf1663253278"
     vm_image_md5: "f6d89c70f1032ea4e351082fced80bea"
 
     resource_requirements:
@@ -25,7 +25,7 @@ virtual_deployment_units:
         size: 2
         size_unit: "GB"
       storage:
-        size: 40
+        size: 20
         size_unit: "GB"
     monitoring_parameters:
       - name: "vm_cpu_perc"
@@ -40,10 +40,7 @@ virtual_deployment_units:
       - id: "mgmt"
         interface: "ipv4"
         type: "management"
-      - id: "in"
-        interface: "ipv4"
-        type: "external"
-      - id: "out"
+      - id: "inout"
         interface: "ipv4"
         type: "external"
  
@@ -55,10 +52,7 @@ connection_points:
   - id: "mgmt"
     interface: "ipv4"
     type: "management"
-  - id: "input"
-    interface: "ipv4"
-    type: "external"
-  - id: "output"
+  - id: "inout"
     interface: "ipv4"
     type: "external"
  
@@ -73,16 +67,11 @@ virtual_links:
       - "vdu01:mgmt"
       - "mgmt"
     dhcp: True
-  - id: "input"
+  - id: "input-output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:in"
-      - "input"
-  - id: "output"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "vdu01:out"
-      - "output"
+      - "vdu01:inout"
+      - "inout"
  
 ##
 ## Function Specific Managers
