@@ -10,7 +10,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "psa-portal"
-version: "0.99"
+version: "0.1"
 author: "Luis Conceicao, UBIWHERE"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
@@ -24,15 +24,15 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.99"
+    vnf_version: "0.1"
   - vnf_id: "vnf_tor"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "tor-vnf"
-    vnf_version: "0.99"
+    vnf_version: "0.1"
   - vnf_id: "vnf_prx"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "prx-vnf"
-    vnf_version: "0.99"
+    vnf_version: "0.1"
 ##
 ## The NS connection points to the
 ## outside world.
@@ -82,11 +82,11 @@ virtual_links:
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vnf_vpn:inout"
-      - "vnf_prx:input"
+      - "vnf_prx:inout"
   - id: "prx-2-tor"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vnf_prx:output"
+      - "vnf_prx:inout"
       - "vnf_tor:inout"
   - id: "tor-2-output"
     connectivity_type: "E-Line"
@@ -121,9 +121,9 @@ forwarding_graphs:
             position: 2
           - connection_point_ref: "vnf_vpn:inout"
             position: 3
-          - connection_point_ref: "vnf_prx:input"
+          - connection_point_ref: "vnf_prx:inout"
             position: 4
-          - connection_point_ref: "vnf_prx:output"
+          - connection_point_ref: "vnf_prx:inout"
             position: 5
           - connection_point_ref: "vnf_tor:inout"
             position: 6
