@@ -24,15 +24,15 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.1.1"
+    vnf_version: "0.99"
   - vnf_id: "vnf_tor"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "tor-vnf"
-    vnf_version: "0.1"
+    vnf_version: "0.99"
   - vnf_id: "vnf_prx"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "prx-vnf"
-    vnf_version: "0.1"
+    vnf_version: "0.99"
 ##
 ## The NS connection points to the
 ## outside world.
