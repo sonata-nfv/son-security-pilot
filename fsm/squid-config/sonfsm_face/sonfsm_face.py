@@ -435,7 +435,7 @@ class faceFSM(sonSMbase):
         os_impl = self.os_factory.get_os_implementation(sout.strip(), LOG)
 
         LOG.info("SSH connection established")
-        os_impl.configure_forward_routing(ssh)
+        os_impl.configure_forward_routing(ssh, next_ip)
         ssh.close()
         # Create a response for the FLM
         response = {}
