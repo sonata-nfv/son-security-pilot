@@ -383,7 +383,7 @@ class faceFSM(sonSMbase):
 
         elif function == 2:
             LOG.info("SSH client configure")
-            os_impl.reconfigure_service(ssh)
+            os_impl.reconfigure_service(ssh, config)
             ssh.close()
 
         elif function == 3:
