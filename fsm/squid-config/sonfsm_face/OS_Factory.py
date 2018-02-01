@@ -367,7 +367,7 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
 
         self.LOG.info('get own ip')
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig ens3 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }' | cut -b 6-")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth0 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }' | cut -b 6-")
         my_ip = ssh_stdout.read().decode('utf-8')
         self.LOG.info('stdout from remote: ' + my_ip)
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
@@ -480,7 +480,7 @@ class Ubuntu_implementation(OS_implementation):
                              ssh_stderr.read().decode('utf-8')))
         else:
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "LI = $(\"sudo /sbin/ifconfig ens3 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
+                "LI = $(\"sudo /sbin/ifconfig eth0 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
             last_if = ssh_stdout.read().decode('utf-8').split('.')
             last_if[3] = '1'
             str_out = "supersede routers %s;".format('.'.join(last_if))
