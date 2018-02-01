@@ -124,6 +124,12 @@ class Centos_implementation(OS_implementation):
         sftpa = ftp.put(localpath, remotepath)
         ftp.close()
 
+        self.LOG.info("Making sure the hostname is resolvable")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts')
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+
         self.LOG.info("Copying scripts")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/ifcfg-eth1 /etc/sysconfig/network-scripts && sudo cp /tmp/ifcfg-eth2 /etc/sysconfig/network-scripts")
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
@@ -321,6 +327,12 @@ class Ubuntu_implementation(OS_implementation):
         remotepath = '/tmp/50-cloud-init.cfg'
         sftpa = ftp.put(localpath, remotepath)
         ftp.close()
+
+        self.LOG.info("Making sure the hostname is resolvable")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts')
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
         self.LOG.info("Copying scripts")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/50-cloud-init.cfg /etc/network/interfaces.d")
