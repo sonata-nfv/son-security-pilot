@@ -4,7 +4,7 @@
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "tor-vnf"
-version: "0.99"
+version: "0.9.9"
 author: "Luis Conceicao, UBIWHERE"
 description: "Implementation of TOR function"
 

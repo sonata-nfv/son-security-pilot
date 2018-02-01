@@ -10,7 +10,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "psa-portal"
-version: "0.99"
+version: "0.9.9"
 author: "Luis Conceicao, UBIWHERE"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
@@ -24,15 +24,15 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.99"
+    vnf_version: "0.9.9"
   - vnf_id: "vnf_tor"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "tor-vnf"
-    vnf_version: "0.99"
+    vnf_version: "0.9.9"
   - vnf_id: "vnf_prx"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "prx-vnf"
-    vnf_version: "0.99"
+    vnf_version: "0.9.9"
 ##
 ## The NS connection points to the
 ## outside world.
