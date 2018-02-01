@@ -383,7 +383,7 @@ class faceFSM(sonSMbase):
 
         elif function == 2:
             LOG.info("SSH client configure")
-            os_impl.reconfigure_service(ssh)
+            os_impl.reconfigure_service(ssh, config)
             ssh.close()
 
         elif function == 3:
@@ -435,7 +435,7 @@ class faceFSM(sonSMbase):
         os_impl = self.os_factory.get_os_implementation(sout.strip(), LOG)
 
         LOG.info("SSH connection established")
-        os_impl.configure_forward_routing(ssh, next_ip)
+        os_impl.configure_forward_routing(ssh, host_ip, data_ip, next_ip)
         ssh.close()
         # Create a response for the FLM
         response = {}
