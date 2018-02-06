@@ -187,7 +187,7 @@ class Centos_implementation(OS_implementation):
 
         self.LOG.info('get own ip')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth0 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }'")
-        my_ip = ssh_stdout.read().decode('utf-8')
+        my_ip = ssh_stdout.read().decode('utf-8').strip()
         self.LOG.info('stdout from remote: ' + my_ip)
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -264,6 +264,24 @@ class Centos_implementation(OS_implementation):
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
         default_gw = sout.strip()
         self.LOG.info("Default GW: {0}".format(str(default_gw)))
+
+        self.LOG.info("Verify if sonata_file exists on /etc")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/sonata_file ] && echo OK")
+        sout = ssh_stdout.read().decode('utf-8').strip()
+        serr = ssh_stderr.read().decode('utf-8').strip()
+
+        if sout != "OK":
+            self.LOG.info("Configure route for FSM IP")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "sudo /usr/sbin/route add -net {0} netmask 255.255.255.255 gw {1}"
+                .format(fsm_ip, default_gw))
+            sout = ssh_stdout.read().decode('utf-8').strip()
+            serr = ssh_stderr.read().decode('utf-8').strip()
+            self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo >> /etc/sonata_file")
+            sout = ssh_stdout.read().decode('utf-8').strip()
+            serr = ssh_stderr.read().decode('utf-8').strip()
+            self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
         self.LOG.info("Configure route for FSM IP")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
@@ -389,7 +407,7 @@ class Ubuntu_implementation(OS_implementation):
 
         self.LOG.info('get own ip')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth0 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }' | cut -b 6-")
-        my_ip = ssh_stdout.read().decode('utf-8')
+        my_ip = ssh_stdout.read().decode('utf-8').strip()
         self.LOG.info('stdout from remote: ' + my_ip)
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -467,13 +485,23 @@ class Ubuntu_implementation(OS_implementation):
         default_gw = sout.strip()
         self.LOG.info("Default GW: {0}".format(str(default_gw)))
 
-        self.LOG.info("Configure route for FSM IP")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "sudo /sbin/route add -net {0} netmask 255.255.255.255 gw {1}"
-            .format(fsm_ip, default_gw))
+        self.LOG.info("Verify if sonata_file exists on /etc")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/sonata_file ] && echo OK")
         sout = ssh_stdout.read().decode('utf-8').strip()
         serr = ssh_stderr.read().decode('utf-8').strip()
-        self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+
+        if sout != "OK":
+            self.LOG.info("Configure route for FSM IP")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "sudo /sbin/route add -net {0} netmask 255.255.255.255 gw {1}"
+                .format(fsm_ip, default_gw))
+            sout = ssh_stdout.read().decode('utf-8').strip()
+            serr = ssh_stderr.read().decode('utf-8').strip()
+            self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo >> /etc/sonata_file")
+            sout = ssh_stdout.read().decode('utf-8').strip()
+            serr = ssh_stderr.read().decode('utf-8').strip()
+            self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
         # remove default GW
         self.LOG.info("Delete default GW")
