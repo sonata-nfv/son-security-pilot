@@ -471,16 +471,17 @@ class Ubuntu_implementation(OS_implementation):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "sudo /sbin/route add -net {0} netmask 255.255.255.255 gw {1}"
             .format(fsm_ip, default_gw))
-        self.LOG.info("stdout: {0}\nstderr:  {1}"
-            .format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
+        sout = ssh_stdout.read().decode('utf-8').strip()
+        serr = ssh_stderr.read().decode('utf-8').strip()
+        self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
         # remove default GW
         self.LOG.info("Delete default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             "sudo /sbin/route del default gw {0}".format(default_gw))
-        self.LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
+        sout = ssh_stdout.read().decode('utf-8').strip()
+        serr = ssh_stderr.read().decode('utf-8').strip()
+        self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
         # next VNF exists
         if next_ip is not None:
