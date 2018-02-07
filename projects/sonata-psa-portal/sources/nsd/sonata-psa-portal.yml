@@ -10,7 +10,7 @@ descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
 name: "psa-portal"
-version: "0.9.9"
+version: "0.10.10"
 author: "Luis Conceicao, UBIWHERE"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
@@ -33,6 +33,11 @@ network_functions:
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "prx-vnf"
     vnf_version: "0.9.9"
+  - vnf_id: "vnf_vfw"
+    vnf_vendor: "eu.sonata-nfv"
+    vnf_name: "vfw-vnf"
+    vnf_version: "0.0.6"
+
 ##
 ## The NS connection points to the
 ## outside world.
@@ -72,6 +77,7 @@ virtual_links:
       - "vnf_vpn:mgmt"
       - "vnf_tor:mgmt"
       - "vnf_prx:mgmt"
+      - "vnf_vfw:cpmgmt"
       - "mgmt"
   - id: "input-2-vpn"
     connectivity_type: "E-Line"
@@ -88,11 +94,17 @@ virtual_links:
     connection_points_reference:
       - "vnf_prx:inout"
       - "vnf_tor:inout"
-  - id: "tor-2-output"
+  - id: "tor-2-vfw"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vnf_tor:inout"
+      - "vnf_vfw:cpinput"
+  - id: "vfw-2-output"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vnf_vfw:cpoutput"
       - "output"
+
 
 ##
 ## The forwarding graphs.
@@ -100,17 +112,19 @@ virtual_links:
 forwarding_graphs:
   - fg_id: "fg01"
     number_of_endpoints: 2
-    number_of_virtual_links: 5
+    number_of_virtual_links: 6
     constituent_virtual_links:
       - "mgmt"
       - "input-2-vpn"
       - "vpn-2-prx"
       - "prx-2-tor"
-      - "tor-2-output"
+      - "tor-2-vfw"
+      - "vfw-2-output"
     constituent_vnfs:
       - "vnf_vpn"
       - "vnf_tor"
       - "vnf_prx"
+      - "vnf_vfw"
     network_forwarding_paths:
       - fp_id: "fg01:fp01"
         policy: "none"
@@ -129,5 +143,9 @@ forwarding_graphs:
             position: 6
           - connection_point_ref: "vnf_tor:inout"
             position: 7
-          - connection_point_ref: "output"
+          - connection_point_ref: "vnf_vfw:cpinput"
             position: 8
+          - connection_point_ref: "vnf_vfw:cpoutput"
+            position: 9
+          - connection_point_ref: "output"
+            position: 10
