@@ -503,7 +503,7 @@ class FirewallFSM(sonSMbase):
 
     #create conf for monitoring
     def createConf(self, pw_ip, interval, name):
-        config = configparser.ConfigParser(interpolation = None)
+        config = configparser.RawConfigParser()
         config.add_section('vm_node')
         config.add_section('Prometheus')
         config.set('vm_node', 'node_name', name)
