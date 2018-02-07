@@ -382,15 +382,15 @@ class FirewallFSM(sonSMbase):
 
 
         #Configure and activate monitoring probe
-        self.LOG.info("Create remote directory")
+        LOG.info("Create remote directory")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mkdir -p /home/sonata/monitoring")
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
-        self.LOG.info("Create monitoring conf")
+        LOG.info("Create monitoring conf")
         self.createConf(sp_ip, 4, 'vfw-vnf')
         sftp = ssh.open_sftp()
-        self.LOG.info("SFTP connection established")
+        LOG.info("SFTP connection established")
         sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
         sftp.close()
         command = "/etc/rc.d/sonmonprobe start"
@@ -406,7 +406,7 @@ class FirewallFSM(sonSMbase):
         response['status'] = 'COMPLETED'
 
         # TODO: complete the response
-
+        LOG.info("Returning response")
         return response
 
     def scale_event(self, content):
