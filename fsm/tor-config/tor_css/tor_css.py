@@ -84,6 +84,9 @@ class CssFSM(sonSMbase):
         self.is_running_in_emulator = 'SON_EMULATOR' in os.environ
         LOG.debug('Running in the emulator is %s', self.is_running_in_emulator)
 
+# config variable to protect routing path to FSM config
+        self.FSMroute = False
+
         super(self.__class__, self).__init__(specific_manager_type=self.specific_manager_type,
                                              service_name=self.service_name,
                                              function_name=self.function_name,
@@ -343,13 +346,16 @@ class CssFSM(sonSMbase):
         default_gw = sout.strip()
         LOG.info("Default GW: {0}".format(str(default_gw)))
 
-        LOG.info("Configure route for FSM IP")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route add -net {0} netmask 255.255.255.255 gw {1}"
-                .format(fsm_ip, default_gw))
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
+# config path to FSM config - should only be run once
+        if self.FSMroute == False:
+            LOG.info("Configure route for FSM IP")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "route add -net {0} netmask 255.255.255.255 gw {1}"
+                    .format(fsm_ip, default_gw))
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
+            self.FSMroute = True
 
         # remove default GW
         LOG.info("Delete default GW")
