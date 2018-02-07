@@ -38,6 +38,7 @@ from ansible.vars.manager import VariableManager
 from ansible.inventory.manager import InventoryManager
 from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
+import configparser
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
