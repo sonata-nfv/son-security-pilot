@@ -380,22 +380,26 @@ class FirewallFSM(sonSMbase):
         #LOG.debug('Stdout: ' + str(stdout))
         #LOG.debug('Stderr: ' + str(stderr))
 
-        ssh.close()
-
 
         #Configure and activate monitoring probe
-
+        self.LOG.info("Create remote directory")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mkdir -p /home/sonata/monitoring")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+        self.LOG.info("Create monitoring conf")
         self.createConf(sp_ip, 4, 'vfw-vnf')
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(mgmt_ip, port, 'sonata', 'sonata',look_for_keys=False, timeout=5)
-        sftp = ssh.client.open_sftp()
+        sftp = ssh.open_sftp()
+        self.LOG.info("SFTP connection established")
         sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
         sftp.close()
-        command = "/etc/rc.d/sonmonprobe start" 
-        (stdin, stdout, stderr) = ssh.exec_command(command)
-        ssh.close()
+        command = "/etc/rc.d/sonmonprobe start"
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
 
+        ssh.close()
 
         # Create a response for the FLM
         response = {}
