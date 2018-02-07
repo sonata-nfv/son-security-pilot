@@ -38,6 +38,7 @@ from ansible.vars.manager import VariableManager
 from ansible.inventory.manager import InventoryManager
 from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
+import configparser
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -234,14 +235,16 @@ class FirewallFSM(sonSMbase):
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
 
-
-        LOG.info("Configure route for monitoring ")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route add {0} {1}"
-            .format(sp_ip, default_gw))
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
+        if sp_ip != fsm_ip:
+            LOG.info("Configure route for monitoring ")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "route add {0} {1}"
+                .format(sp_ip, default_gw))
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
+        else:
+            LOG.info("The SP and the FSM have the same ip")
 
         LOG.info("Always use ethO (mgmt) for connection from 10.230.x.x for debug")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
