@@ -14,13 +14,14 @@ class Factory:
         elif os == "\"centos\"":
             return Centos_implementation(logger)
         else:
-            return Centos_implementation(logger)
-            #raise NotImplementedError("Unknown OS type.")
+            raise NotImplementedError("Unknown OS type.")
 
 class OS_implementation(metaclass = ABCMeta):
     config_options = { 'direct': './ansible/roles/squid/files/squid_direct.conf', 
         'transparent': './ansible/roles/squid/files/squid.conf', 
-        'squidguard': './ansible/roles/squid/files/squid_guard.conf' }
+        'squidguard_xenial': './ansible/roles/squid/files/squid_guard_xenial.conf',
+        'squidguard_centos': './ansible/roles/squid/files/squid_guard_ubuntu.conf',
+        'squidguardconf': './ansible/roles/squid/files/squidguard.conf' }
     config_dir = './ansible/roles/squid/files'
     monitoring_file = './node.conf'
     LOG = None
@@ -222,10 +223,22 @@ class Centos_implementation(OS_implementation):
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
 
-        localpath = self.config_options[cfg]
-        self.LOG.info("SFTP connection entering on %s", localpath)
-        remotepath = '/tmp/squid.conf'
-        sftpa = ftp.put(localpath, remotepath)
+        if cfg == "transparent":
+            localpath = self.config_options[cfg]
+            self.LOG.info("SFTP connection entering on %s", localpath)
+            remotepath = '/tmp/squid.conf'
+            sftpa = ftp.put(localpath, remotepath)
+        elif cfg == "squidguard":
+            cfg += "_centos"
+            localpath = self.config_options[cfg]
+            self.LOG.info("SFTP connection entering on %s", localpath)
+            remotepath = '/tmp/squid.conf'
+            sftpa = ftp.put(localpath, remotepath)
+            localpath = self.config_options["squidguardconf"]
+            self.LOG.info("SFTP connection entering on %s", localpath)
+            remotepath = '/tmp/squidguard.conf'
+            sftpa = ftp.put(localpath, remotepath)
+
         ftp.close()
 
         self.LOG.info("Moving the Squid configuration file")
@@ -236,6 +249,21 @@ class Centos_implementation(OS_implementation):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid')
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+
+        if cfg == "squidguard_centos":
+            self.LOG.info("Copying the Squid Guard configuration file")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/squid/squidguard.conf ] && echo OK")
+            self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+            self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+
+            if sout == "OK":
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /etc/squid/squidguard.conf /etc/squid/squidguard.conf.old'") 
+                self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+                self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+            
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /tmp/squidguard.conf /etc/squid/squidguard.conf'")
+            self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+            self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info("Restarting Squid")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart squid')
@@ -441,10 +469,21 @@ class Ubuntu_implementation(OS_implementation):
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
 
-        localpath = self.config_options[cfg]
-        self.LOG.info("SFTP connection entering on %s", localpath)
-        remotepath = '/tmp/squid.conf'
-        sftpa = ftp.put(localpath, remotepath)
+        if cfg == "transparent":
+            localpath = self.config_options[cfg]
+            self.LOG.info("SFTP connection entering on %s", localpath)
+            remotepath = '/tmp/squid.conf'
+            sftpa = ftp.put(localpath, remotepath)
+        elif cfg == "squidguard":
+            cfg += "_xenial"
+            localpath = self.config_options[cfg]
+            self.LOG.info("SFTP connection entering on %s", localpath)
+            remotepath = '/tmp/squid.conf'
+            sftpa = ftp.put(localpath, remotepath)
+            localpath = self.config_options["squidguardconf"]
+            self.LOG.info("SFTP connection entering on %s", localpath)
+            remotepath = '/tmp/squidguard.conf'
+            sftpa = ftp.put(localpath, remotepath)
         ftp.close()
 
         self.LOG.info("Moving the Squid configuration file")
@@ -455,6 +494,21 @@ class Ubuntu_implementation(OS_implementation):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid')
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
+
+        if cfg == "squidguard_xenial":
+            self.LOG.info("Copying the Squid Guard configuration file")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/squidguard/squidGuard.conf ] && echo OK")
+            self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+            self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+
+            if sout == "OK":
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /etc/squidguard/squidGuard.conf /etc/squidguard/squidGuard.conf.old'") 
+                self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+                self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+            
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /tmp/squidguard.conf /etc/squidguard/squidGuard.conf'")
+            self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+            self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info("Restarting Squid")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart squid')
