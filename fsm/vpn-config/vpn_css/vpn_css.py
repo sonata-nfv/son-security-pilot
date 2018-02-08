@@ -358,7 +358,7 @@ class CssFSM(sonSMbase):
             LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
-            self.FSMroute = True;
+            self.FSMroute = True
 
         # remove default GW
         LOG.info("Delete default GW")
@@ -408,6 +408,14 @@ class CssFSM(sonSMbase):
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
 
+        # Configure DNS correctly
+        LOG.info("Configure appropriate DNS'")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "printf \"NETWORKING=yes\\nNOZEROCONF=yes\\nDNS1=8.8.8.8\\nDNS2=8.8.4.4\" > /etc/sysconfig/network"
+        )
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
 
         # Create a response for the FLM
         response = {}
