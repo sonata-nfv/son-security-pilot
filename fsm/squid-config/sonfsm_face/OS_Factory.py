@@ -448,11 +448,11 @@ class Ubuntu_implementation(OS_implementation):
         ftp.close()
 
         self.LOG.info("Moving the Squid configuration file")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid3/squid.conf /etc/squid3/squid.conf.old')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo mv /etc/squid/squid.conf /etc/squid/squid.conf.old')
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
         self.LOG.info("Copying the Squid configuration file")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid3')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/squid.conf /etc/squid')
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
 
