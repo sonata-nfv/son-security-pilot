@@ -49,29 +49,25 @@ class OS_implementation(metaclass = ABCMeta):
 
         self.LOG.info("SSH connection reestablished")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo cp /tmp/node.conf /opt/Monitoring')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart mon-probe.service')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
                 
     def stop_service(self, ssh):
         self.LOG.info("SSH connection established")
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl stop squid')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
         
     def scale_service(self, ssh):
         self.LOG.info("SSH connection established")
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl start squid')
-        self.LOG.info('output from remote: ' + str(ssh_stdout))
-        self.LOG.info('output from remote: ' + str(ssh_stdin))
-        self.LOG.info('output from remote: ' + str(ssh_stderr))
+        self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
+        self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
     @abstractmethod
     def reconfigure_service(self, ssh, cfg):
@@ -221,7 +217,6 @@ class Centos_implementation(OS_implementation):
         self.LOG.info("SSH connection established")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl stop squid')
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
-        self.LOG.info('output from remote: ' + ssh_stdin.read().decode('utf-8'))
         self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
         
         ftp = ssh.open_sftp()
