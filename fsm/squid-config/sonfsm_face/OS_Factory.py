@@ -20,7 +20,7 @@ class OS_implementation(metaclass = ABCMeta):
     config_options = { 'direct': './ansible/roles/squid/files/squid_direct.conf', 
         'transparent': './ansible/roles/squid/files/squid.conf', 
         'squidguard_xenial': './ansible/roles/squid/files/squid_guard_xenial.conf',
-        'squidguard_centos': './ansible/roles/squid/files/squid_guard_ubuntu.conf',
+        'squidguard_centos': './ansible/roles/squid/files/squid_guard_centos.conf',
         'squidguardconf': './ansible/roles/squid/files/squidguard.conf' }
     config_dir = './ansible/roles/squid/files'
     monitoring_file = './node.conf'
