@@ -238,7 +238,7 @@ class faceFSM(sonSMbase):
             self.playbook_execution(plbk, squid_ip)
         else:
             opt = 2
-            self.ssh_execution(opt, squid_ip)
+            self.ssh_execution(opt, squid_ip, config_opt)
             
         response = {}
         response['status'] = 'COMPLETED'
