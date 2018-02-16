@@ -401,7 +401,7 @@ class CssFSM(sonSMbase):
             "iptables -t nat -F && "
             "iptables -t nat -A PREROUTING -i eth1 -p udp --dport 53 -j REDIRECT --to-ports 53 && "
             "iptables -t nat -A PREROUTING -i eth1 -p tcp --dport 22 -j REDIRECT --to-ports 22 && "
-            "iptables -t nat -A PREROUTING -i eth1 -p tcp --syn -j REDIRECT --to-ports 9040"
+            "iptables -t nat -A PREROUTING -i eth1 -p tcp -j REDIRECT --to-ports 9040"
         )
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
