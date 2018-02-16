@@ -19,7 +19,7 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.sonata-nfv.eu).
 
-FROM python:3.4-slim
+FROM python:3.6-slim
 MAINTAINER SONATA
 
 # configrurations
@@ -30,7 +30,7 @@ ENV broker_exchange son-kernel
 
 RUN apt-get clean \
     && apt-get update \
-    && apt-get install -y build-essential
+    && apt-get install -y build-essential iputils-ping netcat
 
 ADD son-sm/son-mano-framework/son-mano-base /son-mano-base
 ADD son-sm/son-sm-template /son-sm-template
