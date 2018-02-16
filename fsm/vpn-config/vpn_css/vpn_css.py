@@ -236,6 +236,27 @@ class CssFSM(sonSMbase):
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
 
+        LOG.info("Make the vpn server supports multiple client")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "echo 'duplicate-cn' | sudo tee -a /etc/openvpn/server.conf")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        LOG.info("Make the vpn use tcp for the tunnel")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "sudo sed -i 's/proto udp/proto tcp/g' /etc/openvpn/server.conf")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        LOG.info("Restart the vpn server")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "sudo systemctl restart openvpn@server.service")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
