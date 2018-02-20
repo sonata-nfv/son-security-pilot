@@ -90,7 +90,9 @@ class Client():
             message['chain'] = ['vpn-vnf', 'tor-vnf', 'vfw-vnf']
         if actionName == "anon":
             message['chain'] = ['vpn-vnf', 'prx-vnf', 'tor-vnf', 'vfw-vnf']
-        if actionName == "stop":
+        if actionName == "basic stop":
+            message['chain'] = ['vpn-vnf', 'vfw-vnf']
+        if actionName == "anon stop":
             message['chain'] = ['vpn-vnf', 'vfw-vnf']
         LOG.info("Selected chain is: " + str(message['chain']))
 
@@ -135,8 +137,8 @@ class Client():
                   "data":
                   [
                       {"name": "VPN", "id": "1", "state": "started"},
-                      {"name": "TOR", "id": "2", "state": "started"},
-                      {"name": "FW", "id": "3", "state": "started"}
+                      {"name": "TOR", "id": "3", "state": "started"},
+                      {"name": "FW", "id": "4", "state": "started"}
                   ],
               }
         if actionName == "anon":
@@ -150,15 +152,26 @@ class Client():
                     {"name": "FW", "id": "4", "state": "started"}
                 ],
             }
-        if actionName == "stop":
+        if actionName == "basic stop":
+            toSend  = {
+                "name": "basic stop",
+                "data":
+                [
+                    {"name": "VPN", "id": "1", "state": "started"},
+                    {"name": "Proxy", "id": "2", "state": "stopped"},
+                    {"name": "TOR", "id": "3", "state": "stopped"},
+                    {"name": "FW", "id": "4", "state": "started"}
+                ],
+            }
+        if actionName == "anon stop":
             toSend  = {
                 "name": "anon stop",
                 "data":
                 [
-                    {"name": "VPN", "id": "1", "state": "stopped"},
+                    {"name": "VPN", "id": "1", "state": "started"},
                     {"name": "Proxy", "id": "2", "state": "stopped"},
                     {"name": "TOR", "id": "3", "state": "stopped"},
-                    {"name": "FW", "id": "4", "state": "stopped"}
+                    {"name": "FW", "id": "4", "state": "started"}
                 ],
             }
         try:
