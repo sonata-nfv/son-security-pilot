@@ -1,0 +1,88 @@
+##
+## This is a network service descriptor
+## for the SONATA PSA pilot containing the
+## vfw
+## 
+## @author Luis Conceicao, UBIWHERE, lconceicao@ubiwhere.com
+##
+---
+descriptor_version: "1.0"
+
+vendor: "eu.sonata-nfv.service-descriptor"
+name: "psa-vfw-fsm"
+version: "0.1.1"
+author: "Felipe Vicens, ATOS"
+description: >
+  "The network service descriptor for the SONATA PSA pilot,
+   comprising vfw function"
+
+##
+## The various network functions this service
+## is composed of.
+##
+network_functions:
+  - vnf_id: "vnf_vfw"
+    vnf_vendor: "eu.sonata-nfv"
+    vnf_name: "vfw-vnf"
+    vnf_version: "0.1"
+
+## The NS connection points to the 
+## outside world.
+##
+connection_points:
+  - id: "cpmgmt"
+    interface: "ipv4"
+    type: "management"
+  - id: "cpinput"
+    interface: "ipv4"
+    type: "external"
+  - id: "cpoutput"
+    interface: "ipv4"
+    type: "external"
+
+##
+## The virtual links that interconnect
+## the different connections points.
+##
+virtual_links:
+  - id: "vlmgmt"
+    connectivity_type: "E-LAN"
+    connection_points_reference:
+      - "vnf_vfw:cpmgmt"
+      - "cpmgmt"
+  - id: "input-2-vfw"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "cpinput"
+      - "vnf_vfw:cpinput"
+  - id: "vfw-2-output"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "vnf_vfw:cpoutput"
+      - "cpoutput"
+
+##
+## The forwarding graphs.
+##
+forwarding_graphs:
+  - fg_id: "ns:fg01"
+    number_of_endpoints: 2
+    number_of_virtual_links: 3
+    constituent_virtual_links: 
+      - "mgmt"
+      - "input-2-vfw"
+      - "vfw-2-output"
+    constituent_vnfs:
+      - "vnf_vfw"
+    network_forwarding_paths:
+      - fp_id: "ns:fg01:fp01"
+        policy: "none"
+        connection_points:
+          - connection_point_ref: "cpinput"
+            position: 1
+          - connection_point_ref: "vnf_vfw:cpinput"
+            position: 2
+          - connection_point_ref: "vnf_vfw:cpoutput"
+            position: 3
+          - connection_point_ref: "cpoutput"
+            position: 4

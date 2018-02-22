@@ -1,0 +1,9 @@
+---
+# tasks file for vpsa
+
+- include: "nginx.yml"
+- include: "squid.yml"
+- include: "haproxy.yml"
+#- include: "ldap.yml"
+- include: "snort.yml"
+#- include: "openvpn.yml"

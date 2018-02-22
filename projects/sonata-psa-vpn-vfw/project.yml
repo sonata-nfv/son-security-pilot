@@ -1,0 +1,8 @@
+descriptor_extension: yml
+package:
+  description: Project for the development of VPN + vFW service of the PSA pilot.
+  maintainer: SONATA
+  name: sonata-psa-vpn-vfw
+  vendor: eu.sonata-nfv
+  version: '0.3'
+version: '0.5'

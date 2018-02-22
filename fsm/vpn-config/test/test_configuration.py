@@ -30,26 +30,26 @@ import sys
 
 from multiprocessing import Process
 from vnfrsender import fakeflm
-from fake_smr import fakesmr
+import fake_smr
 from sonmanobase import messaging
-from configuration.configuration import ConfigurationFSM
+import vpn_css.vpn_css
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger('amqp-storm').setLevel(logging.INFO)
-LOG = logging.getLogger("son-mano-plugins:sm_template_test")
-logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
-LOG.setLevel(logging.INFO)
-
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+logging.getLogger('amqpstorm').setLevel(logging.INFO)
+# logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
+FORMAT = '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+LOG = logging.getLogger(__name__ if __name__ != "__main__" else __file__ + ':' + __name__)
 
 
 
 class testConfFSM(unittest.TestCase):
 
     def setUp(self):
-
         self.slm_proc = Process(target= fakeflm)
-        self.smr_proc = Process(target= fakesmr)
-        self.con_proc = Process(target= ConfigurationFSM)
+        self.smr_proc = Process(target= fake_smr.main)
+        self.con_proc = Process(target= vpn_css.vpn_css.main)
 
         self.slm_proc.daemon = True
         self.smr_proc.daemon = True
@@ -91,16 +91,18 @@ class testConfFSM(unittest.TestCase):
     def waitForRegEvent(self, timeout=5, msg="Event timed out."):
         if not self.wait_for_reg_event.wait(timeout):
             self.assertEqual(True, False, msg=msg)
+        self.wait_for_reg_event.clear()
 
     def waitForResEvent(self, timeout=5, msg="Event timed out."):
         if not self.wait_for_res_event.wait(timeout):
             self.assertEqual(True, False, msg=msg)
+        self.wait_for_res_event.clear()
 
     def test_configuration_fsm(self):
 
 
         def on_register_receive(ch, method, properties, message):
-            print(properties.app_id)
+            LOG.debug('on_register_receive with id=%s, message=%s', properties.app_id, message)
 
             if properties.app_id != 'fake-smr':
                 msg = yaml.load(message)
@@ -151,18 +153,21 @@ class testConfFSM(unittest.TestCase):
 
 
         def on_ip_receive(ch, method, properties, message):
-
-            if properties.app_id == 'sonfsmservice1firewallconfiguration1':
+            LOG.info('on_ip_receive app_id=%s, message=%s ...', properties.app_id, message[:100])
+            if properties.app_id == 'sonfsmservice1function1css1':
 
                 payload = yaml.load(message)
 
                 self.assertTrue(isinstance(payload, dict), msg='message is not a dictionary')
 
-                if isinstance(payload['IP'], str):
+                if 'IP' in payload and isinstance(payload['IP'], str):
                     self.assertTrue(payload['IP'] == "10.100.32.250", msg='Wrong IP address')
+                elif 'status' in payload:
+                    self.assertTrue(payload['status'] == 'COMPLETED')
                 else:
                     self.assertEqual(True, False, msg='IP address is not a string')
             self.res_eventFinished()
+
 
         self.smr_proc.start()
         #time.sleep(4)
@@ -173,14 +178,15 @@ class testConfFSM(unittest.TestCase):
         #time.sleep(4)
         self.waitForRegEvent(timeout=5, msg="Registration request not received.")
 
-        self.manoconn.subscribe(on_ip_receive, 'son.configuration')
+        self.manoconn.subscribe(on_ip_receive, vpn_css.vpn_css.CssFSM.get_listening_topic_name() + '.#')
         #time.sleep(4)
         self.slm_proc.start()
         #time.sleep(4)
         self.waitForResEvent(timeout=5, msg="Configuration request not received.")
+        time.sleep(3)
 
-
-
+        self.waitForResEvent(timeout=25, msg="Status response not received.")
 
 if __name__ == '__main__':
+    unittest.main(warnings='ignore')
     unittest.main()

@@ -1,0 +1,8 @@
+descriptor_extension: yml
+package:
+  description: SONATA PSA PORTAL ver 2.0
+  maintainer: <Miguel Mesquita, mesquita@alticelabs.com>
+  name: "sonata-psa-portal-v2"
+  vendor: "eu.sonata-nfv"
+  version: "0.99"
+version: '0.7'

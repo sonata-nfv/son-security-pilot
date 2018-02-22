@@ -1,0 +1,5 @@
+- name: Docker User Defined Network (generic)
+  shell: 'docker network create --driver=bridge \
+--subnet=172.20.0.0/24 --gateway=172.20.0.1 \
+--ip-range=172.20.0.128/25 "{{ docker_network_name }}"'
+
