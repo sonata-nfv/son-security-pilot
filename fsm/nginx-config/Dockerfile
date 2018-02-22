@@ -26,10 +26,17 @@ RUN git clone --recursive https://github.com/miguelmesquita/son-security-pilot.g
 WORKDIR /son-sm/son-mano-framework/son-mano-base
 RUN python setup.py install
 
-WORKDIR /son-security-pilot/install/roles/docker-nginx/files
-COPY ansible/roles/nginx/files /etc/nginx
+WORKDIR /son-sm/son-sm-template
+RUN python setup.py install
 
-CMD mkdir /nginx-config
+WORKDIR /son-security-pilot
+ADD fsm/nginx-config /nginx-config
+
+WORKDIR /nginx-config
+RUN python setup.py develop
+
+#WORKDIR /son-security-pilot/fsm/nginx-config/
+COPY ansible/roles/nginx/files /etc/nginx
 
 COPY ansible/roles/nginx/files/entrypoint.sh /sbin
 RUN chmod 755 /sbin/entrypoint.sh
