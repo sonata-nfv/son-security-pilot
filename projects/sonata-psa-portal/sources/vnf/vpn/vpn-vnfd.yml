@@ -4,7 +4,7 @@
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
 name: "vpn-vnf"
-version: "0.99"
+version: "0.9.9"
 author: "Luis Conceicao, UBIWHERE"
 description: "Implementation of OpenVPN function"
 
@@ -18,9 +18,9 @@ virtual_deployment_units:
     vm_image_md5: "799b6db0c724b6552e092232a94a262a"
     resource_requirements:
       cpu:
-        vcpus: 2
+        vcpus: 1
       memory:
-        size: 4
+        size: 2
         size_unit: "GB"
       storage:
         size: 40

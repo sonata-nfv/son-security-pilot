@@ -38,6 +38,7 @@ from ansible.vars.manager import VariableManager
 from ansible.inventory.manager import InventoryManager
 from ansible.executor.playbook_executor import PlaybookExecutor
 from sonsmbase.smbase import sonSMbase
+import configparser
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -204,6 +205,55 @@ class FirewallFSM(sonSMbase):
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(sout, serr))
 
+
+        sp_ip = '10.30.0.112'
+        LOG.info("Retrieve FSM IP address")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "echo $SSH_CLIENT | awk '{ print $1}'")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+        fsm_ip = sout.strip()
+        LOG.info("FSM IP: {0}".format(fsm_ip))
+
+        LOG.info("Get current default GW")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "/usr/bin/netstat -nr| awk '/default/ { print $2 }'")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(sout, serr))
+        default_gw = sout.strip()
+        LOG.info("Default GW: {0}".format(str(default_gw)))
+
+        LOG.info("Configure route for FSM IP")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route add {0} {1}"
+            .format(fsm_ip, default_gw))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        if sp_ip != fsm_ip:
+            LOG.info("Configure route for monitoring ")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "route add {0} {1}"
+                .format(sp_ip, default_gw))
+            LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
+        else:
+            LOG.info("The SP and the FSM have the same ip")
+
+        LOG.info("Always use ethO (mgmt) for connection from 10.230.x.x for debug")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "route add -net 10.230.0.0/16 {0}".format(default_gw))
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+
         #activate firewall
         #command = "pfctl -e"
         #(stdin, stdout, stderr) = ssh.exec_command(command)
@@ -296,51 +346,6 @@ class FirewallFSM(sonSMbase):
             LOG.error('Unable to establish an SSH connection during the configure event')
             return;
 
-
-        LOG.info("Retrieve FSM IP address")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "echo $SSH_CLIENT | awk '{ print $1}'")
-        sout = ssh_stdout.read().decode('utf-8')
-        serr = ssh_stderr.read().decode('utf-8')
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(sout, serr))
-        fsm_ip = sout.strip()
-        LOG.info("FSM IP: {0}".format(fsm_ip))
-
-        LOG.info("Get current default GW")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "/usr/bin/netstat -nr| awk '/default/ { print $2 }'")
-        sout = ssh_stdout.read().decode('utf-8')
-        serr = ssh_stderr.read().decode('utf-8')
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(sout, serr))
-        default_gw = sout.strip()
-        LOG.info("Default GW: {0}".format(str(default_gw)))
-
-        LOG.info("Configure route for FSM IP")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route add {0} {1}"
-            .format(fsm_ip, default_gw))
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
-
-
-        LOG.info("Configure route for monitoring ")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route add {0} {1}"
-            .format(sp_ip, default_gw))
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
-
-        LOG.info("Always use ethO (mgmt) for connection from 10.230.x.x for debug")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "route add -net 10.230.0.0/16 {0}".format(default_gw))
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
-
         # remove default GW
         LOG.info("Delete default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
@@ -375,29 +380,33 @@ class FirewallFSM(sonSMbase):
         #LOG.debug('Stdout: ' + str(stdout))
         #LOG.debug('Stderr: ' + str(stderr))
 
-        ssh.close()
-
 
         #Configure and activate monitoring probe
-
+        LOG.info("Create remote directory")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mkdir -p /home/sonata/monitoring")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+        LOG.info("Create monitoring conf")
         self.createConf(sp_ip, 4, 'vfw-vnf')
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(mgmt_ip, port, 'sonata', 'sonata',look_for_keys=False, timeout=5)
-        sftp = ssh.client.open_sftp()
+        sftp = ssh.open_sftp()
+        LOG.info("SFTP connection established")
         sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
         sftp.close()
-        command = "/etc/rc.d/sonmonprobe start" 
-        (stdin, stdout, stderr) = ssh.exec_command(command)
-        ssh.close()
+        command = "/etc/rc.d/sonmonprobe start"
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
 
+        ssh.close()
 
         # Create a response for the FLM
         response = {}
         response['status'] = 'COMPLETED'
 
         # TODO: complete the response
-
+        LOG.info("Returning response")
         return response
 
     def scale_event(self, content):

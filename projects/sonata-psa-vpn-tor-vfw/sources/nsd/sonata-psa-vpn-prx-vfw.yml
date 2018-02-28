@@ -9,12 +9,10 @@
 descriptor_version: "1.0"
 
 vendor: "eu.sonata-nfv.service-descriptor"
-name: "psa-portal"
-version: "0.10.10"
-author: "Luis Conceicao, UBIWHERE"
-description: >
-  "The network service descriptor for the SONATA PSA pilot,
-   comprising VPN and TOR functions"
+name: "psa-vpn-tor-vfw"
+version: "0.0.2"
+author: "SONATA"
+description: "The network service descriptor for the SONATA PSA pilot, comprising VPN, PRX and vFW functions"
 
 ##
 ## The various network functions this service
@@ -24,20 +22,15 @@ network_functions:
   - vnf_id: "vnf_vpn"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vpn-vnf"
-    vnf_version: "0.9.9"
+    vnf_version: "0.7"
   - vnf_id: "vnf_tor"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "tor-vnf"
-    vnf_version: "0.9.9"
-  - vnf_id: "vnf_prx"
-    vnf_vendor: "eu.sonata-nfv"
-    vnf_name: "prx-vnf"
-    vnf_version: "0.9.9"
+    vnf_version: "0.5"
   - vnf_id: "vnf_vfw"
     vnf_vendor: "eu.sonata-nfv"
     vnf_name: "vfw-vnf"
-    vnf_version: "0.0.6"
-
+    vnf_version: "0.4"
 ##
 ## The NS connection points to the
 ## outside world.
@@ -76,7 +69,6 @@ virtual_links:
     connection_points_reference:
       - "vnf_vpn:mgmt"
       - "vnf_tor:mgmt"
-      - "vnf_prx:mgmt"
       - "vnf_vfw:cpmgmt"
       - "mgmt"
   - id: "input-2-vpn"
@@ -84,15 +76,10 @@ virtual_links:
     connection_points_reference:
       - "input"
       - "vnf_vpn:inout"
-  - id: "vpn-2-prx"
+  - id: "vpn-2-tor"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "vnf_vpn:inout"
-      - "vnf_prx:inout"
-  - id: "prx-2-tor"
-    connectivity_type: "E-Line"
-    connection_points_reference:
-      - "vnf_prx:inout"
       - "vnf_tor:inout"
   - id: "tor-2-vfw"
     connectivity_type: "E-Line"
@@ -105,25 +92,22 @@ virtual_links:
       - "vnf_vfw:cpoutput"
       - "output"
 
-
 ##
 ## The forwarding graphs.
 ##
 forwarding_graphs:
   - fg_id: "fg01"
     number_of_endpoints: 2
-    number_of_virtual_links: 6
+    number_of_virtual_links: 5
     constituent_virtual_links:
       - "mgmt"
       - "input-2-vpn"
-      - "vpn-2-prx"
-      - "prx-2-tor"
+      - "vpn-2-tor"
       - "tor-2-vfw"
       - "vfw-2-output"
     constituent_vnfs:
       - "vnf_vpn"
       - "vnf_tor"
-      - "vnf_prx"
       - "vnf_vfw"
     network_forwarding_paths:
       - fp_id: "fg01:fp01"
@@ -135,17 +119,13 @@ forwarding_graphs:
             position: 2
           - connection_point_ref: "vnf_vpn:inout"
             position: 3
-          - connection_point_ref: "vnf_prx:inout"
+          - connection_point_ref: "vnf_tor:inout"
             position: 4
-          - connection_point_ref: "vnf_prx:inout"
+          - connection_point_ref: "vnf_tor:inout"
             position: 5
-          - connection_point_ref: "vnf_tor:inout"
-            position: 6
-          - connection_point_ref: "vnf_tor:inout"
-            position: 7
           - connection_point_ref: "vnf_vfw:cpinput"
-            position: 8
+            position: 6
           - connection_point_ref: "vnf_vfw:cpoutput"
-            position: 9
+            position: 7
           - connection_point_ref: "output"
-            position: 10
+            position: 8

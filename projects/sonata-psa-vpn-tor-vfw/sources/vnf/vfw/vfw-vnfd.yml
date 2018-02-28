@@ -5,7 +5,7 @@
 descriptor_version: "vnfd-schema-01"
 vendor: "eu.sonata-nfv"
 name: "vfw-vnf"
-version: "0.3"
+version: "0.4"
 author: "Steven Van Rossem, Ghent University, steven.vanrossem@intec.ugent.be"
 description: "Firewall VNF based on psSense"
 ##
@@ -15,7 +15,7 @@ virtual_deployment_units:
   - id: "1"
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/pfSense-vnf/pfSense.qcow2"
     vm_image_format: "qcow2"
-    vm_image_md5: "b9cacb0185c76a5e66c01f36f07e2d48"
+    vm_image_md5: "cb20ff09d2b4a4faa55c788573443ac2"
     resource_requirements:
       cpu:
         vcpus: 1
@@ -102,7 +102,7 @@ monitoring_rules:
 
 
 function_specific_managers:
-  - id: "sonfsmpsaservice-vpnvfw-vfw-config1"
+  - id: "sonfsmpsa-servicefirewall-vnffirewall-config1"
     description: "FSM to do a first FSM test"
     image: "sonatanfv/psa-vfw-fsm-css"
     options:

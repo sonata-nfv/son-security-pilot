@@ -31,12 +31,16 @@ import yaml
 import time
 import sys
 import _thread
-import websocket
+import threading
+import asyncio
 
 from sonsmbase.smbase import sonSMbase
-from threading import Thread
-from websocket_server import WebsocketServer
 from json import loads, dumps
+from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado import gen
+from tornado.websocket import websocket_connect
+from queue import Queue
+
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("ssm-task_config-1")
@@ -44,12 +48,20 @@ LOG.setLevel(logging.DEBUG)
 logging.getLogger("son-mano-base:messaging").setLevel(logging.INFO)
 
 
-class Server():
-
-    def __init__(self):
-
+class Client():
+    
+    def __init__(self, url, in_q):
         self.ssm = None
-
+        self.url = url
+        asyncio.set_event_loop(asyncio.new_event_loop())
+        self.ioloop = IOLoop.instance()
+        self.connect()
+        #PeriodicCallback(self.keep_alive, 20000).start()
+        LOG.info("getting queue argument")
+        self.ssm = in_q.get()
+        LOG.info("received ssm info from queue.")
+        self.ioloop.start()
+ 
     # Called for every client connecting (after handshake)
     def new_client(self, client, server):
         logging.warning("*********************"+"New client connected and was given id"+ str(client['id']))
@@ -58,25 +70,31 @@ class Server():
     def client_left(self, client, server):
         logging.warning("*********************"+"Client("+str(client['id'])+") disconnected")
 
-    def message_received(self, client, server, message):
+    def message_received(self, message):
         LOG.info('message received...')
         if len(message) > 200:
             message = message[:200]+'..'
-        logging.warning("*********************"+"Client("+str(client['id'])+") said:"+message)
+        logging.warning("*********************Handling message: "+message)
 
         # Format message
         messageDict = loads(message)
         actionName = messageDict['name']
         message = {}
 
+        LOG.info("Received action: "+actionName)
         LOG.info("Creating messages for the SSM plugin")
         # Translating the portal application message into the right format for
         # the SSM.
+        message['chain'] = []
         if actionName == "basic":
-            message['chain'] = ['vpn-vnf', 'tor-vnf']
-
+            message['chain'] = ['vpn-vnf', 'tor-vnf', 'vfw-vnf']
         if actionName == "anon":
-            message['chain'] = ['vpn-vnf', 'prx-vnf', 'tor-vnf']
+            message['chain'] = ['vpn-vnf', 'prx-vnf', 'tor-vnf', 'vfw-vnf']
+        if actionName == "basic stop":
+            message['chain'] = ['vpn-vnf', 'vfw-vnf']
+        if actionName == "anon stop":
+            message['chain'] = ['vpn-vnf', 'vfw-vnf']
+        LOG.info("Selected chain is: " + str(message['chain']))
 
         # Only when the status of the service is ready is it allowed to make
         # a reconfiguration request. Possible status: 'configuring', 'instantiating'
@@ -95,6 +113,9 @@ class Server():
         else:
             LOG.info("Service not ready to be reconfigured, status: " + str(status))
             # TODO: respond to portal that service is not ready to reconfigure
+            
+        # Send a response to the portal
+        self.reply_to_portal(actionName)
 
     def add_ssm(self, ssm_object):
         """
@@ -103,24 +124,116 @@ class Server():
         """
         self.ssm = ssm_object
 
-    def connect_to_socket(self, port, host):
+    def handle_response(response):
+        if response.error:
+            LOG.info("web_socket response: error: " + response.error)
+        else:
+            LOG.info("web_socket response: " + response.body)
+
+    def reply_to_portal(self, actionName):
+        if actionName == "basic":
+              toSend  = {
+                  "name": "basic start",
+                  "data":
+                  [
+                      {"name": "VPN", "id": "1", "state": "started"},
+                      {"name": "TOR", "id": "3", "state": "started"},
+                      {"name": "FW", "id": "4", "state": "started"}
+                  ],
+              }
+        if actionName == "anon":
+            toSend  = {
+                "name": "anon start",
+                "data":
+                [
+                    {"name": "VPN", "id": "1", "state": "started"},
+                    {"name": "Proxy", "id": "2", "state": "started"},
+                    {"name": "TOR", "id": "3", "state": "started"},
+                    {"name": "FW", "id": "4", "state": "started"}
+                ],
+            }
+        if actionName == "basic stop":
+            toSend  = {
+                "name": "basic stop",
+                "data":
+                [
+                    {"name": "VPN", "id": "1", "state": "started"},
+                    {"name": "Proxy", "id": "2", "state": "stopped"},
+                    {"name": "TOR", "id": "3", "state": "stopped"},
+                    {"name": "FW", "id": "4", "state": "started"}
+                ],
+            }
+        if actionName == "anon stop":
+            toSend  = {
+                "name": "anon stop",
+                "data":
+                [
+                    {"name": "VPN", "id": "1", "state": "started"},
+                    {"name": "Proxy", "id": "2", "state": "stopped"},
+                    {"name": "TOR", "id": "3", "state": "stopped"},
+                    {"name": "FW", "id": "4", "state": "started"}
+                ],
+            }
+        try:
+            toSendJson = dumps(toSend)
+            LOG.info("Sending reply: " + str(toSendJson))
+            self.ws.write_message(toSendJson)
+            LOG.info("Finished sending reply.")
+        except Exception as e:
+            LOG.error("Exception: " + str(e))
+    
+
+            
+    @gen.coroutine
+    def connect(self):
         # TODO: How to connect to the portal application? Should we make the SSM
         # the client and the application the server?
-        LOG.info("connecting to socket...")
+        LOG.info("connecting to websocket..." + self.url)
         logging.warning("*********************Listening to Requests...!")
-        port = port
-        host = host
+        connecting = True
+        while connecting:
+            try:
+                self.ws = yield websocket_connect(self.url)
+            except Exception as e:
+                LOG.info("connection error")
+                LOG.info(e)
+                time.sleep(15)
+            else:
+                LOG.info("connected")
+                connecting = False
+                self.run()
+
+    @gen.coroutine
+    def run(self):
+        while True:
+            msg = yield self.ws.read_message()
+            if msg is None:
+                LOG.info("connection closed")
+                self.ws = None
+                self.connect()
+                break
+            else:
+                LOG.info("received message: " + str(msg))
+                self.message_received(msg)
+
+#    def keep_alive(self):
+#        if self.ws is None:
+#            self.connect()
+#        else:
+#            self.ws.write_message("keep alive")
+
+            
         # host="selfservice-ssm"
-        server = WebsocketServer(port, host=host)
-        server.set_fn_new_client(self.new_client)
-        server.set_fn_client_left(self.client_left)
-        server.set_fn_message_received(self.message_received)
-        server.run_forever()
+        #server = WebsocketServer(port, host=host)
+        #server.set_fn_new_client(self.new_client)
+        #server.set_fn_client_left(self.client_left)
+        #server.set_fn_message_received(self.message_received)
+        #server.run_forever()
 
 
 class TaskConfigMonitorSSM(sonSMbase):
 
-    def __init__(self, server=None):
+    def __init__(self, out_q):
 
         """
         :param specific_manager_type: specifies the type of specific manager that could be either fsm or ssm.
@@ -152,14 +265,14 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         self.description = "Task - Config SSM for the PSA."
 
-        # Connect with server
-        # LOG.info("Connecting to server")
-        # self.server = server
-        # self.server.add_ssm(self)
-        # port = 4000
-        # host = "10.30.0.116"
-        # Thread(target=self.server.connect_to_socket(port, host)).start()
+        # Let server know myself
+        out_q.put(self)
+        
+        """
+        while True:
+            pass
 
+        """
         super(self.__class__, self).__init__(specific_manager_type= self.specific_manager_type,
                                              service_name= self.service_name,
                                              specific_manager_name = self.specific_manager_name,
@@ -502,11 +615,18 @@ class TaskConfigMonitorSSM(sonSMbase):
         self.push_update(request)
 
 
-def main():
+def connectPortal(url, in_q):
+    self.client = Client(url, in_q)
+    LOG.info("FINISHED")
 
-    portal_server = Server()
-#    TaskConfigMonitorSSM(server=portal_server)
-    TaskConfigMonitorSSM()
+def main():
+    q = Queue()
+    #url = "ws://10.10.243.100:4000/ssm"
+    url = "ws://10.30.0.116:4000/ssm"
+    t = threading.Thread(target=connectPortal, args=(url,q,), daemon=True)
+    t.start()
+
+    TaskConfigMonitorSSM(q)
 
 if __name__ == '__main__':
     main()

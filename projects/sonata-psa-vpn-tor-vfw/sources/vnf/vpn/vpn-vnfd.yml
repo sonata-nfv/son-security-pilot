@@ -1,31 +1,29 @@
 ##
-## vPRX VNF Descriptor
+## VPN VNF Descriptor
 ##
 descriptor_version: "vnfd-schema-02"
 vendor: "eu.sonata-nfv"
-name: "prx-vnf"
-version: "0.9.9"
-author: "Felipe Vicens, ATOS"
-description: "Implementation of Proxy function"
- 
+name: "vpn-vnf"
+version: "0.7"
+author: "Luis Conceicao, UBIWHERE"
+description: "Implementation of OpenVPN function"
+
 ##
 ## The virtual deployment units.
 ##
 virtual_deployment_units:
   - id: "vdu01"
-    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/eu.sonata-nfv_vprx-vnf_0.1_vdu01"
+    vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/vpn-vnf/sonata-vpn.qcow2"
     vm_image_format: "qcow2"
-# Ce7  vm_image_md5: "838821b21771674dd29acf1663253278"
-    vm_image_md5: "f6d89c70f1032ea4e351082fced80bea"
-
+    vm_image_md5: "799b6db0c724b6552e092232a94a262a"
     resource_requirements:
       cpu:
-        vcpus: 1
+        vcpus: 2
       memory:
-        size: 2
+        size: 4
         size_unit: "GB"
       storage:
-        size: 20
+        size: 40
         size_unit: "GB"
     monitoring_parameters:
       - name: "vm_cpu_perc"
@@ -37,15 +35,15 @@ virtual_deployment_units:
       - name: "vm_net_tx_bps"
         unit: "bps"
     connection_points:
-      - id: "mgmt"
+      - id: "eth0"
         interface: "ipv4"
         type: "management"
       - id: "inout"
         interface: "ipv4"
         type: "external"
- 
+
 ##
-## The VNF connection points to the 
+## The VNF connection points to the
 ## outside world.
 ##
 connection_points:
@@ -55,7 +53,8 @@ connection_points:
   - id: "inout"
     interface: "ipv4"
     type: "external"
- 
+
+
 ##
 ## The virtual links that interconnect
 ## the different connections points.
@@ -64,7 +63,7 @@ virtual_links:
   - id: "mgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "vdu01:mgmt"
+      - "vdu01:eth0"
       - "mgmt"
     dhcp: True
   - id: "input-output"
@@ -72,18 +71,39 @@ virtual_links:
     connection_points_reference:
       - "vdu01:inout"
       - "inout"
- 
+
+##
+## The monitoring rules that react
+## to the monitoring parameters
+##
+monitoring_rules:
+  - name: "mon:rule:vm_cpu_perc"
+    description: "Trigger events if CPU load is above 10 percent."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:vm_cpu_perc > 10"
+    notification:
+      - name: "notification01"
+        type: "rabbitmq_message"
+  - name: "mon:rule:vm_mem_perc"
+    description: "Trigger events if memory consumption is above 10 percent."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:vm_mem_perc > 10"
+    notification:
+      - name: "notification02"
+        type: "rabbitmq_message"
+
+
 ##
 ## Function Specific Managers
 ##
 function_specific_managers:
-  - id: "sonfsmpsaserviceprx-vnfprx-config1"
-    description: "FSM for the configuration of the vPRX"
-    image: "sonatanfv/psa-vprx-fsm-css"
+  - id: "sonfsmpsaservicevpn-vnfvpn-config1"
+    description: "FSM for the configuration of the VPN"
+    image: "sonatanfv/psa-vpn-fsm-css"
     options:
       - key: "type"
         value: "start"
-      - key: "type"
-        value: "stop"
       - key: "type"
         value: "configure"
