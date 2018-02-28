@@ -1,0 +1,33 @@
+FROM python:3.5-slim
+MAINTAINER support@sonata-nfv.eu
+
+# configurations
+ENV mongo_host mongo
+ENV mongo_port 27017
+ENV broker_host amqp://guest:guest@broker:5672/%2F
+ENV broker_exchange son-kernel
+
+#// TO RUN IN THE REMOOTE MACHINE (ex, production environ - deployed through the MANO/FSM)
+
+RUN apt-get update && apt-get -y install python3-pip ssh \
+    && apt-get update && pip3 install paramiko && pip3 install ansible \
+    && apt-get install -y python3-amqp python3-amqplib \
+    && pip3 install IPy
+
+ADD son-sm/son-mano-framework/son-mano-base /son-mano-base
+ADD son-sm/son-sm-template /son-sm-template
+
+WORKDIR /son-mano-base
+Run python setup.py install
+
+WORKDIR /son-sm-template
+RUN python setup.py install
+
+WORKDIR /
+ADD fsm/nginx-config /nginx-config
+
+WORKDIR /nginx-config
+RUN python setup.py develop
+
+CMD ["fsm-nginx"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
