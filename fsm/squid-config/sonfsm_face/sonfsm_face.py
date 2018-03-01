@@ -238,6 +238,7 @@ class faceFSM(sonSMbase):
             self.playbook_execution(plbk, squid_ip)
         else:
             opt = 2
+            LOG.info("config_opt = " + config_opt)
             self.ssh_execution(opt, squid_ip, config_opt)
             
         response = {}
@@ -382,7 +383,7 @@ class faceFSM(sonSMbase):
             ssh.close()
 
         elif function == 2:
-            LOG.info("SSH client configure")
+            LOG.info("SSH client configure with config " + config)
             os_impl.reconfigure_service(ssh, config)
             ssh.close()
 
