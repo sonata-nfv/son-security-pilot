@@ -610,9 +610,17 @@ class TaskConfigMonitorSSM(sonSMbase):
         message = yaml.load(payload)
         LOG.info("Received emulated portal request:" + str(message))
 
-        request = {}
-        request['chain'] = message['chain']
-        self.push_update(request)
+        if 'chain' in message.keys():        
+            request = {}
+            request['chain'] = message['chain']
+
+            if 'prx_config' in message.keys():
+                request['prx_config'] = message['prx_config']
+
+            self.push_update(request)
+            
+        else:
+            LOG.info("Not a valid emulated portal request.")
 
 
 def connectPortal(url, in_q):
