@@ -79,6 +79,52 @@ virtual_links:
       - "vdu01:inout"
       - "inout"
  
+
+##
+## Monitory rules to trigger notification events
+##
+monitoring_rules:
+  - name: "mon:rule:vm_cpu_perc"
+    description: "Trigger events if CPU load is above 90 percent."
+    duration: 60
+    duration_unit: "s"
+    condition: "vdu01:vm_cpu_perc > 90"
+    notification:
+      - name: "notification01"
+        type: "rabbitmq_message"
+  - name: "mon:rule:vm_mem_perc"
+    description: "Trigger events if memory consumption is above 90 percent."
+    duration: 60
+    duration_unit: "s"
+    condition: "vdu01:vm_mem_perc > 90"
+    notification:
+      - name: "notification02"
+        type: "rabbitmq_message"
+  - name: "mon:rule:mbits_packets_all"
+    description: "Trigger events if network load is greater than 1500."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:mbits_packets_all > 1500"
+    notification:
+      - name: "notification01"
+        type: "rabbitmq_message"
+  - name: "mon:rule:mbits_packets_http"
+    description: "Trigger events if HTTP load is more than 10000."
+    duration: 10
+    duration_unit: "s"
+    condition: "vdu01:mbits_packets_http > 10000"
+    notification:
+      - name: "notification02"
+        type: "rabbitmq_message"
+  - name: "mon:rule:num_reqs"
+    description: "Trigger events if number of requests is more than 10000."
+    duration: 5
+    duration_unit: "s"
+    condition: "vdu01:num_reqs > 10000"
+    notification:
+      - name: "notification02"
+        type: "rabbitmq_message"
+
 ##
 ## Function Specific Managers
 ##
