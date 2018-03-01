@@ -253,7 +253,8 @@ class Centos_implementation(OS_implementation):
         if cfg == "squidguard_centos":
             self.LOG.info("Copying the Squid Guard configuration file")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/squid/squidguard.conf ] && echo OK")
-            self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+            sout = ssh_stdout.read().decode('utf-8')
+            self.LOG.info('output from remote: ' + sout)
             self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             if sout == "OK":
@@ -498,7 +499,8 @@ class Ubuntu_implementation(OS_implementation):
         if cfg == "squidguard_xenial":
             self.LOG.info("Copying the Squid Guard configuration file")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/squidguard/squidGuard.conf ] && echo OK")
-            self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+            sout = ssh_stdout.read().decode('utf-8')
+            self.LOG.info('output from remote: ' + sout)
             self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             if sout == "OK":
