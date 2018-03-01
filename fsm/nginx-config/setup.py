@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='NGINX config',
+    name='NGINX FSM configuration',
 
     version='0.1',
 
@@ -39,6 +39,6 @@ setup(
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
-        'console_scripts': ['fsm-nginx=sonfsm_face.__main__:main'],
+        'console_scripts': ['fsm-nginx=nginx-css.__main__:main'],
     },
 )
