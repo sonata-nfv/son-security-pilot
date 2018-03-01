@@ -48,6 +48,7 @@ class faceFSM(sonSMbase):
     username = 'sonata'
     password = 'sonata'
     with_monitoring = True
+    monitoring_ip = '10.30.0.112'
     option = 1
 
     def __init__(self):
@@ -373,7 +374,7 @@ class faceFSM(sonSMbase):
             os_impl.configure_squid_forwarding_rules(ssh, gw)
 
             if self.with_monitoring == True:
-                os_impl.configure_monitoring(ssh, host_ip)
+                os_impl.configure_monitoring(ssh, self.monitoring_ip)
 
             ssh.close();
 
