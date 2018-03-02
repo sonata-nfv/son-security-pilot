@@ -359,7 +359,7 @@ class faceFSM(sonSMbase):
             LOG.info('Could not establish SSH connection within max retries')
             return;
 
-            LOG.info("SSH connection established")
+        LOG.info("SSH connection established")
             
         LOG.info("Get OS system version")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/os-release | awk '/^ID=/ { print }' | cut -b 4-")
