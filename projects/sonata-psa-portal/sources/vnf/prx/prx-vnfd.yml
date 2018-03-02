@@ -6,7 +6,7 @@ vendor: "eu.sonata-nfv"
 name: "prx-vnf"
 version: "0.9.9"
 author: "Felipe Vicens, ATOS"
-description: "Implementation of Proxy function"
+description: "Implementation of a Proxy function"
  
 ##
 ## The virtual deployment units.
