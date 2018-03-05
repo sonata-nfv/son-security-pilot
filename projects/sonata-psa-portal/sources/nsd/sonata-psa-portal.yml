@@ -14,7 +14,7 @@ version: "0.10.10"
 author: "Luis Conceicao, UBIWHERE"
 description: >
   "The network service descriptor for the SONATA PSA pilot,
-   comprising VPN and TOR functions"
+   comprising VPN, TOR, PRX, FW and SSP functions functions"
 
 ##
 ## The various network functions this service
