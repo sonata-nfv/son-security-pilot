@@ -254,6 +254,41 @@ class FirewallFSM(sonSMbase):
                          ssh_stderr.read().decode('utf-8')))
 
 
+        #Configure and activate monitoring probe
+        LOG.info("Create remote directory")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mkdir -p /home/sonata/monitoring")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+        LOG.info("Create monitoring conf")
+        self.createConf(sp_ip, 4, 'vfw-vnf')
+        sftp = ssh.open_sftp()
+        LOG.info("SFTP connection established")
+        sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
+        sftp.close()
+
+        LOG.info("Copy configuration file")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "cp /home/sonata/monitoring/node.conf /opt/Monitoring/node.conf || true")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        LOG.info("Start the probe")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "/usr/local/bin/python2.7 /usr/local/bin/probe.py &")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+        LOG.info("List process")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "ps aux")
+        LOG.info("stdout: {0}\nstderr:  {1}"
+                 .format(ssh_stdout.read().decode('utf-8'),
+                         ssh_stderr.read().decode('utf-8')))
+
+
         #activate firewall
         #command = "pfctl -e"
         #(stdin, stdout, stderr) = ssh.exec_command(command)
@@ -379,25 +414,6 @@ class FirewallFSM(sonSMbase):
         #(stdin, stdout, stderr) = ssh.exec_command(command)
         #LOG.debug('Stdout: ' + str(stdout))
         #LOG.debug('Stderr: ' + str(stderr))
-
-
-        #Configure and activate monitoring probe
-        LOG.info("Create remote directory")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mkdir -p /home/sonata/monitoring")
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                 .format(ssh_stdout.read().decode('utf-8'),
-                         ssh_stderr.read().decode('utf-8')))
-        LOG.info("Create monitoring conf")
-        self.createConf(sp_ip, 4, 'vfw-vnf')
-        sftp = ssh.open_sftp()
-        LOG.info("SFTP connection established")
-        sftp.put('node.conf', '/home/sonata/monitoring/node.conf')
-        sftp.close()
-        command = "/etc/rc.d/sonmonprobe start"
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
-        LOG.info("stdout: {0}\nstderr:  {1}"
-                     .format(ssh_stdout.read().decode('utf-8'),
-                             ssh_stderr.read().decode('utf-8')))
 
         ssh.close()
 
