@@ -205,6 +205,8 @@ def handle_reprocess(metrics, old_now, oldest, late_now, latest, id_):
                 pass
         m = build_metric(family_name, "", "gauge", some_metrics)
         metrics.append(m)
+    m = build_metric("vm_mem_perc", "", "gauge", [("vm_mem_perc", {'id': id_}, (time.time() % 6, late_now))])
+    metrics.append(m)
     return metrics
 
 
