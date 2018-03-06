@@ -41,7 +41,7 @@ class OS_implementation(metaclass = ABCMeta):
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
 
-        self.createConf(host_ip, 4, 'prx-vnf')
+        self.createConf(host_ip, 4, 'cache-vnf')
         localpath = self.monitoring_file
         self.LOG.info("SFTP connection entering on %s", localpath)
         remotepath = '/tmp/node.conf'
