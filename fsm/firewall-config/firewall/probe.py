@@ -160,6 +160,7 @@ to_translate = {
 def translate_metrics(metrics, now, id_):
     new_families = []
     to_keep = ["vm_net_rx_pps", "vm_net_tx_pps", "vm_net_rx_bps", "vm_net_tx_bps"]
+    per_cpus_metrics = []
     has_mem_perc_metric = False
     reprocess = {}
     for elt in to_keep:
@@ -187,9 +188,17 @@ def translate_metrics(metrics, now, id_):
                 new_families.append(m)
             if m.name == 'vm_mem_perc':
                 has_mem_perc_metric = True
+            if m.name == 'vm_cpu_perc':
+                for (_, _, data) in samples:
+                    per_cpus_metrics.append(data[0])
     if not has_mem_perc_metric:
         m = build_metric("vm_mem_perc", "", "gauge", [("vm_mem_perc", {'id': id_}, (time.time() % 6, now))])
         new_families.append(m)
+    cpu_mean = 0.0
+    if per_cpus_metrics:
+        cpu_mean = sum(per_cpus_metrics) / float(len(per_cpus_metrics))
+    m = build_metric("vm_cpu_perc", "", "gauge", [("vm_cpu_perc", {'id': id_, 'core': 'cpu'}, (cpu_mean, now))])
+    new_families.append(m)
     return (new_families, reprocess)
 
 
