@@ -440,29 +440,33 @@ class TaskConfigMonitorSSM(sonSMbase):
         LOG.info("keys in function: " + str(self.functions.keys()))
         for key in self.functions.keys():
             LOG.info("Function %s: %s", key, str(self.functions[key]))
-            if key == 'vpn-vnf':
-                if 'prx-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['prx-vnf']['own_ip'])
-                elif 'tor-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
-                elif 'vfw-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
-                else:
-                    self.functions[key]['next_ip'] = None
-            if key == 'prx-vnf':
-                if 'tor-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
-                elif 'vfw-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
-                else:
-                    self.functions[key]['next_ip'] = None
-            if key == 'tor-vnf':
-                if 'vfw-vnf' in self.functions.keys():
-                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
-                else:
-                    self.functions[key]['next_ip'] = None
-            if key == 'vfw-vnf':
-                self.functions[key]['next_ip'] = None
+            self.functions['vpn-vnf']['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
+            self.functions['tor-vnf']['next_ip'] = None
+            self.functions['prx-vnf']['next_ip'] = None
+            self.functions['vfw-vnf']['next_ip'] = None
+#            if key == 'vpn-vnf':
+#                if 'prx-vnf' in self.functions.keys():
+#                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['prx-vnf']['own_ip'])
+#                elif 'tor-vnf' in self.functions.keys():
+#                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
+#                elif 'vfw-vnf' in self.functions.keys():
+#                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
+#                else:
+#                    self.functions[key]['next_ip'] = None
+#            if key == 'prx-vnf':
+#                if 'tor-vnf' in self.functions.keys():
+#                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['tor-vnf']['own_ip'])
+#                elif 'vfw-vnf' in self.functions.keys():
+#                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
+#                else:
+#                    self.functions[key]['next_ip'] = None
+#            if key == 'tor-vnf':
+#                if 'vfw-vnf' in self.functions.keys():
+#                    self.functions[key]['next_ip'] = self.floating_to_internal(self.functions['vfw-vnf']['own_ip'])
+#                else:
+#                    self.functions[key]['next_ip'] = None
+#            if key == 'vfw-vnf':
+#                self.functions[key]['next_ip'] = None
 
         response = self.create_configuration_message()
 
