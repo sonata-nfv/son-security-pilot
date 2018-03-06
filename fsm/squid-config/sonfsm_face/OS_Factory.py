@@ -41,7 +41,7 @@ class OS_implementation(metaclass = ABCMeta):
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
 
-        self.createConf(host_ip, 4, 'cache-vnf')
+        self.createConf(host_ip, 4, 'prx-vnf')
         localpath = self.monitoring_file
         self.LOG.info("SFTP connection entering on %s", localpath)
         remotepath = '/tmp/node.conf'
@@ -128,7 +128,7 @@ class Centos_implementation(OS_implementation):
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
         self.LOG.info("Making sure .ssh directory exists")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[-d .ssh] && echo OK")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -d .ssh ] && echo OK")
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
@@ -394,7 +394,7 @@ class Ubuntu_implementation(OS_implementation):
         ftp.close()
 
         self.LOG.info("Making sure .ssh directory exists")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[-d .ssh] && echo OK")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -d .ssh ] && echo OK")
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
