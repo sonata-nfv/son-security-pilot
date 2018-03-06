@@ -274,9 +274,17 @@ class FirewallFSM(sonSMbase):
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
 
+        LOG.info("Update the probe code")
+        sftp = ssh.open_sftp()
+        some_path = os.path.abspath(__file__ + '/../' + 'probe.py')
+        LOG.info("SFTP connection established to transfer %s", some_path)
+        sftp.put(some_path, '/usr/local/bin/probe.py')
+        sftp.close()
+
+
         LOG.info("Start the probe with nohup")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "nohup /usr/local/bin/python2.7 /usr/local/bin/probe.py  >& /dev/null &")
+            "nohup /usr/local/bin/python2.7 /usr/local/bin/probe.py 1>/dev/null 2>/dev/null &")
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
@@ -541,7 +549,7 @@ class FirewallFSM(sonSMbase):
 def main(working_dir=None):
     if working_dir:
         os.chdir(working_dir)
-    LOG.info('Welcome to the main in %s', __name__)
+    LOG.info('Welcome to the main in %s located in %s', __name__, os.path.abspath(__file__))
     FirewallFSM()
     while True:
         time.sleep(10)
