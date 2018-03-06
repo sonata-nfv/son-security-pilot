@@ -160,6 +160,7 @@ to_translate = {
 def translate_metrics(metrics, now, id_):
     new_families = []
     to_keep = ["vm_net_rx_pps", "vm_net_tx_pps", "vm_net_rx_bps", "vm_net_tx_bps"]
+    has_mem_perc_metric = False
     reprocess = {}
     for elt in to_keep:
         reprocess[elt] = {}
@@ -184,6 +185,11 @@ def translate_metrics(metrics, now, id_):
                     reprocess[m.name][labels['inf']] = data[0]
             else:
                 new_families.append(m)
+            if m.name == 'vm_mem_perc':
+                has_mem_perc_metric = True
+    if not has_mem_perc_metric:
+        m = build_metric("vm_mem_perc", "", "gauge", [("vm_mem_perc", {'id': id_}, (time.time() % 6, now))])
+        new_families.append(m)
     return (new_families, reprocess)
 
 
@@ -205,8 +211,6 @@ def handle_reprocess(metrics, old_now, oldest, late_now, latest, id_):
                 pass
         m = build_metric(family_name, "", "gauge", some_metrics)
         metrics.append(m)
-    m = build_metric("vm_mem_perc", "", "gauge", [("vm_mem_perc", {'id': id_}, (time.time() % 6, late_now))])
-    metrics.append(m)
     return metrics
 
 
