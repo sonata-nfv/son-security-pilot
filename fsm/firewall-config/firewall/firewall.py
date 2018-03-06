@@ -274,9 +274,9 @@ class FirewallFSM(sonSMbase):
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
 
-        LOG.info("Start the probe")
+        LOG.info("Start the probe with nohup")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "/usr/local/bin/python2.7 /usr/local/bin/probe.py &")
+            "nohup /usr/local/bin/python2.7 /usr/local/bin/probe.py  >& /dev/null &")
         LOG.info("stdout: {0}\nstderr:  {1}"
                  .format(ssh_stdout.read().decode('utf-8'),
                          ssh_stderr.read().decode('utf-8')))
