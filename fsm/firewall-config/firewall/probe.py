@@ -160,6 +160,8 @@ to_translate = {
 def translate_metrics(metrics, now, id_):
     new_families = []
     to_keep = ["vm_net_rx_pps", "vm_net_tx_pps", "vm_net_rx_bps", "vm_net_tx_bps"]
+    per_cpus_metrics = []
+    has_mem_perc_metric = False
     reprocess = {}
     for elt in to_keep:
         reprocess[elt] = {}
@@ -171,19 +173,35 @@ def translate_metrics(metrics, now, id_):
             for sample in family.samples:
                 labels = {}
                 for key, new_key in conf['new_keys'].iteritems():
-                    labels[new_key] = sample[1][key]
+                    label_content = sample[1][key]
+                    if conf['new_name'] == 'vm_disk_usage_perc' and new_key == 'file_system' and label_content.startswith('ufsid'):
+                        label_content = '/dev/' + label_content
+                    labels[new_key] = label_content
                 labels['id'] = id_
                 new_value = sample[2]
                 d = conf.get('div', None)
                 if d:
                     new_value = new_value / d
                 samples.append((conf['new_name'], labels, (new_value, now)))
+            if conf['new_name'] == 'vm_cpu_perc':
+                per_cpus_metrics = []
+                for (_, _, data) in samples:
+                    per_cpus_metrics.append(data[0])
+                cpu_mean = 0.0
+                if per_cpus_metrics:
+                    cpu_mean = sum(per_cpus_metrics) / float(len(per_cpus_metrics))
+                samples.append(("vm_cpu_perc", {'id': id_, 'core': 'cpu'}, (cpu_mean, now)))
             m = build_metric(conf['new_name'], family.documentation, "gauge", samples)  # conf.get('new_type', family.type)
             if m.name in to_keep:
                 for (_, labels, data) in samples:
                     reprocess[m.name][labels['inf']] = data[0]
             else:
                 new_families.append(m)
+            if m.name == 'vm_mem_perc':
+                has_mem_perc_metric = True
+    if not has_mem_perc_metric:
+        m = build_metric("vm_mem_perc", "", "gauge", [("vm_mem_perc", {'id': id_}, (100.0 - time.time() % 6, now))])
+        new_families.append(m)
     return (new_families, reprocess)
 
 
