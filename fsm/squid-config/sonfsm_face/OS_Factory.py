@@ -613,11 +613,14 @@ class Ubuntu_implementation(OS_implementation):
                              ssh_stderr.read().decode('utf-8')))
         else:
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ifconfig eth1 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-")
-            str_temp = ssh_stdout.read().decode('utf-8').strip()
-            self.LOG.info("Last interface = {0}".format(str_temp))
-#            last_if[3] = '1'
-#            str_out = "supersede routers %s;".format('.'.join(last_if))
-#            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
+            last_if = ssh_stdout.read().decode('utf-8').strip().spli(".")
+            self.LOG.info("Last interface = {0}".format(last_if))
+            last_if[3] = '1'
+            str_out = "supersede routers %s;".format('.'.join(last_if))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
+            self.LOG.info("stdout: {0}\nstderr:  {1}"
+                     .format(ssh_stdout.read().decode('utf-8'),
+                             ssh_stderr.read().decode('utf-8')))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/route add default gw {0} dev eth1".format(str_temp))
             self.LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
