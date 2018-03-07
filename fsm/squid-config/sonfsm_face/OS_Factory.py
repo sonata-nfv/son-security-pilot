@@ -612,8 +612,7 @@ class Ubuntu_implementation(OS_implementation):
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
         else:
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-                "LI = $(\"sudo /sbin/ifconfig eth0 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("LI=$(\"sudo /sbin/ifconfig eth0 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
             last_if = ssh_stdout.read().decode('utf-8').strip().split(".")
             self.LOG.info("Last interface = {0}".format(last_if))
             last_if[3] = '1'
