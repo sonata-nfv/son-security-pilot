@@ -16,7 +16,7 @@ virtual_deployment_units:
     vm_image: "http://files.sonata-nfv.eu/son-psa-pilot/prx-vnf/eu.sonata-nfv_vprx-vnf_0.1_vdu01"
     vm_image_format: "qcow2"
 # Ce7  vm_image_md5: "838821b21771674dd29acf1663253278"
-    vm_image_md5: "f6d89c70f1032ea4e351082fced80bea"
+    vm_image_md5: "f3c6705dd692bb452640ce2b5d49a1e1"
 
     resource_requirements:
       cpu:
