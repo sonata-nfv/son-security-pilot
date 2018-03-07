@@ -617,11 +617,11 @@ class Ubuntu_implementation(OS_implementation):
             self.LOG.info("Last interface = {0}".format(last_if))
             last_if[3] = '1'
             str_out = "supersede routers %s;".format('.'.join(last_if))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'echo %s >>  /etc/dhcp/dhclient.conf'".format(str_out))
             self.LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/route add default gw {0} dev eth1".format(str_temp))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/route add default gw {0} dev eth1".format(str_out))
             self.LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
