@@ -612,16 +612,16 @@ class Ubuntu_implementation(OS_implementation):
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
         else:
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("LI=$(\"sudo /sbin/ifconfig eth0 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-\") && echo $LI")
-            last_if = ssh_stdout.read().decode('utf-8').strip().split(".")
-            self.LOG.info("Last interface = {0}".format(last_if))
-            last_if[3] = '1'
-            str_out = "supersede routers %s;".format('.'.join(last_if))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ifconfig eth0 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-")
+            str_temp = ssh_stdout.read().decode('utf-8').strip()
+            self.LOG.info("Last interface = {0}".format(str_temp))
+#            last_if[3] = '1'
+#            str_out = "supersede routers %s;".format('.'.join(last_if))
+#            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo echo %s >>  /etc/dhcp/dhclient.conf".format(str_out))
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \'s/#net.ipv4.ip_forward/net.ipv4.ip_forward/g\' /etc/sysctl.conf")
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
         
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /etc/init.d/procps restart")
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
-
+tr
