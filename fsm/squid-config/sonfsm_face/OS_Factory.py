@@ -613,7 +613,7 @@ class Ubuntu_implementation(OS_implementation):
                              ssh_stderr.read().decode('utf-8')))
         else:
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ifconfig eth1 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-")
-            last_if = ssh_stdout.read().decode('utf-8').strip().spli(".")
+            last_if = ssh_stdout.read().decode('utf-8').strip().split(".")
             self.LOG.info("Last interface = {0}".format(last_if))
             last_if[3] = '1'
             str_out = "supersede routers %s;".format('.'.join(last_if))
