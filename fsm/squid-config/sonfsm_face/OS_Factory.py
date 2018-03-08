@@ -383,6 +383,11 @@ class Ubuntu_implementation(OS_implementation):
         if ssh == None:
             return;
         
+        self.LOG.info("Disable UFW service")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo systemctl stop ufw && sudo systemctl disable ufw")
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+
         self.LOG.info("Copy net interfaces cfg files")
         ftp = ssh.open_sftp()
         self.LOG.info("SFTP connection established")
@@ -572,11 +577,24 @@ class Ubuntu_implementation(OS_implementation):
 
         if sout != "OK":
             self.LOG.info("Configure route for FSM IP")
+            
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
                 "sudo /sbin/route add -net {0} netmask 255.255.255.255 gw {1}"
                 .format(fsm_ip, default_gw))
             sout = ssh_stdout.read().decode('utf-8').strip()
             serr = ssh_stderr.read().decode('utf-8').strip()
+            
+            # mask will be 255.255.255.224
+            self.LOG.info("Configure a Net route for FSM IP to backwards")
+            last_if = data_ip.split(".")
+            last_if[3] = str(int(last_if[3]) & 224) 
+            test_net = '.'.join(last_if)
+            self.LOG.info("For network {0} we have dev eth1".format(test_net))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+                "sudo /sbin/route add -net {0} netmask 255.255.255.224 dev eth1".format(test_net))
+            sout = ssh_stdout.read().decode('utf-8').strip()
+            serr = ssh_stderr.read().decode('utf-8').strip()
+
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c '>> /etc/sonata_file'")
             sout = ssh_stdout.read().decode('utf-8').strip()
