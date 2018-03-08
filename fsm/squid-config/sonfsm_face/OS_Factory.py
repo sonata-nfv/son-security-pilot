@@ -437,13 +437,6 @@ class Ubuntu_implementation(OS_implementation):
         serr = ssh_stderr.read().decode('utf-8')
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(input_subnetwork, serr))
 
-        self.LOG.info("Delete extraneous rule on eth2 (output)")
-        #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route del {0} dev eth2".format(input_subnetwork))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route del {0} dev eth1".format(input_subnetwork))
-        sout = ssh_stdout.read().decode('utf-8')
-        serr = ssh_stderr.read().decode('utf-8')
-        self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
-
         self.LOG.info("Get current default GW")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ip route | awk '/default/ { print $3 }'")
         sout = ssh_stdout.read().decode('utf-8')
