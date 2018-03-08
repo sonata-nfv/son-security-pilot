@@ -204,12 +204,12 @@ class Centos_implementation(OS_implementation):
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info('Port 80 to 3128 for {0}'.format(my_ip))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination '{0}:3128'".format(my_ip))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/iptables -t nat -A PREROUTING -i eth1 -p tcp -m tcp --dport 80 -j DNAT --to-destination '{0}:3128'".format(my_ip))
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info("Redirecting port")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /usr/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /usr/sbin/iptables -t nat -A PREROUTING -i eth1 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -466,12 +466,12 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info('Port 80 to 3128 for {0}'.format(my_ip))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination '{0}:3128'".format(my_ip))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/iptables -t nat -A PREROUTING -i eth1 -p tcp -m tcp --dport 80 -j DNAT --to-destination '{0}:3128'".format(my_ip))
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
         self.LOG.info("Redirecting port")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /sbin/iptables -t nat -A PREROUTING -i eth1 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128')
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
