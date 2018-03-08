@@ -419,8 +419,8 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('stderr from remote: ' + ssh_stderr.read().decode('utf-8'))
 
-        self.LOG.info("Displaying eth1 data")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth1")
+        self.LOG.info("Displaying eth1 data and other info")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("/sbin/ifconfig eth1 && /sbin/ip a && /sbin/ip r")
         sout = ssh_stdout.read().decode('utf-8')
         serr = ssh_stderr.read().decode('utf-8')
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
