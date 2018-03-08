@@ -414,6 +414,12 @@ class Ubuntu_implementation(OS_implementation):
         serr = ssh_stderr.read().decode('utf-8')
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
+        self.LOG.info("Stopping ufw")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo /usr/sbin/service ufw stop || true')
+        sout = ssh_stdout.read().decode('utf-8')
+        serr = ssh_stderr.read().decode('utf-8')
+        self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
+
         self.LOG.info("Copying scripts")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo cp /tmp/50-cloud-init.cfg /etc/network/interfaces.d")
         self.LOG.info('stdout from remote: ' + ssh_stdout.read().decode('utf-8'))
