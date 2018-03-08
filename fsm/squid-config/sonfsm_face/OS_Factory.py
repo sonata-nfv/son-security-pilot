@@ -586,7 +586,7 @@ class Ubuntu_implementation(OS_implementation):
             
             # mask will be 255.255.255.224
             self.LOG.info("Configure a Net route for FSM IP to backwards")
-            last_if = data_ip.split(".")
+            last_if = default_gw.split(".")
             last_if[3] = str(int(last_if[3]) & 224) 
             test_net = '.'.join(last_if)
             self.LOG.info("For network {0} we have dev eth1".format(test_net))
