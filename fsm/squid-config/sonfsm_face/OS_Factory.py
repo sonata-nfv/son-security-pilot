@@ -631,7 +631,7 @@ class Ubuntu_implementation(OS_implementation):
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ifconfig eth1 | grep \"inet\" | awk '{if($1==\"inet\") { print $2; }}' | cut -b 6-")
             last_if = ssh_stdout.read().decode('utf-8').strip().split(".")
             self.LOG.info("Last interface = {0}".format(last_if))
-            last_if[3] = str(int((last_if[3]) & 224) + 1)
+            last_if[3] = str((int(last_if[3]) & 224) + 1)
             str_out = "supersede routers {0};".format('.'.join(last_if))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'echo {0} >>  /etc/dhcp/dhclient.conf'".format(str_out))
             self.LOG.info("stdout: {0}\nstderr:  {1}"
