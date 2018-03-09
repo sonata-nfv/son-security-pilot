@@ -322,10 +322,6 @@ class Centos_implementation(OS_implementation):
             serr = ssh_stderr.read().decode('utf-8').strip()
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
 
-        self.LOG.info("Configure route for FSM IP")
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "sudo /usr/sbin/route add -net {0} netmask 255.255.255.255 gw {1}"
-            .format(fsm_ip, default_gw))
         self.LOG.info("stdout: {0}\nstderr:  {1}"
             .format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
 
@@ -585,18 +581,18 @@ class Ubuntu_implementation(OS_implementation):
             sout = ssh_stdout.read().decode('utf-8').strip()
             serr = ssh_stderr.read().decode('utf-8').strip()
             
-            self.LOG.info("Configure a Net route for FSM IP to backwards")	
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("ifconfig eth1 | awk '{if($1==\"inet\")  { print $2; }}' | cut -b 6-")
-            sout = ssh_stdout.read().decode('utf-8').strip()
-            serr = ssh_stderr.read().decode('utf-8').strip()
-            last_if = sout.split(".")	
-            last_if[3] = str(int(last_if[3]) & 224) 	
-            test_net = '.'.join(last_if)	
-            self.LOG.info("For network {0} we have dev eth1".format(test_net))	
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(	
-                "sudo /sbin/route add -net {0} netmask 255.255.255.224 dev eth1".format(test_net))	
-            sout = ssh_stdout.read().decode('utf-8').strip()	
-            serr = ssh_stderr.read().decode('utf-8').strip()	
+#            self.LOG.info("Configure a Net route for FSM IP to backwards")	
+#            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("ifconfig eth1 | awk '{if($1==\"inet\")  { print $2; }}' | cut -b 6-")
+#            sout = ssh_stdout.read().decode('utf-8').strip()
+#            serr = ssh_stderr.read().decode('utf-8').strip()
+#            last_if = sout.split(".")	
+#            last_if[3] = str(int(last_if[3]) & 224) 	
+#            test_net = '.'.join(last_if)	
+#            self.LOG.info("For network {0} we have dev eth1".format(test_net))	
+#            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(	
+#                "sudo /sbin/route add -net {0} netmask 255.255.255.224 dev eth1".format(test_net))	
+#            sout = ssh_stdout.read().decode('utf-8').strip()	
+#            serr = ssh_stderr.read().decode('utf-8').strip()	
 
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c '>> /etc/sonata_file'")
