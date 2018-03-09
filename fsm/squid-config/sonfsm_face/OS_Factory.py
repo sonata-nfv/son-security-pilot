@@ -641,7 +641,7 @@ class Ubuntu_implementation(OS_implementation):
             self.LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/route add default gw {0}".format(str_out))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/route add default gw {0}".format('.'.join(last_if)))
             self.LOG.info("stdout: {0}\nstderr:  {1}"
                      .format(ssh_stdout.read().decode('utf-8'),
                              ssh_stderr.read().decode('utf-8')))
