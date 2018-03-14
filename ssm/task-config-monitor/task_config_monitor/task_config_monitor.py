@@ -88,12 +88,16 @@ class Client():
         message['chain'] = []
         if actionName == "basic":
             message['chain'] = ['vpn-vnf', 'tor-vnf', 'vfw-vnf']
+            message['prx_config'] = 'transparent'
         if actionName == "anon":
             message['chain'] = ['vpn-vnf', 'prx-vnf', 'tor-vnf', 'vfw-vnf']
+            message['prx_config'] = 'squidguard'
         if actionName == "basic stop":
             message['chain'] = ['vpn-vnf', 'vfw-vnf']
+            message['prx_config'] = 'transparent'
         if actionName == "anon stop":
             message['chain'] = ['vpn-vnf', 'vfw-vnf']
+            message['prx_config'] = 'transparent'
         LOG.info("Selected chain is: " + str(message['chain']))
 
         # Only when the status of the service is ready is it allowed to make
