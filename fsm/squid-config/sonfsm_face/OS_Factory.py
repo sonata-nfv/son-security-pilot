@@ -19,9 +19,9 @@ class Factory:
 class OS_implementation(metaclass = ABCMeta):
     config_options = { 'direct': './ansible/roles/squid/files/squid_direct.conf', 
         'transparent': './ansible/roles/squid/files/squid.conf', 
-        'squidguard_xenial': './ansible/roles/squid/files/squid_guard_xenial.conf',
-        'squidguard_centos': './ansible/roles/squid/files/squid_guard_centos.conf',
-        'squidguardconf': './ansible/roles/squid/files/squidguard.conf' }
+        'squidufdb_xenial': './ansible/roles/squid/files/squid_ufdb_xenial.conf',
+        'squidufdb_centos': './ansible/roles/squid/files/squid_ufdb_centos.conf',
+        'ufdbguardconf': './ansible/roles/squid/files/ufdbguard.conf' }
     config_dir = './ansible/roles/squid/files'
     monitoring_file = './node.conf'
     LOG = None
@@ -244,14 +244,14 @@ class Centos_implementation(OS_implementation):
             remotepath = '/tmp/squid.conf'
             sftpa = ftp.put(localpath, remotepath)
         elif cfg == "squidguard":
-            cfg += "_centos"
+            cfg = "squid_ufdb_centos"
             localpath = self.config_options[cfg]
             self.LOG.info("SFTP connection entering on %s", localpath)
             remotepath = '/tmp/squid.conf'
             sftpa = ftp.put(localpath, remotepath)
-            localpath = self.config_options["squidguardconf"]
+            localpath = self.config_options["ufdbguardconf"]
             self.LOG.info("SFTP connection entering on %s", localpath)
-            remotepath = '/tmp/squidguard.conf'
+            remotepath = '/tmp/ufdbguard.conf'
             sftpa = ftp.put(localpath, remotepath)
 
         ftp.close()
@@ -265,19 +265,22 @@ class Centos_implementation(OS_implementation):
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
-        if cfg == "squidguard_centos":
+        if cfg == "squid_ufdb_centos":
             self.LOG.info("Copying the Squid Guard configuration file")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/squid/squidguard.conf ] && echo OK")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/ufdbguard/ufdbGuard.conf ] && echo OK")
             sout = ssh_stdout.read().decode('utf-8')
             self.LOG.info('output from remote: ' + sout)
             self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             if sout == "OK":
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /etc/squid/squidguard.conf /etc/squid/squidguard.conf.old'") 
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /etc/ufdbguard/ufdbGuard.conf /etc/ufdbguard/ufdbGuard.conf.old'") 
                 self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
                 self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
             
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /tmp/squidguard.conf /etc/squid/squidguard.conf'")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /tmp/ufdbguard.conf /etc/ufdbguard/ufdbGuard.conf'")
+            self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+            self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo systemctl start ufdb.service")
             self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
             self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
@@ -336,7 +339,7 @@ class Centos_implementation(OS_implementation):
             self.LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; forward_cpinput_ip:'{2}'"
                 .format(host_ip, data_ip, next_ip))
 
-            self.LOG.info("Set the path to the next hop by eth2 (output)")
+            self.LOG.info("Set the path to the next hop by eth1 (output)")
             #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route add {0}/32 dev eth2".format(next_ip))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/ip route add {0}/32 dev eth1".format(next_ip))
             sout = ssh_stdout.read().decode('utf-8')
@@ -350,16 +353,22 @@ class Centos_implementation(OS_implementation):
         else:
             self.LOG.info("Modify DHCP configuration of interfaces")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth0")
-            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"no\"\" /etc/sysconfig/network-scripts/ifcfg-eth1")
-            #self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
-            #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth2")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \"/DEFROUTE/cDEFROUTE=\"yes\"\" /etc/sysconfig/network-scripts/ifcfg-eth1")
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
 
-            self.LOG.info("Add default route for input/output interface (eth2)")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ifconfig eth1 | grep \"inet\" | awk '{ if ($1 == \"inet\") {print $2} }'")
+            last_if = ssh_stdout.read().decode('utf-8').strip().split(".")
+            self.LOG.info("Last interface = {0}".format(last_if))
+            last_if[3] = str((int(last_if[3]) & 224) + 1)
+
+            self.LOG.info("Add default route for input/output interface (eth1)")
             #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient -r eth2 && dhclient eth2")
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo dhclient -r eth1 && dhclient eth1")
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /usr/sbin/route add default gw {0}".format('.'.join(last_if)))
+            self.LOG.info("stdout: {0}\nstderr:  {1}" .format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
+
 
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo sed -i \'s/#net.ipv4.ip_forward/net.ipv4.ip_forward/g\' /etc/sysctl.conf")
         self.LOG.info("stdout: {0}\nstderr:  {1}".format(ssh_stdout.read().decode('utf-8'), ssh_stderr.read().decode('utf-8')))
@@ -507,14 +516,14 @@ class Ubuntu_implementation(OS_implementation):
             remotepath = '/tmp/squid.conf'
             sftpa = ftp.put(localpath, remotepath)
         elif cfg == "squidguard":
-            cfg += "_xenial"
+            cfg = "squidufdb_xenial"
             localpath = self.config_options[cfg]
             self.LOG.info("SFTP connection entering on %s", localpath)
             remotepath = '/tmp/squid.conf'
             sftpa = ftp.put(localpath, remotepath)
-            localpath = self.config_options["squidguardconf"]
+            localpath = self.config_options["ufdbguardconf"]
             self.LOG.info("SFTP connection entering on %s", localpath)
-            remotepath = '/tmp/squidguard.conf'
+            remotepath = '/tmp/ufdbguard.conf'
             sftpa = ftp.put(localpath, remotepath)
         ftp.close()
 
@@ -527,21 +536,27 @@ class Ubuntu_implementation(OS_implementation):
         self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
         self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
 
-        if cfg == "squidguard_xenial":
+        if cfg == "squidufdb_xenial":
             self.LOG.info("Copying the Squid Guard configuration file")
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /etc/squidguard/squidGuard.conf ] && echo OK")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("[ -f /usr/local/ufdbguard/etc/ufdbGuard.conf ] && echo OK")
             sout = ssh_stdout.read().decode('utf-8')
             self.LOG.info('output from remote: ' + sout)
             self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
             if sout == "OK":
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /etc/squidguard/squidGuard.conf /etc/squidguard/squidGuard.conf.old'") 
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /usr/local/ufdbguard/etc/ufdbGuard.conf /usr/local/ufdbguard/etc/ufdbGuard.conf.old'") 
                 self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
                 self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
             
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /tmp/squidguard.conf /etc/squidguard/squidGuard.conf'")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /tmp/ufdbguard.conf /usr/local/ufdbguard/etc/ufdbGuard.conf")
             self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
             self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
+
+            self.LOG.info("Restarting ufdb")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl start ufdb.service')
+            self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
+            self.LOG.info('output from remote: ' + ssh_stderr.read().decode('utf-8'))
+
 
         self.LOG.info("Restarting Squid")
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('sudo systemctl restart squid')
@@ -581,19 +596,6 @@ class Ubuntu_implementation(OS_implementation):
             sout = ssh_stdout.read().decode('utf-8').strip()
             serr = ssh_stderr.read().decode('utf-8').strip()
             
-#            self.LOG.info("Configure a Net route for FSM IP to backwards")	
-#            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("ifconfig eth1 | awk '{if($1==\"inet\")  { print $2; }}' | cut -b 6-")
-#            sout = ssh_stdout.read().decode('utf-8').strip()
-#            serr = ssh_stderr.read().decode('utf-8').strip()
-#            last_if = sout.split(".")	
-#            last_if[3] = str(int(last_if[3]) & 224) 	
-#            test_net = '.'.join(last_if)	
-#            self.LOG.info("For network {0} we have dev eth1".format(test_net))	
-#            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(	
-#                "sudo /sbin/route add -net {0} netmask 255.255.255.224 dev eth1".format(test_net))	
-#            sout = ssh_stdout.read().decode('utf-8').strip()	
-#            serr = ssh_stderr.read().decode('utf-8').strip()	
-
             self.LOG.info("stdout: {0}\nstderr:  {1}".format(sout, serr))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c '>> /etc/sonata_file'")
             sout = ssh_stdout.read().decode('utf-8').strip()
@@ -614,7 +616,7 @@ class Ubuntu_implementation(OS_implementation):
             self.LOG.info("cpmgmt IP address:'{0}'; cpinput IP address:'{1}'; forward_cpinput_ip:'{2}'"
                 .format(host_ip, data_ip, next_ip))
 
-            self.LOG.info("Force the path to the next hope to go through eth2 (outpu)")
+            self.LOG.info("Force the path to the next hope to go through eth1 (output)")
             #ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route add {0}/32 dev eth2".format(next_ip))
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo /sbin/ip route add {0}/32 dev eth1".format(next_ip))
             sout = ssh_stdout.read().decode('utf-8')
