@@ -547,7 +547,7 @@ class Ubuntu_implementation(OS_implementation):
                 self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
                 self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
             
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /tmp/ufdbguard.conf /usr/local/ufdbguard/etc/ufdbGuard.conf")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("sudo su -c 'mv /tmp/ufdbguard.conf /usr/local/ufdbguard/etc/ufdbGuard.conf'")
             self.LOG.info('output from remote: ' + ssh_stdout.read().decode('utf-8'))
             self.LOG.info('error from remote: ' + ssh_stderr.read().decode('utf-8'))
 
