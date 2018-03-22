@@ -366,8 +366,11 @@ class TaskConfigMonitorSSM(sonSMbase):
 
         if 'ip_mapping' in content.keys():
             LOG.info("Ip mapping found, saving...")
-            self.ip_mapping = content['ip_mapping']
-            LOG.info("Ip mapping found, saved: %s", self.ip_mapping)
+            if self.ip_mapping is None:
+                self.ip_mapping = content['ip_mapping']
+                LOG.info("Ip mapping found, saved: %s", self.ip_mapping)
+            else:
+                LOG.info("Ignoring the new value %s; because the ip_mapping was not empty: %s", content['ip_mapping'], self.ip_mapping)
 
         if content["workflow"] == 'instantiation':
             msg = "Received a configure request for the instantiation workflow"
