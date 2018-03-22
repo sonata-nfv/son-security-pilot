@@ -367,6 +367,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         if 'ip_mapping' in content.keys():
             LOG.info("Ip mapping found, saving...")
             self.ip_mapping = content['ip_mapping']
+            LOG.info("Ip mapping found, saved: %s", self.ip_mapping)
 
         if content["workflow"] == 'instantiation':
             msg = "Received a configure request for the instantiation workflow"
@@ -544,12 +545,13 @@ class TaskConfigMonitorSSM(sonSMbase):
         """
         This method tries to convert a floating ip into an internal ip.
         """
-        LOG.info("Mapping floating IP to internal IP")
+        LOG.info("Mapping floating IP %s to internal IP inside %s", floating_ip, self.ip_mapping)
         resulting_ip = floating_ip
         for ip_duo in self.ip_mapping:
             if ip_duo['floating_ip'] == floating_ip:
                 LOG.info('Internal IP found')
                 resulting_ip = ip_duo['internal_ip']
+                LOG.info('Returning internal IP %s', resulting_ip)
                 break
 
         return resulting_ip
