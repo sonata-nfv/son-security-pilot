@@ -561,7 +561,7 @@ class TaskConfigMonitorSSM(sonSMbase):
         return self.status
 
     def push_update(self, content):
-
+        LOG.info('Pushing update')
         self.chain = content['chain']
         if 'prx_config' in content.keys():
             new_config = content['prx_config']
@@ -576,7 +576,9 @@ class TaskConfigMonitorSSM(sonSMbase):
         payload = yaml.dump(message)
 
         topic = 'monitor.ssm.' + self.sfuuid
+        LOG.info('Notifying Mano on %s with %s', topic, message)
         self.manoconn.notify(topic, payload)
+        LOG.info('Mano notified')
 
     def monitor_request(self, corr_id, content):
         """
